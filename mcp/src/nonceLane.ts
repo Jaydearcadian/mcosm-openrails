@@ -7,6 +7,7 @@ export interface AllocateNonceLaneInput {
   payer: string;
   attempts?: number;
   randomBytes?: (length: number) => Uint8Array;
+  readNonceFn?: typeof readNonce;
 }
 
 /**
@@ -21,12 +22,13 @@ export async function allocateUnusedRailsCardLane(
 ): Promise<{ nonceChannel: number; nonceValue: number }> {
   const attempts = input.attempts ?? 8;
   const randomBytes = input.randomBytes ?? ethers.randomBytes;
+  const readNonceAt = input.readNonceFn ?? readNonce;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const candidate = Number(BigInt(ethers.hexlify(randomBytes(6))));
     if (!Number.isSafeInteger(candidate) || candidate === 0) continue;
 
-    const nonceValue = await readNonce(
+    const nonceValue = await readNonceAt(
       input.provider,
       input.hubAddress,
       input.payer,
