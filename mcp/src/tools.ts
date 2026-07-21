@@ -24,8 +24,9 @@ import {
   type RailsFlowLinkPayloadV1,
 } from 'openrails-sdk';
 import type { OpenRailsContext } from './context.js';
+import { allocateUnusedRailsCardLane } from './nonceLane.js';
 
-const NONCE_CHANNEL = 0;
+const SEQUENTIAL_NONCE_CHANNEL = 0;
 
 // ---- Spend ceiling ------------------------------------------------------------
 // Guards the two write tools that commit the MCP signer's own funds (pay_link's RailsFlow-open
@@ -83,19 +84,25 @@ function readPaymentTerms(
 
 // ---- Idempotency on retry -------------------------------------------------------
 // An agent retry after an ambiguous failure (timeout, dropped connection) must not sign and
-// submit a second, independent authorization for the same request. Cache the result of an
-// identical call for a short TTL and replay it instead of minting a fresh nonce/paycardId.
+// submit a second, independent authorization for the same request. Cache the in-flight promise
+// as well as the completed result so concurrent identical calls cannot both sign authorizations.
 const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000;
-const idempotencyCache = new Map<string, { expires: number; result: unknown }>();
+const idempotencyCache = new Map<string, { expires: number; promise: Promise<unknown> }>();
 
 async function withIdempotency<T>(tool: string, args: unknown, fn: () => Promise<T>): Promise<T> {
   const key = `${tool}:${JSON.stringify(args)}`;
   const now = Date.now();
   const cached = idempotencyCache.get(key);
-  if (cached && cached.expires > now) return cached.result as T;
-  const result = await fn();
-  idempotencyCache.set(key, { expires: now + IDEMPOTENCY_TTL_MS, result });
-  return result;
+  if (cached && cached.expires > now) return cached.promise as Promise<T>;
+
+  const promise = fn();
+  idempotencyCache.set(key, { expires: now + IDEMPOTENCY_TTL_MS, promise });
+  try {
+    return await promise;
+  } catch (error) {
+    if (idempotencyCache.get(key)?.promise === promise) idempotencyCache.delete(key);
+    throw error;
+  }
 }
 
 // The SDK is compiled CommonJS; its .d.ts reference ethers' commonjs type-view, while this ESM
@@ -168,13 +175,13 @@ export async function payLink(ctx: OpenRailsContext, args: { link: string }) {
       amount: pl.amount, velocity: pl.flowVelocityPerSecond, lifespan: pl.lifespanSeconds,
     });
     const metadataHash = hashOpenRailsMetadata(metadata);
-    const nonceValue = Number(await readNonce(asProvider(ctx), hub, payer, NONCE_CHANNEL));
-    const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel: NONCE_CHANNEL, nonceValue, metadataHash });
+    const nonceValue = Number(await readNonce(asProvider(ctx), hub, payer, SEQUENTIAL_NONCE_CHANNEL));
+    const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel: SEQUENTIAL_NONCE_CHANNEL, nonceValue, metadataHash });
     const intent: OpenRailsIntentV1 = {
       paycardId, metadataHash, recipient: pl.recipient,
       totalAllocationPool: pl.amount, flowVelocityPerSecond: pl.flowVelocityPerSecond,
       genesisTimestamp: Math.floor(Date.now() / 1000), lifespanSeconds: pl.lifespanSeconds,
-      residualDeltaRecipient: payer, nonceChannel: NONCE_CHANNEL, nonceValue,
+      residualDeltaRecipient: payer, nonceChannel: SEQUENTIAL_NONCE_CHANNEL, nonceValue,
     };
     const permit = await signUsdcPermit(account, { token, spender: hub, value: pl.amount, chainId, provider: asProvider(ctx) });
     const res = await payGasless({ client, relay: ctx.relay, intent, options: { mode: 'railsflow', metadata }, permit });
@@ -235,13 +242,17 @@ export async function issueRailscard(
 
     const metadata = metadataFor({ mode, originator: payer, recipient, token, amount: args.amount, velocity, lifespan });
     const metadataHash = hashOpenRailsMetadata(metadata);
-    const nonceValue = Number(await readNonce(asProvider(ctx), hub, payer, NONCE_CHANNEL));
-    const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel: NONCE_CHANNEL, nonceValue, metadataHash });
+    const { nonceChannel, nonceValue } = await allocateUnusedRailsCardLane({
+      provider: asProvider(ctx),
+      hubAddress: hub,
+      payer,
+    });
+    const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel, nonceValue, metadataHash });
     const intent = createRailsCardIntent({
       paycardId, metadataHash,
       totalAllocationPool: args.amount, flowVelocityPerSecond: velocity,
       genesisTimestamp: Math.floor(Date.now() / 1000), lifespanSeconds: lifespan,
-      residualDeltaRecipient: payer, nonceChannel: NONCE_CHANNEL, nonceValue,
+      residualDeltaRecipient: payer, nonceChannel, nonceValue,
     });
     if (!bearer) intent.recipient = recipient;
 
@@ -249,7 +260,9 @@ export async function issueRailscard(
     const link = createRailsCardClaimLink({ appBaseUrl, chainId, vault: hub, token, metadataHash, mode, envelopeToken });
     return {
       link, paycardId, mode, amount: args.amount, type: oneTime ? 'one-time' : 'streaming',
-      note: 'Escrow is pulled from the payer on claim - ensure the payer keeps enough USDC allowance/balance when this is claimed.',
+      nonceChannel,
+      fundingStatus: 'authorized_unfunded',
+      note: 'Escrow is pulled from the payer on claim. The card has an isolated replay lane but still requires sufficient payer balance and Hub allowance at claim time.',
     };
   });
 }
