@@ -22,6 +22,7 @@
     "smoke:sdk:arc": "ts-node scripts/sdk-arc-smoke.ts",
     "smoke:x402:paid": "ts-node experiments/x402-smoke/x402-paid-buyer.ts",
     "smoke:x402:stream": "ts-node experiments/x402-smoke/x402-to-stream.ts",
+    "demo:creator-stream": "node scripts/openrails-creator-streaming-demo.mjs",
     "cockpit:dev": "npm --prefix cockpit run dev",
     "cockpit:build": "npm --prefix cockpit run build",
     "cockpit:deploy": "npm --prefix cockpit run build && npx wrangler pages deploy cockpit/dist --project-name openrails --branch main",
