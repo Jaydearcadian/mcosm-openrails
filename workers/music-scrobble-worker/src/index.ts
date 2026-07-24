@@ -21,11 +21,7 @@ export interface Env {
 
 interface ScrobblePayload {
   event?: string;
-  track?: {
-    mbid?: string;
-    artist?: string;
-    title?: string;
-  };
+  track?: { mbid?: string; artist?: string; title?: string };
   paycardId?: string;
 }
 
@@ -116,7 +112,21 @@ export default {
         const budget = BigInt(body.budgetUsdc ?? "5000000");
         const velocity = BigInt(body.velocityPerSecond ?? "1000");
         const existing = await getSession(env.STREAM_DB, body.sessionId);
-        if (existing) return jsonResponse({ session: existing, idempotent: true });
+        if (existing) {
+          const matchesOriginalPolicy =
+            existing.listenerAddress.toLowerCase() === body.listenerAddress.toLowerCase() &&
+            existing.artistMbid === body.artistMbid &&
+            existing.artistWallet.toLowerCase() === artistWallet.toLowerCase() &&
+            existing.budgetBaseUnits === budget.toString() &&
+            existing.velocityPerSecond === velocity.toString();
+          if (!matchesOriginalPolicy) {
+            return jsonResponse(
+              { error: "Session id already belongs to a different payment policy", code: "conflict" },
+              409,
+            );
+          }
+          return jsonResponse({ session: existing, idempotent: true });
+        }
 
         const result = await openListeningSession({
           hubAddress: env.OPENRAILS_HUB_ADDRESS,
