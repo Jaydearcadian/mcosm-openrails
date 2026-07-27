@@ -1,4 +1,12 @@
 import { openListeningSession } from "./openSession";
+import { authorized } from "../../shared/auth";
+import {
+  getSession,
+  heartbeatSession,
+  SessionLifecycleError,
+  startSession,
+  stopSession,
+} from "./sessionLifecycle";
 
 export interface Env {
   MUSICBRAINZ_REGISTRY: KVNamespace;
@@ -13,32 +21,20 @@ export interface Env {
 
 interface ScrobblePayload {
   event?: string;
-  track?: {
-    mbid?: string;
-    artist?: string;
-    title?: string;
-  };
+  track?: { mbid?: string; artist?: string; title?: string };
   paycardId?: string;
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, PUT, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-OpenRails-Webhook-Secret",
     },
   });
-}
-
-function authorized(request: Request, secret?: string): boolean {
-  if (!secret) return false;
-  const auth = request.headers.get("Authorization") || "";
-  const bearer = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : "";
-  const headerSecret = request.headers.get("X-OpenRails-Webhook-Secret") || "";
-  return bearer === secret || headerSecret === secret;
 }
 
 function isBytes32Hex(value: string): boolean {
@@ -49,6 +45,11 @@ function isEvmAddress(value: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(value);
 }
 
+function lifecycleError(error: SessionLifecycleError): Response {
+  const status = error.code === "not_found" ? 404 : error.code === "conflict" ? 409 : 422;
+  return jsonResponse({ error: error.message, code: error.code }, status);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") {
@@ -56,7 +57,7 @@ export default {
         status: 204,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, PUT, OPTIONS",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, Authorization, X-OpenRails-Webhook-Secret",
         },
       });
@@ -65,15 +66,12 @@ export default {
     try {
       const url = new URL(request.url);
 
-      // PUT /artist/:mbid
       if (url.pathname.startsWith("/artist/") && request.method === "PUT") {
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         const mbid = url.pathname.slice("/artist/".length);
-        if (!mbid) {
-          return jsonResponse({ error: "Missing mbid" }, 400);
-        }
+        if (!mbid) return jsonResponse({ error: "Missing mbid" }, 400);
         const body = (await request.json().catch(() => null)) as { wallet?: string } | null;
         if (!body?.wallet || !isEvmAddress(body.wallet)) {
           return jsonResponse({ error: "Invalid or missing wallet address" }, 400);
@@ -82,12 +80,12 @@ export default {
         return jsonResponse({ mbid, wallet: body.wallet.toLowerCase() });
       }
 
-      // POST /session/open
       if (url.pathname === "/session/open" && request.method === "POST") {
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         const body = (await request.json().catch(() => null)) as {
+          sessionId?: string;
           listenerAddress?: string;
           artistMbid?: string;
           budgetUsdc?: string;
@@ -96,8 +94,8 @@ export default {
           envelopeToken?: string;
         } | null;
 
-        if (!body?.listenerAddress || !body?.artistMbid) {
-          return jsonResponse({ error: "Missing listenerAddress or artistMbid" }, 400);
+        if (!body?.sessionId || !body.listenerAddress || !body.artistMbid) {
+          return jsonResponse({ error: "Missing sessionId, listenerAddress or artistMbid" }, 400);
         }
         if (!isEvmAddress(body.listenerAddress)) {
           return jsonResponse({ error: "Invalid listenerAddress" }, 400);
@@ -107,35 +105,86 @@ export default {
         if (!artistWallet) {
           return jsonResponse({ error: `Artist MBID '${body.artistMbid}' is not registered.` }, 404);
         }
-
         if (!env.MUSIC_SIDECAR_RELAYER_KEY) {
           return jsonResponse({ error: "Relayer secret key is not configured" }, 503);
         }
 
-        try {
-          const result = await openListeningSession({
-            hubAddress: env.OPENRAILS_HUB_ADDRESS,
-            rpcUrl: env.ARC_RPC_URL,
-            relayerPrivateKey: env.MUSIC_SIDECAR_RELAYER_KEY,
-            listenerAddress: body.listenerAddress,
-            artistWallet,
-            budgetUsdcBaseUnits: BigInt(body.budgetUsdc ?? "5000000"),
-            velocityPerSecond: BigInt(body.velocityPerSecond ?? "1000"),
-            lifespanSeconds: BigInt(body.lifespanSeconds ?? "3600"),
-            envelopeToken: body.envelopeToken,
-          });
-          return jsonResponse(result);
-        } catch (e) {
-          return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 500);
+        const budget = BigInt(body.budgetUsdc ?? "5000000");
+        const velocity = BigInt(body.velocityPerSecond ?? "1000");
+        const existing = await getSession(env.STREAM_DB, body.sessionId);
+        if (existing) {
+          const matchesOriginalPolicy =
+            existing.listenerAddress.toLowerCase() === body.listenerAddress.toLowerCase() &&
+            existing.artistMbid === body.artistMbid &&
+            existing.artistWallet.toLowerCase() === artistWallet.toLowerCase() &&
+            existing.budgetBaseUnits === budget.toString() &&
+            existing.velocityPerSecond === velocity.toString();
+          if (!matchesOriginalPolicy) {
+            return jsonResponse(
+              { error: "Session id already belongs to a different payment policy", code: "conflict" },
+              409,
+            );
+          }
+          return jsonResponse({ session: existing, idempotent: true });
         }
+
+        const result = await openListeningSession({
+          hubAddress: env.OPENRAILS_HUB_ADDRESS,
+          rpcUrl: env.ARC_RPC_URL,
+          relayerPrivateKey: env.MUSIC_SIDECAR_RELAYER_KEY,
+          listenerAddress: body.listenerAddress,
+          artistWallet,
+          budgetUsdcBaseUnits: budget,
+          velocityPerSecond: velocity,
+          lifespanSeconds: BigInt(body.lifespanSeconds ?? "3600"),
+          envelopeToken: body.envelopeToken,
+        });
+
+        const timestamp = Math.floor(Date.now() / 1000);
+        const session = await startSession(env.STREAM_DB, {
+          sessionId: body.sessionId,
+          paycardId: result.paycardId,
+          listenerAddress: body.listenerAddress,
+          artistMbid: body.artistMbid,
+          artistWallet,
+          budgetBaseUnits: budget,
+          velocityPerSecond: velocity,
+          timestamp,
+        });
+        return jsonResponse({ session, settlement: result }, 201);
       }
 
-      // POST /webhook/scrobble
-      if (url.pathname === "/webhook/scrobble" && request.method === "POST") {
-        if (!env.WEBHOOK_SECRET) {
-          return jsonResponse({ error: "Webhook secret is not configured" }, 503);
+      const sessionMatch = url.pathname.match(/^\/session\/([^/]+)$/);
+      if (sessionMatch && request.method === "GET") {
+        const session = await getSession(env.STREAM_DB, decodeURIComponent(sessionMatch[1]));
+        return session ? jsonResponse({ session }) : jsonResponse({ error: "Session not found" }, 404);
+      }
+
+      const heartbeatMatch = url.pathname.match(/^\/session\/([^/]+)\/heartbeat$/);
+      if (heartbeatMatch && request.method === "POST") {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
+          return jsonResponse({ error: "Unauthorized" }, 401);
         }
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        const body = (await request.json().catch(() => null)) as { timestamp?: number } | null;
+        const timestamp = body?.timestamp ?? Math.floor(Date.now() / 1000);
+        const session = await heartbeatSession(env.STREAM_DB, decodeURIComponent(heartbeatMatch[1]), timestamp);
+        return jsonResponse({ session });
+      }
+
+      const stopMatch = url.pathname.match(/^\/session\/([^/]+)\/stop$/);
+      if (stopMatch && request.method === "POST") {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
+          return jsonResponse({ error: "Unauthorized" }, 401);
+        }
+        const body = (await request.json().catch(() => null)) as { timestamp?: number } | null;
+        const timestamp = body?.timestamp ?? Math.floor(Date.now() / 1000);
+        const session = await stopSession(env.STREAM_DB, decodeURIComponent(stopMatch[1]), timestamp);
+        return jsonResponse({ session });
+      }
+
+      if (url.pathname === "/webhook/scrobble" && request.method === "POST") {
+        if (!env.WEBHOOK_SECRET) return jsonResponse({ error: "Webhook secret is not configured" }, 503);
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
 
@@ -143,36 +192,24 @@ export default {
         const mbid = payload.track?.mbid;
         const paycardId = payload.paycardId;
         const artistName = payload.track?.artist ?? "Unknown Artist";
-
-        if (!mbid) {
-          return jsonResponse({ error: "Missing artist MusicBrainz ID (mbid)" }, 400);
-        }
-
-        if (!paycardId) {
-          return jsonResponse({ error: "Missing OpenRails paycardId" }, 400);
-        }
-
+        if (!mbid) return jsonResponse({ error: "Missing artist MusicBrainz ID (mbid)" }, 400);
+        if (!paycardId) return jsonResponse({ error: "Missing OpenRails paycardId" }, 400);
         if (!isBytes32Hex(paycardId)) {
           return jsonResponse({ error: "Invalid OpenRails paycardId; expected bytes32 hex" }, 400);
         }
 
-        // 1. Resolve artist's wallet address from Cloudflare KV
         const artistWallet = await env.MUSICBRAINZ_REGISTRY.get(mbid);
         if (!artistWallet) {
-          return jsonResponse({
-            error: `Artist '${artistName}' (MBID: ${mbid}) is not registered in the Payee Registry.`,
-          }, 404);
+          return jsonResponse({ error: `Artist '${artistName}' (MBID: ${mbid}) is not registered.` }, 404);
         }
-
         if (!isEvmAddress(artistWallet)) {
           return jsonResponse({ error: "Registered artist wallet is not a valid EVM address" }, 502);
         }
 
-        // 2. Log play and pending royalty record to D1 SQL database
         const timestamp = Math.floor(Date.now() / 1000);
         const sourceEventId = payload.event?.trim() || null;
         await env.STREAM_DB.prepare(
-          "INSERT OR IGNORE INTO plays (source_event_id, paycard_id, artist_mbid, artist_wallet, timestamp, settled, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?)"
+          "INSERT OR IGNORE INTO plays (source_event_id, paycard_id, artist_mbid, artist_wallet, timestamp, settled, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?)",
         )
           .bind(sourceEventId, paycardId, mbid, artistWallet, timestamp, timestamp)
           .run();
@@ -180,19 +217,14 @@ export default {
         return jsonResponse({
           success: true,
           message: "Scrobble royalty logged successfully",
-          details: {
-            artist: artistName,
-            mbid,
-            wallet: artistWallet,
-            paycardId,
-            sourceEventId,
-          },
+          details: { artist: artistName, mbid, wallet: artistWallet, paycardId, sourceEventId },
         });
       }
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      if (err instanceof SessionLifecycleError) return lifecycleError(err);
+      return jsonResponse({ error: err instanceof Error ? err.message : String(err) }, 500);
     }
   },
 };

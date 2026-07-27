@@ -1,13 +1,9 @@
 /**
  * @module index
- * @description Public barrel export for the OpenRails V1 SDK.
+ * @description Public barrel export for the OpenRails SDK.
  *
  * All arc-policy-envelope layer modules are re-exported here so consumers
- * can import from the package root:
- *
- * ```ts
- * import { LeptonOpenRailsClient, NonceEngine, ... } from 'openrails-sdk';
- * ```
+ * can import from the package root.
  */
 
 export * from './client';
@@ -16,6 +12,7 @@ export * from './permit';
 export * from './relay';
 export * from './errors';
 export * from './serialization';
+export * from './numeric';
 export * from './nonce';
 export * from './factory';
 export * from './policy';
