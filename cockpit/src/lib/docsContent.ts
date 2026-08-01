@@ -133,7 +133,7 @@ export const DOCS: Record<string, DocPage> = {
       list([
         'Paycard Stream: The foundational on-chain vault entity (keyed by a unique paycardId) that escrows USDC, manages real-time checkpoints, and acts as a metered payment "tab" to release value.',
         "RailsFlow: A merchant-centric request primitive. Generate dynamic links to request metered payments for services, digital goods, paywalls, or invoices.",
-        "RailsCard: A payer-centric value primitive. Distribute pre-funded, claimable stream value, either bearer-token style or bound to a specific recipient address (e.g., gift cards, employee payouts, or agent spending caps).",
+        "RailsCard: A payer-centric value primitive. Distribute pre-authorized, claimable value, either bearer-token style or bound to a specific recipient address (for example, gift cards, employee payouts, or agent spending caps).",
         "Nonce Lane: An advanced 2D replay and concurrency protection mechanism using nonceChannel and nonceValue to allow parallel, independent streams without head-of-line blocking.",
         "Receipts: Cryptographically verifiable proof artifacts generated for every stream initialization, incremental settlement, and final closure.",
         "STN-Delta: The over-provision safety buffer designed to prevent premature stream termination. Any remaining balance is automatically swept back to the payer via flushResidualDelta.",
@@ -298,7 +298,7 @@ export const DOCS: Record<string, DocPage> = {
       ),
       h2("Peer-to-Peer Distribution"),
       p(
-        "Distribute these URLs across any communication channel. When opened, the counterparty signs to instantiate the stream: RailsFlow triggers a request-to-pay flow, while RailsCard offers a pre-funded budget ready to be claimed on-chain.",
+        "Distribute these URLs across any communication channel. When opened, the counterparty signs to instantiate the stream: RailsFlow triggers a request-to-pay flow, while RailsCard carries a payer-signed budget authorized for an onchain claim.",
       ),
       callout("note", "Decentralized State: The link itself acts as the self-contained state database. No backend server or centralized database is needed to store or resolve the request before it lands on-chain."),
     ],
@@ -456,7 +456,7 @@ export const DOCS: Record<string, DocPage> = {
       h2("Arc Network Configuration"),
       kv([
         { k: "chainId", v: "5042002" },
-        { k: "RPC", v: "https://rpc.testnet.arc.network" },
+        { k: "RPC", v: "https://rpc.testnet.arc.io" },
         { k: "explorer", v: "https://testnet.arcscan.app" },
         { k: "EIP-712 domain version", v: '"2.0.0"' },
       ]),

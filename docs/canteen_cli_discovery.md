@@ -1,60 +1,37 @@
-# OpenRails V1: Circle CLI Discovery & Integration
+# Arc Canteen RPC Operations
 
-This document logs the confirmation, version details, and command specs of the globally installed **Circle CLI** tool (referred to as the Canteen Arc CLI) for verification and testing on the Arc Network.
+OpenRails uses Arc Canteen as the managed primary RPC provider for server-side Cloudflare Workers.
+Public Arc RPC endpoints remain configured as fallbacks.
 
-> [!NOTE]
-> Planning and analysis note. Confirm current implementation before treating any item as shipped.
+## Provider order
 
----
+1. `ARC_CANTEEN_RPC_URL`: tokenized Worker secret returned by `arc-canteen rpc-url`
+2. `ARC_RPC_URL`: `https://rpc.testnet.arc.io`
+3. `ARC_RPC_FALLBACK_URL`: `https://rpc.drpc.testnet.arc.io`
 
-## 1. Executable Details & Status
+The Canteen URL is server-only. Never place it in a `VITE_*` variable, browser bundle, log, sample
+configuration, or committed file.
 
-We verified the installation and successfully queried the CLI tool:
-* **Command Name:** `circle`
-* **Global Executable Path:** `/home/jay/.nvm/versions/node/v22.22.2/bin/circle`
-* **Installed Version:** `0.0.3`
-* **Status:** Verified and responding to queries.
+## CLI checks
 
----
+```bash
+arc-canteen --version
+arc-canteen status
+```
 
-## 2. Supported Blockchain Networks
+`arc-canteen status` can display sensitive provider details. Do not paste its full output into logs,
+issues, or release notes.
 
-Running `circle blockchain list` returns the following EVM chain configurations, including the primary deployment target for OpenRails:
+## Cloudflare secret
 
-* **Target Network:** `ARC-TESTNET` (Arc Testnet)
-* **EVM Chain ID:** `5042002`
-* **Public RPC Endpoint:** `https://rpc.testnet.arc.network`
+Set the managed URL separately for each Worker that performs RPC calls:
 
-Other supported networks include Ethereum, Polygon (Amoy), Arbitrum (Sepolia), Avalanche (Fuji), Optimism (Sepolia), Base (Sepolia), Unichain (Sepolia), and Monad Testnet.
+```bash
+npx wrangler secret put ARC_CANTEEN_RPC_URL
+```
 
----
+Paste the output of `arc-canteen rpc-url` at Wrangler's prompt. Rotate the Canteen token when it has
+been exposed, then update every Worker secret before revoking the previous token.
 
-## 3. Key Integration Commands for OpenRails
-
-The `circle` CLI provides native commands for stablecoin-native development, CCTP bridging, and x402 API payments that can be used next to OpenRails:
-
-### A. Wallet Management & Faucet Funding
-* **Fund Testnet Address:** Fund a wallet with gas/tokens on testnet:
-  ```bash
-  circle wallet fund --blockchain ARC-TESTNET --address <wallet_address>
-  ```
-* **Read Balances:** Show token balances (including USDC native gas balances on Arc):
-  ```bash
-  circle wallet balance --blockchain ARC-TESTNET --address <wallet_address>
-  ```
-
-### B. Gateway Nanopayments (x402 Integration)
-* **Read Gateway Balance:** Query the active Circle Gateway nanopayments balance:
-  ```bash
-  circle gateway balance
-  ```
-* **Deposit stablecoins:** Deposit USDC into the gateway pool to fund micro-settlements:
-  ```bash
-  circle gateway deposit --amount <amount_in_usdc>
-  ```
-
-### C. Direct Smart Contract Query
-* **Read-only Contract Calls:** Query smart contracts (such as checking nonce lanes on `ArcOpenRailsHubV1` directly via RPC):
-  ```bash
-  circle contract query --blockchain ARC-TESTNET --address <hub_address> --method "accountNonceTracks" --args '["<payer_address>", 0]'
-  ```
+Browser clients use only public endpoints. This keeps the managed token private while preserving
+provider failover for Cockpit reads and wallet transactions.

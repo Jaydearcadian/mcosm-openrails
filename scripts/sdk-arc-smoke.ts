@@ -89,7 +89,7 @@ function requireAddress(value: unknown, name: string): string {
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const registry = loadRegistry();
-  const rpcUrl = process.env.ARC_RPC_URL || process.env.RPC || "https://rpc.testnet.arc.network";
+  const rpcUrl = process.env.ARC_RPC_URL || process.env.RPC || "https://rpc.testnet.arc.io";
   const chainId = Number(process.env.ARC_CHAIN_ID || registry.chainId || 5042002);
   const hub = requireAddress(process.env.ARC_OPENRAILS_HUB_ADDRESS || registry.arcOpenRailsHubV1, "Arc hub");
   const token = requireAddress(process.env.ARC_USDC_ADDRESS || registry.arcUsdcAddress, "Arc USDC");

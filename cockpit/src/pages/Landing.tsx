@@ -1250,7 +1250,7 @@ export default function Landing() {
                 {[
                   ["network", "Arc testnet · chain 5042002"],
                   ["canonical hub (V2)", "0x941C…6D0b"],
-                  ["tests passing", "74 Hardhat · 9 Foundry"],
+                  ["tests passing", "84 Hardhat · 9 Foundry"],
                   ["accounts", "EOAs + smart accounts (EIP-1271)"],
                   ["gas", "sponsored: keeper relays, gasless"],
                 ].map(([k, v]) => (

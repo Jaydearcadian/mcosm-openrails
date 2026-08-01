@@ -23,7 +23,7 @@ import {
 } from './tools.js';
 
 const ctx = buildContext();
-const server = new McpServer({ name: 'openrails-mcp', version: '0.1.0' });
+const server = new McpServer({ name: 'openrails-mcp', version: '0.1.2' });
 
 type ToolResult = { content: Array<{ type: 'text'; text: string }>; isError?: boolean };
 
@@ -80,7 +80,7 @@ server.registerTool(
   'issue_railscard',
   {
     description:
-      'Issue a claimable RailsCard link (the server is the payer, pre-signs the intent). Returns a claim link and paycardId. Escrow is pulled from the payer on claim.',
+      'Issue and authorize a claimable RailsCard link. The server reserves Hub allowance, signs the intent, and returns the claim link, paycardId, and approval transaction hash when one was needed.',
     inputSchema: {
       amount: z.string().describe('Amount in USDC base units (6dp).'),
       mode: z.enum(['bearer', 'recipient_bound']).optional().describe('bearer = anyone with the link claims (default); recipient_bound = fixed recipient.'),

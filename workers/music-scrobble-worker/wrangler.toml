@@ -4,10 +4,14 @@ compatibility_date = "2026-06-24"
 
 [vars]
 ARC_CHAIN_ID = "5042002"
-ARC_RPC_URL = "https://rpc.testnet.arc.network"
+ARC_RPC_URL = "https://rpc.testnet.arc.io"
+ARC_RPC_FALLBACK_URL = "https://rpc.drpc.testnet.arc.io"
 # V2 canonical hub. V1 (frozen): 0x01EC54846524D043fD808152D41596beF603381d
 OPENRAILS_HUB_ADDRESS = "0x941C8029F0f912df3fAb7423890ab2359b996D0b"
 ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
+
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider with
+# `wrangler secret put ARC_CANTEEN_RPC_URL`.
 
 [[kv_namespaces]]
 binding = "MUSICBRAINZ_REGISTRY"

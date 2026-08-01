@@ -1,8 +1,11 @@
 import { ethers } from "ethers";
+import { createArcProvider, safeRpcError } from "../../shared/rpc";
 
 export interface Env {
   STREAM_DB: D1Database;
   ARC_RPC_URL: string;
+  ARC_CANTEEN_RPC_URL?: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;      // V2 canonical hub — always watched
   OPENRAILS_FACTORY_ADDRESS: string;  // ArcOpenRailsFactoryV1
@@ -131,7 +134,7 @@ async function setCursor(db: D1Database, scanKey: string, block: number): Promis
 // documents for stream-gateway.
 async function runTick(env: Env): Promise<{ vaultsDiscovered: number; eventsIngested: number; chunksUsed: number; head: number }> {
   const db = env.STREAM_DB;
-  const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+  const provider = createArcProvider(env);
   const windowBlocks = readPositiveInt(env.SCAN_WINDOW_BLOCKS, 9000);
   const maxChunks = readPositiveInt(env.MAX_CHUNKS_PER_TICK, 20);
   const initialBackfill = readPositiveInt(env.INITIAL_BACKFILL_BLOCKS, 50000);
@@ -496,7 +499,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Indexer request failed") }, 500);
     }
   },
 };

@@ -17,7 +17,7 @@ import {
 import { hashOpenRailsMetadata } from "../sdk/src/metadata";
 
 async function main() {
-  const rpc = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
+  const rpc = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.io";
   const provider = new ethers.JsonRpcProvider(rpc);
   const signer = new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY as string, provider);
   const chainId = Number((await provider.getNetwork()).chainId);

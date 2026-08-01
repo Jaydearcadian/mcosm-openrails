@@ -1,8 +1,12 @@
 import { ethers } from "ethers";
+import { createArcProvider, safeRpcError } from "../../shared/rpc";
+import { type RelayPermit, validateRelayPermit } from "../../shared/relay";
 
 export interface Env {
   STREAM_DB?: D1Database; // only used in the legacy "d1" settler mode
   ARC_RPC_URL: string;
+  ARC_CANTEEN_RPC_URL?: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
   ARC_USDC_ADDRESS?: string; // USDC token (for the optional EIP-2612 permit in /relay-open)
@@ -20,11 +24,14 @@ const HUB_ABI = [
   "function processDripSettle(bytes32 paycardId) external",
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
   "function claimWildcardPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address claimRecipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
+  "function accountNonceTracks(address account, uint256 channel) external view returns (uint256)",
   "function registry(bytes32 paycardId) external view returns (address payer, address recipient, bytes32 metadataHash, uint256 totalAllocationPool, uint256 availableBalance, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, uint256 lastCheckpointEpoch, address residualDeltaRecipient, uint8 operationalStatus)",
   "event PaycardProvisioned(bytes32 indexed paycardId, address indexed payer, address indexed recipient, bytes32 metadataHash, uint256 poolAllocation, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds)"
 ];
 
 const USDC_PERMIT_ABI = [
+  "function balanceOf(address account) external view returns (uint256)",
+  "function allowance(address owner, address spender) external view returns (uint256)",
   "function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external"
 ];
 
@@ -137,7 +144,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Worker request failed") }, 500);
     }
   },
 
@@ -169,6 +176,12 @@ export default {
     if (!i?.paycardId || !env0.envelopeSignature) {
       return jsonResponse({ error: "Envelope is missing an intent or signature" }, 400);
     }
+    if (env0.mode !== "railscard_bearer" && env0.mode !== "railscard_recipient_bound") {
+      return jsonResponse({ error: "relay-claim only accepts RailsCard envelopes" }, 400);
+    }
+    if (!env.ARC_USDC_ADDRESS) {
+      return jsonResponse({ error: "USDC address is not configured" }, 503);
+    }
 
     const bearer = env0.mode === "railscard_bearer" || /^0x0{40}$/i.test(i.recipient);
     let claimRecipient = bearer ? body.claimRecipient : i.recipient;
@@ -180,24 +193,77 @@ export default {
     }
     claimRecipient = ethers.getAddress(claimRecipient as string);
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    let payer: string;
+    let allocation: bigint;
+    let nonceChannel: bigint;
+    let nonceValue: bigint;
+    try {
+      payer = ethers.getAddress(env0.payerAddress);
+      allocation = BigInt(i.totalAllocationPool);
+      nonceChannel = BigInt(i.nonceChannel);
+      nonceValue = BigInt(i.nonceValue);
+      if (allocation <= 0n) throw new Error("allocation must be positive");
+    } catch {
+      return jsonResponse({ error: "Envelope contains invalid payer or funding values" }, 400);
+    }
+
+    const provider = createArcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
+    const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
 
-    // Optional: land the payer's approval via permit (gasless for them) before claiming.
-    if (env0.permit) {
-      if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured for permit" }, 503);
+    let balance: bigint;
+    let allowance: bigint;
+    let currentNonce: bigint;
+    try {
+      [balance, allowance, currentNonce] = await Promise.all([
+        usdc.balanceOf(payer),
+        usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS),
+        hub.accountNonceTracks(payer, nonceChannel),
+      ]);
+    } catch (error) {
+      return jsonResponse({ error: safeRpcError(error, "Could not check RailsCard funding") }, 503);
+    }
+    if (currentNonce !== nonceValue) {
+      return jsonResponse({ error: "RailsCard is stale or already claimed" }, 409);
+    }
+    if (balance < allocation) {
+      return jsonResponse({ error: "RailsCard sender has insufficient USDC" }, 409);
+    }
+
+    // New cards reserve Hub allowance at issuance. A legacy permit is only needed when the
+    // current allowance does not cover this claim.
+    if (allowance < allocation && env0.permit) {
       const p = env0.permit;
-      const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+      let permitValue: bigint;
       try {
-        await usdc.permit.staticCall(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
-        const ptx = await usdc.permit(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
-        await ptx.wait();
-        console.log(`[relay] claim permit landed for ${p.owner} (${ptx.hash})`);
-      } catch (error) {
-        // Permit might already be landed or expired, warn but don't fail yet
-        console.warn(`[relay] permit staticCall failed or already set for ${p.owner}: ${(error as Error).message}`);
+        permitValue = BigInt(p.value);
+        const owner = ethers.getAddress(p.owner);
+        const spender = ethers.getAddress(p.spender);
+        if (owner !== payer || spender !== ethers.getAddress(env.OPENRAILS_HUB_ADDRESS)) {
+          throw new Error("permit parties do not match the signed intent");
+        }
+        if (permitValue < allocation) throw new Error("permit value is below the card allocation");
+        if (BigInt(p.deadline) <= BigInt(Math.floor(Date.now() / 1000))) {
+          throw new Error("permit is expired");
+        }
+      } catch {
+        return jsonResponse({ error: "RailsCard sender authorization is invalid or expired" }, 409);
       }
+
+      try {
+        await usdc.permit.staticCall(p.owner, p.spender, permitValue, BigInt(p.deadline), p.v, p.r, p.s);
+        const ptx = await usdc.permit(p.owner, p.spender, permitValue, BigInt(p.deadline), p.v, p.r, p.s);
+        await ptx.wait();
+        console.log(`[relay] legacy claim permit landed for ${payer} (${ptx.hash})`);
+      } catch (error) {
+        console.warn(`[relay] legacy permit failed for ${payer}: ${safeRpcError(error, "permit failed")}`);
+      }
+
+      allowance = await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS);
+    }
+    if (allowance < allocation) {
+      return jsonResponse({ error: "RailsCard sender allowance is insufficient; ask the sender to reissue it" }, 409);
     }
 
     const fn = bearer ? "claimWildcardPaycardChannel" : "openPaycardChannel";
@@ -205,22 +271,22 @@ export default {
       i.paycardId,
       i.metadataHash,
       claimRecipient,
-      BigInt(i.totalAllocationPool),
+      allocation,
       BigInt(i.flowVelocityPerSecond),
       BigInt(i.genesisTimestamp),
       BigInt(i.lifespanSeconds),
       i.residualDeltaRecipient,
       env0.envelopeSignature,
-      BigInt(i.nonceChannel),
-      BigInt(i.nonceValue),
-      env0.payerAddress, // V2: explicit payer
+      nonceChannel,
+      nonceValue,
+      payer, // V2: explicit payer
     ];
 
     try {
       // Precheck: reverts here (already claimed, expired, payer under-funded) cost the keeper nothing.
       await hub[fn].staticCall(...args);
     } catch (error) {
-      const msg = (error as Error).message?.slice(0, 300) || "claim would revert";
+      const msg = safeRpcError(error, "claim would revert");
       return jsonResponse({ error: `Claim not currently valid: ${msg}` }, 409);
     }
 
@@ -230,7 +296,7 @@ export default {
       console.log(`[relay] sponsored ${fn} ${i.paycardId} -> ${claimRecipient} (${tx.hash})`);
       return jsonResponse({ txHash: tx.hash, paycardId: i.paycardId, recipient: claimRecipient, mode: env0.mode });
     } catch (error) {
-      return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "relay submit failed" }, 502);
+      return jsonResponse({ error: safeRpcError(error, "relay submit failed") }, 502);
     }
   },
 
@@ -245,8 +311,7 @@ export default {
       return jsonResponse({ error: "Relay signer is not configured" }, 503);
     }
 
-    type Permit = { owner: string; spender: string; value: string; deadline: number; v: number; r: string; s: string };
-    let body: { envelopeToken?: string; permit?: Permit };
+    let body: { envelopeToken?: string; permit?: RelayPermit };
     try {
       body = (await request.json()) as typeof body;
     } catch {
@@ -268,7 +333,18 @@ export default {
       return jsonResponse({ error: "relay-open needs a fixed recipient; use /relay-claim for bearer cards" }, 400);
     }
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    let payer: string;
+    let allocation: bigint;
+    try {
+      payer = ethers.getAddress(env0.payerAddress);
+      ethers.getAddress(i.recipient);
+      allocation = BigInt(i.totalAllocationPool);
+      if (allocation <= 0n) throw new Error("allocation must be positive");
+    } catch {
+      return jsonResponse({ error: "Envelope contains invalid payer, recipient, or allocation" }, 400);
+    }
+
+    const provider = createArcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -277,17 +353,19 @@ export default {
       if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured for permit" }, 503);
       const p = body.permit;
       const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+      const permitError = validateRelayPermit(p, payer, env.OPENRAILS_HUB_ADDRESS, allocation);
+      if (permitError) return jsonResponse({ error: permitError }, 409);
       try {
         await usdc.permit.staticCall(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
       } catch (error) {
-        return jsonResponse({ error: `Permit not valid: ${(error as Error).message?.slice(0, 240)}` }, 409);
+        return jsonResponse({ error: `Permit not valid: ${safeRpcError(error, "permit check failed")}` }, 409);
       }
       try {
         const ptx = await usdc.permit(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
         await ptx.wait();
         console.log(`[relay] permit landed for ${p.owner} (${ptx.hash})`);
       } catch (error) {
-        return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "permit submit failed" }, 502);
+        return jsonResponse({ error: safeRpcError(error, "permit submit failed") }, 502);
       }
     }
 
@@ -295,7 +373,7 @@ export default {
       i.paycardId,
       i.metadataHash,
       i.recipient,
-      BigInt(i.totalAllocationPool),
+      allocation,
       BigInt(i.flowVelocityPerSecond),
       BigInt(i.genesisTimestamp),
       BigInt(i.lifespanSeconds),
@@ -303,13 +381,13 @@ export default {
       env0.envelopeSignature,
       BigInt(i.nonceChannel),
       BigInt(i.nonceValue),
-      env0.payerAddress, // V2: explicit payer
+      payer, // V2: explicit payer
     ];
 
     try {
       await hub.openPaycardChannel.staticCall(...args);
     } catch (error) {
-      const msg = (error as Error).message?.slice(0, 300) || "open would revert";
+      const msg = safeRpcError(error, "open would revert");
       return jsonResponse({ error: `Open not currently valid: ${msg}` }, 409);
     }
 
@@ -319,7 +397,7 @@ export default {
       console.log(`[relay] sponsored open ${i.paycardId} -> ${i.recipient} (${tx.hash})`);
       return jsonResponse({ txHash: tx.hash, paycardId: i.paycardId, recipient: i.recipient, mode: env0.mode });
     } catch (error) {
-      return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "relay open failed" }, 502);
+      return jsonResponse({ error: safeRpcError(error, "relay open failed") }, 502);
     }
   },
 
@@ -342,7 +420,7 @@ export default {
     const windowBlocks = readPositiveInt(env.SETTLER_WINDOW_BLOCKS, 9000);
     const minAccruedBase = BigInt(Math.round(Number(env.MIN_ACCRUED_USDC ?? "0.0005") * 1_000_000));
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createArcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY!, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -386,10 +464,10 @@ export default {
         console.log(`[settler] settled ${paycardId} (${tx.hash})`);
       } catch (error) {
         errors++;
-        console.error(`[settler] settle failed ${paycardId}:`, (error as Error).message?.slice(0, 300));
+        console.error(`[settler] settle failed ${paycardId}:`, safeRpcError(error, "settlement failed"));
       }
     }
-    console.log(`[settler] done — settled ${settled}, skipped ${skipped}, errors ${errors}`);
+    console.log(`[settler] done: settled ${settled}, skipped ${skipped}, errors ${errors}`);
   },
 
   // Legacy mode: settle only paycards referenced by unsettled rows in the music "plays" D1 table.
@@ -414,7 +492,7 @@ export default {
     }
 
     // 2. Initialize provider and wallet signer
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createArcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -465,8 +543,8 @@ export default {
         ).bind(Math.floor(Date.now() / 1000), paycardId).run();
 
       } catch (error) {
-        console.error(`[reconciliation-worker] Failed to settle stream ${paycardId}:`, error);
-        const message = (error as Error).message?.slice(0, 500) || "settlement failed";
+        const message = safeRpcError(error, "settlement failed");
+        console.error(`[reconciliation-worker] Failed to settle stream ${paycardId}:`, message);
         await db.prepare(
           "UPDATE plays SET settled = CASE WHEN settlement_attempts >= ? THEN 2 ELSE 0 END, last_error = ?, updated_at = ? WHERE paycard_id = ? AND settled = 3"
         ).bind(maxAttempts, message, Math.floor(Date.now() / 1000), paycardId).run();

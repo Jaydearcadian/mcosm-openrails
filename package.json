@@ -11,6 +11,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "test:worker-rpc": "node --experimental-strip-types --test test/WorkerRpcProvider.test.ts",
     "test:foundry": "forge test",
     "build:sdk": "tsc -p sdk/tsconfig.json",
     "node": "hardhat node",

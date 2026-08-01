@@ -8,8 +8,9 @@
  * cheap chain equivalent, so they degrade to honest empty states in standalone mode; My Streams
  * + Profile still work via recover + registry.
  */
-import { createPublicClient, http, parseAbiItem, getAddress } from "viem";
+import { createPublicClient, parseAbiItem, getAddress } from "viem";
 import { arcTestnet } from "./chain";
+import { createArcTransport } from "./rpc";
 import { HUB_ABI } from "./contracts";
 import type { GatewayConfig, PaycardOnchain, RecoveredPaycard, StreamState, StreamEvent, PaycardStatus } from "./api";
 
@@ -38,7 +39,22 @@ const WINDOW = 9000n; // public RPC caps getLogs at ~10k blocks
 const stringifyArgs = (a: Record<string, unknown> = {}): Record<string, unknown> =>
   Object.fromEntries(Object.entries(a).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v]));
 
-const client = createPublicClient({ chain: arcTestnet, transport: http("https://rpc.testnet.arc.network") });
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3, baseMs = 500): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, baseMs * 2 ** attempt));
+      }
+    }
+  }
+  throw lastError;
+}
+
+const client = createPublicClient({ chain: arcTestnet, transport: createArcTransport() });
 
 const USDC = BUNDLED_CONFIG.usdcAddress as `0x${string}`;
 const ERC20_READ = [
@@ -50,20 +66,20 @@ export const chainReads = {
   config: async (): Promise<GatewayConfig> => BUNDLED_CONFIG,
 
   balance: async (address: string): Promise<{ balance: string }> => {
-    const b = (await client.readContract({ address: USDC, abi: ERC20_READ, functionName: "balanceOf", args: [getAddress(address)] })) as bigint;
+    const b = await withRetry(() => client.readContract({ address: USDC, abi: ERC20_READ, functionName: "balanceOf", args: [getAddress(address)] })) as bigint;
     return { balance: b.toString() };
   },
   allowance: async (owner: string): Promise<{ allowance: string }> => {
-    const a = (await client.readContract({ address: USDC, abi: ERC20_READ, functionName: "allowance", args: [getAddress(owner), HUB] })) as bigint;
+    const a = await withRetry(() => client.readContract({ address: USDC, abi: ERC20_READ, functionName: "allowance", args: [getAddress(owner), HUB] })) as bigint;
     return { allowance: a.toString() };
   },
   nonce: async (payer: string, channel: number): Promise<{ nonce: string }> => {
-    const n = (await client.readContract({ address: HUB, abi: HUB_ABI, functionName: "accountNonceTracks", args: [getAddress(payer), BigInt(channel)] })) as bigint;
+    const n = await withRetry(() => client.readContract({ address: HUB, abi: HUB_ABI, functionName: "accountNonceTracks", args: [getAddress(payer), BigInt(channel)] })) as bigint;
     return { nonce: n.toString() };
   },
 
   paycard: async (id: string): Promise<PaycardOnchain> => {
-    const r = (await client.readContract({
+    const r = await withRetry(() => client.readContract({
       address: HUB,
       abi: HUB_ABI,
       functionName: "registry",

@@ -5,7 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ARC_CHAIN_ID = "5042002"
-ARC_RPC_URL = "https://rpc.testnet.arc.network"
+ARC_RPC_URL = "https://rpc.testnet.arc.io"
+ARC_RPC_FALLBACK_URL = "https://rpc.drpc.testnet.arc.io"
 # V2 canonical hub (new default). V1 (frozen/draining): 0x01EC54846524D043fD808152D41596beF603381d
 OPENRAILS_HUB_ADDRESS = "0x941C8029F0f912df3fAb7423890ab2359b996D0b"
 ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
@@ -19,7 +20,8 @@ MAX_SETTLEMENT_ATTEMPTS = "5"
 # sponsors gas only; escrow is pulled from the payer per the signed intent (non-custodial).
 RELAY_CLAIMS_ENABLED = "true"
 
-# Secrets (never in this file): set with `wrangler secret put RECONCILIATION_SIGNER_KEY`
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider with
+# `wrangler secret put ARC_CANTEEN_RPC_URL`. Set `RECONCILIATION_SIGNER_KEY` with Wrangler
 # (funded keeper wallet — pays gas only, non-custodial) and optionally RECONCILIATION_ADMIN_TOKEN
 # to guard the POST /reconcile trigger.
 

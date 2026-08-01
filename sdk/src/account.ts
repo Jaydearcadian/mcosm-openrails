@@ -12,8 +12,8 @@
  * - {@link OpenRailsSubmitter} — also submits its own transactions (self-submit path).
  *   Any `ethers.Signer` satisfies it.
  *
- * Because the Hub uses `ecrecover`, the signer must be an **EOA**. Smart-contract
- * (EIP-1271) accounts are deferred to V2.
+ * The V2 Hub uses SignatureChecker and accepts EOA or EIP-1271 signatures. Adapters still need
+ * to provide the account-specific signing implementation.
  */
 import type { ethers } from 'ethers';
 

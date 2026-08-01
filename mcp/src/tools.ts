@@ -16,6 +16,8 @@ import {
   readPaycard,
   readNonce,
   readTokenBalance,
+  randomRailsCardNonceChannel,
+  reserveRailsCardAllowance,
   hashOpenRailsMetadata,
   buildMetadataBoundPaycardId,
   type CanonicalMetadataV1,
@@ -31,6 +33,29 @@ const NONCE_CHANNEL = 0;
 // package resolves ethers to its ESM view. Same runtime ethers, incompatible brand types — so we
 // pass the provider through this boundary cast at SDK read calls.
 const asProvider = (ctx: OpenRailsContext): any => ctx.provider;
+
+function positiveBaseUnits(value: string, field: string): string {
+  try {
+    if (BigInt(value) <= 0n) throw new Error();
+    return value;
+  } catch {
+    throw new Error(`${field} must be a positive integer in USDC base units`);
+  }
+}
+
+function paymentTiming(params: {
+  oneTime: boolean;
+  velocityPerSecond?: string;
+  lifespanSeconds?: number;
+}): { velocity: string; lifespan: number } {
+  if (params.oneTime) return { velocity: '0', lifespan: 0 };
+  const velocity = positiveBaseUnits(params.velocityPerSecond ?? '', 'velocityPerSecond');
+  const lifespan = params.lifespanSeconds;
+  if (!Number.isSafeInteger(lifespan) || (lifespan ?? 0) <= 0) {
+    throw new Error('lifespanSeconds must be a positive integer for streaming payments');
+  }
+  return { velocity, lifespan: lifespan as number };
+}
 
 function metadataFor(params: {
   mode: CanonicalMetadataV1['mode'];
@@ -114,17 +139,17 @@ export async function createRequestLink(
 ) {
   const recipient = ethers.getAddress(args.recipient ?? (ctx.signerAddress ?? ethers.ZeroAddress));
   if (recipient === ethers.ZeroAddress) throw new Error('recipient required (no signer configured to default to)');
+  const amount = positiveBaseUnits(args.amount, 'amount');
   const oneTime = args.oneTime ?? false;
-  const velocity = oneTime ? '0' : (args.velocityPerSecond ?? '0');
-  const lifespan = oneTime ? 0 : (args.lifespanSeconds ?? 0);
+  const { velocity, lifespan } = paymentTiming({ ...args, oneTime });
   const { hubAddress: hub, usdcAddress: token, chainId, appBaseUrl } = ctx.config;
 
-  const metadata = metadataFor({ mode: 'railsflow', originator: recipient, recipient, token, amount: args.amount, velocity, lifespan });
+  const metadata = metadataFor({ mode: 'railsflow', originator: recipient, recipient, token, amount, velocity, lifespan });
   const link = createRailsFlowRequestLink({
     appBaseUrl, chainId, vault: hub, token, metadataHash: hashOpenRailsMetadata(metadata),
-    payload: { mode: 'railsflow', merchant: recipient, recipient, amount: args.amount, flowVelocityPerSecond: velocity, lifespanSeconds: lifespan, metadataRef: 'openrails-mcp' },
+    payload: { mode: 'railsflow', merchant: recipient, recipient, amount, flowVelocityPerSecond: velocity, lifespanSeconds: lifespan, metadataRef: 'openrails-mcp' },
   });
-  return { link, recipient, amount: args.amount, type: oneTime ? 'one-time' : 'streaming' };
+  return { link, recipient, amount, type: oneTime ? 'one-time' : 'streaming' };
 }
 
 // ---- issue_railscard --------------------------------------------------------
@@ -138,29 +163,32 @@ export async function issueRailscard(
   const bearer = (args.mode ?? 'bearer') === 'bearer';
   const recipient = bearer ? ethers.ZeroAddress : ethers.getAddress(args.recipient ?? ethers.ZeroAddress);
   if (!bearer && recipient === ethers.ZeroAddress) throw new Error('recipient_bound cards need a recipient');
+  const amount = positiveBaseUnits(args.amount, 'amount');
   const oneTime = args.oneTime ?? true;
-  const velocity = oneTime ? '0' : (args.velocityPerSecond ?? '0');
-  const lifespan = oneTime ? 0 : (args.lifespanSeconds ?? 0);
+  const { velocity, lifespan } = paymentTiming({ ...args, oneTime });
   const { hubAddress: hub, usdcAddress: token, chainId, appBaseUrl } = ctx.config;
   const mode = bearer ? 'railscard_bearer' : 'railscard_recipient_bound';
 
-  const metadata = metadataFor({ mode, originator: payer, recipient, token, amount: args.amount, velocity, lifespan });
+  const metadata = metadataFor({ mode, originator: payer, recipient, token, amount, velocity, lifespan });
   const metadataHash = hashOpenRailsMetadata(metadata);
-  const nonceValue = Number(await readNonce(asProvider(ctx), hub, payer, NONCE_CHANNEL));
-  const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel: NONCE_CHANNEL, nonceValue, metadataHash });
+  const nonceChannel = randomRailsCardNonceChannel();
+  const nonceValue = Number(await readNonce(asProvider(ctx), hub, payer, nonceChannel));
+  const paycardId = buildMetadataBoundPaycardId({ payer, nonceChannel, nonceValue, metadataHash });
   const intent = createRailsCardIntent({
     paycardId, metadataHash,
-    totalAllocationPool: args.amount, flowVelocityPerSecond: velocity,
+    totalAllocationPool: amount, flowVelocityPerSecond: velocity,
     genesisTimestamp: Math.floor(Date.now() / 1000), lifespanSeconds: lifespan,
-    residualDeltaRecipient: payer, nonceChannel: NONCE_CHANNEL, nonceValue,
+    residualDeltaRecipient: payer, nonceChannel, nonceValue,
   });
   if (!bearer) intent.recipient = recipient;
 
+  const reservation = await reserveRailsCardAllowance(account, asProvider(ctx), token, hub, amount);
   const envelopeToken = await client.signPermissionEnvelope(intent, { mode, metadata });
   const link = createRailsCardClaimLink({ appBaseUrl, chainId, vault: hub, token, metadataHash, mode, envelopeToken });
   return {
-    link, paycardId, mode, amount: args.amount, type: oneTime ? 'one-time' : 'streaming',
-    note: 'Escrow is pulled from the payer on claim — ensure the payer keeps enough USDC allowance/balance when this is claimed.',
+    link, paycardId, mode, amount, type: oneTime ? 'one-time' : 'streaming',
+    authorizationTxHash: reservation.transactionHash ?? null,
+    note: 'Hub allowance was reserved at issuance. Escrow is pulled from the payer on claim, subject to the payer balance.',
   };
 }
 

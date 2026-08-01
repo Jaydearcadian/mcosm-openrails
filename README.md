@@ -6,7 +6,7 @@
 
 In plain terms it's a payment rail: a payer signs a **bounded intent**, it **clears** into a
 non-custodial on-chain Vault, value **settles** to the recipient as work is performed, and unused
-residual **returns** to the payer when the stream ends — usable by **humans or AI agents**. Arc
+residual **returns** to the payer when the stream ends: usable by **humans or AI agents**. Arc
 provides fast, low-cost, USDC-native settlement; OpenRails provides the intent, escrow, streaming,
 receipt, and recovery layer on top.
 
@@ -14,12 +14,12 @@ receipt, and recovery layer on top.
 > payments can be relayed and gas-sponsored), and escrow is **bounded by construction** (a bug, a bad
 > actor, or a runaway agent can never move more than was signed for).
 
-**Core primitives** *(vocabulary is fixed — do not rename):*
+**Core primitives** *(vocabulary is fixed: do not rename):*
 
 | Primitive | Meaning |
 | :--- | :--- |
-| **RailsFlow** | A link to *ask* to be paid — invoice / paywall / usage bill. |
-| **RailsCard** | A link to *send* pre-authorized value to claim — gift card / payout / agent budget (bearer or recipient-bound). |
+| **RailsFlow** | A link to *ask* to be paid: invoice / paywall / usage bill. |
+| **RailsCard** | A link to *send* pre-authorized value to claim: gift card / payout / agent budget (bearer or recipient-bound). |
 | **Paycard Stream** | The on-chain Vault row that escrows funds and meters settlement. |
 | **Nonce Lane** | Replay/concurrency protection for parallel agent payments (`nonceChannel` / `nonceValue`). |
 | **Receipts** | Verifiable proof of every open, settlement, and residual return. |
@@ -31,7 +31,7 @@ vertical-agnostic.
 
 ## Status
 
-**Live on Arc testnet (chain `5042002`). Unaudited — test funds only.** V2 is deployed; V1 is frozen
+**Live on Arc testnet (chain `5042002`). Unaudited: test funds only.** V2 is deployed; V1 is frozen
 to new opens and left to drain.
 
 | | Address / package |
@@ -46,7 +46,7 @@ to new opens and left to drain.
 **What's shipped:** EIP-1271 **smart accounts** *and* EOAs (humans via embedded wallets, agents via
 server wallets); **gasless** relaying via the keeper worker; streaming + instant settlement; automatic
 residual return; on-chain receipts; a published SDK/CLI and MCP server; a deployed cockpit at
-[openrails.pages.dev](https://openrails.pages.dev). Test baseline: **74 Hardhat + 9 Foundry** passing.
+[openrails.pages.dev](https://openrails.pages.dev). Test baseline: **84 Hardhat + 9 Foundry** passing.
 
 **Not yet:** mainnet, a security audit, session keys, USDC paymaster / Circle Gateway, and a real
 Circle Smart Account end-to-end (the contract accepts EIP-1271 today; the Circle-specific adapter is
@@ -56,7 +56,7 @@ next). See [`HANDOFF.md`](HANDOFF.md) for the full roadmap.
 
 ## Quick start
 
-The fastest paths need no repo checkout — the packages default to Arc-testnet-V2. Full walkthrough in
+The fastest paths need no repo checkout: the packages default to Arc-testnet-V2. Full walkthrough in
 [`GETTING_STARTED.md`](GETTING_STARTED.md).
 
 **CLI (one command to a first payment):**
@@ -87,7 +87,7 @@ import { LeptonOpenRailsClient, payGasless } from "openrails-sdk";
 Tools: `pay_link`, `create_request_link`, `issue_railscard`, `paycard_status`, `openrails_config`.
 Omit the signer key for read-only.
 
-**Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev) — connect a wallet,
+**Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev): connect a wallet,
 create/pay a link, issue/claim a RailsCard.
 
 ---
@@ -95,15 +95,15 @@ create/pay a link, issue/claim a RailsCard.
 ## The suite
 
 ```
-Surface   RailsFlow & RailsCard  — links/QR: ask to be paid, or send value to claim
-Accounts  whoever signs          — embedded wallets, EIP-1271 smart accounts, agents
-Rail      intent → vault → stream → residual  — non-custodial clearing & settlement
-Build     SDK · CLI · MCP        — one command / one tool-call to transact
-Settle    on Arc                 — USDC-native, fast, low-cost finality
+Surface   RailsFlow & RailsCard : links/QR: ask to be paid, or send value to claim
+Accounts  whoever signs         : embedded wallets, EIP-1271 smart accounts, agents
+Rail      intent → vault → stream → residual : non-custodial clearing & settlement
+Build     SDK · CLI · MCP       : one command / one tool-call to transact
+Settle    on Arc                : USDC-native, fast, low-cost finality
 ```
 
 - **Contracts** (`contracts/`): `ArcOpenRailsHubV1.sol` (V1, frozen); `contracts/v2-factory/`
-  — `ArcOpenRailsHubV2Initializable.sol` (master logic), `ArcOpenRailsFactoryV1.sol` (ERC-1167
+ : `ArcOpenRailsHubV2Initializable.sol` (master logic), `ArcOpenRailsFactoryV1.sol` (ERC-1167
   clone factory). The **canonical default hub is a governance-owned clone** of the master; enterprise
   tenants can mint their own isolated clones. V2 verifies signatures via OpenZeppelin
   `SignatureChecker` (EOA + EIP-1271) with an explicit `payer` argument; EIP-712 domain version
@@ -124,12 +124,12 @@ the Nonce Lane, blocks `paycardId` reuse, escrows USDC, and stores the isolated 
 Non-custodial: nothing but the Vault ever holds the funds.
 
 **Smart accounts (EIP-1271).** The open path takes an explicit `payer` and verifies via
-`SignatureChecker.isValidSignatureNow` — transparently accepting both EOAs (ECDSA) and contract
+`SignatureChecker.isValidSignatureNow`: transparently accepting both EOAs (ECDSA) and contract
 accounts (Circle Smart Accounts, EIP-1271). Domain separation (`verifyingContract` + version `2.0.0`)
 makes cross-version replay impossible.
 
 **RailsFlow & RailsCard.** RailsFlow is a merchant-created request the payer reviews and signs.
-RailsCard is a payer-signed value link — **bearer** (first valid claimant binds, first-holder-wins) or
+RailsCard is a payer-signed value link: **bearer** (first valid claimant binds, first-holder-wins) or
 **recipient-bound**. Fixed-recipient envelopes cannot be redirected after signing. Both produce
 links/QR encoded as URL fragments (`#or=…`) so payloads never hit HTTP servers as query strings.
 
@@ -169,9 +169,9 @@ key env or a deploy-then-`transferOwnership` handoff (tracked for mainnet).
 ## Limitations & honesty
 
 - **Testnet, unaudited, test funds only.** Not production software; do not handle non-demo funds.
-- Non-custodial and bounded by design — but a mainnet **audit** is the gate before real value.
+- Non-custodial and bounded by design: but a mainnet **audit** is the gate before real value.
 - **Bearer RailsCard** links are first-holder-wins until claimed; treat unclaimed links as sensitive.
-- On Arc, USDC is the native gas token — a USDC holder inherently has gas; `transferFrom` cannot move
+- On Arc, USDC is the native gas token: a USDC holder inherently has gas; `transferFrom` cannot move
   a holder's *entire* balance, so over-fund the payer.
 - The legacy Express server (`server/index.ts`) and dashboard remain on V1 and are superseded by the
   cockpit + keeper + SDK path.

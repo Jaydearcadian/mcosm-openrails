@@ -1,9 +1,12 @@
 import { openListeningSession } from "./openSession";
+import { safeRpcError } from "../../shared/rpc";
 
 export interface Env {
   MUSICBRAINZ_REGISTRY: KVNamespace;
   STREAM_DB: D1Database;
   ARC_RPC_URL: string;
+  ARC_CANTEEN_RPC_URL?: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
   ARC_USDC_ADDRESS: string;
@@ -116,6 +119,9 @@ export default {
           const result = await openListeningSession({
             hubAddress: env.OPENRAILS_HUB_ADDRESS,
             rpcUrl: env.ARC_RPC_URL,
+            canteenRpcUrl: env.ARC_CANTEEN_RPC_URL,
+            fallbackRpcUrl: env.ARC_RPC_FALLBACK_URL,
+            chainId: Number(env.ARC_CHAIN_ID),
             relayerPrivateKey: env.MUSIC_SIDECAR_RELAYER_KEY,
             listenerAddress: body.listenerAddress,
             artistWallet,
@@ -126,7 +132,7 @@ export default {
           });
           return jsonResponse(result);
         } catch (e) {
-          return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 500);
+          return jsonResponse({ error: safeRpcError(e, "Could not open listening session") }, 500);
         }
       }
 
@@ -192,7 +198,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Music worker request failed") }, 500);
     }
   },
 };

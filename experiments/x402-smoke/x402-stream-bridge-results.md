@@ -1,4 +1,4 @@
-# x402 → Paycard Stream Bridge — Results (non-custodial)
+# x402 → Paycard Stream Bridge: Results (non-custodial)
 
 Status date: 2026-06-28. Proven on Arc testnet: a paid x402 request culminates in a **real
 OpenRails Vault escrow stream**, opened **non-custodially** from the buyer's own USDC and
@@ -29,11 +29,11 @@ OpenRails Vault escrow stream**, opened **non-custodially** from the buyer's own
   "sendingNetwork": "eip155:5042002", "facilitatorUrl": "https://gateway-api-testnet.circle.com" }
 ```
 
-**Stream leg** — real `openPaycardChannel` on Arc testnet:
+**Stream leg**: real `openPaycardChannel` on Arc testnet:
 - `openTxHash`: `0x3693d7a92ef1e712ff37682c769ec7d7805477be416565694fb15ce61738fc0f` (block 49187374)
 - `paycardId`: `0xa051ff27822cba6d05e6d4b754d4a2aac1b161a21d4579aa07440b3b52df49a5`
 
-**Authoritative on-chain Vault row** (`GET /api/paycard/:id`, direct RPC — the source of truth):
+**Authoritative on-chain Vault row** (`GET /api/paycard/:id`, direct RPC: the source of truth):
 ```json
 { "paycardId": "0xa051ff27822cba6d05e6d4b754d4a2aac1b161a21d4579aa07440b3b52df49a5",
   "payer": "0x1A76BFE6bF7A4BfD854b16C19Dd870e0DE56473C",
@@ -54,21 +54,21 @@ OpenRails Vault escrow stream**, opened **non-custodially** from the buyer's own
   "metadataRef": "circle-x402:2f03bb36-e873-4913-81d4-aff303771518" }
 ```
 
-## Full lifecycle — PROVEN end to end (2026-06-29)
+## Full lifecycle: PROVEN end to end (2026-06-29)
 
 The bridged stream was driven through its **entire** lifecycle on Arc testnet, not just opened:
 
-1. **Drip settlement** — `processDripSettle` (permissionless), tx
+1. **Drip settlement**: `processDripSettle` (permissionless), tx
    `0x96e1b1ab6459325ad130e69105cd7e8162efc0b3ec00c8feb9ebdf52926f42ad` (block 49254633).
    Past lifespan, so earned capped at `velocity×lifespan = 10×3600 = 36000` (0.036 USDC):
    Vault `availableBalance` 50000 → **14000**; the 0.036 USDC streamed to recipient `0x933a…`.
-2. **Residual recovery** — `flushResidualDelta` (payer/recipient only; called by the payer/buyer),
+2. **Residual recovery**: `flushResidualDelta` (payer/recipient only; called by the payer/buyer),
    tx `0x4bc3bdeca43c7b9d165b7c31951ce380092b4c50a653e11135f5c1d45b9633b8` (block 49254695).
    `availableBalance` 14000 → **0**; residual 0.014 USDC returned to `residualDeltaRecipient`
    (the buyer `0x1A76…`); stream **Terminated**.
 
 So of the 0.05 USDC the buyer escrowed: **0.036 streamed to the provider, 0.014 recovered by
-the buyer** — a complete bounded, streaming, recoverable payment opened by an x402 request.
+the buyer**: a complete bounded, streaming, recoverable payment opened by an x402 request.
 
 **Indexed event timeline** (`GET /api/streams/:paycardId/history`, `authoritative: false`,
 status `Terminated`):
@@ -83,18 +83,18 @@ status `Terminated`):
 gateway backfilled the settle/close events from a recent start block (the public Arc RPC caps
 `eth_getLogs` at 10,000 blocks, so backfill windows must stay under that).
 
-_Note: recipient/buyer wallet-level deltas are approximate (both addresses have other activity —
+_Note: recipient/buyer wallet-level deltas are approximate (both addresses have other activity -
 the recipient is also the x402 demo seller); the Vault `availableBalance` accounting above is
 the authoritative measure._
 
 ## Reproduce
 
 ```bash
-# server (arc-testnet) — Terminal A, as in x402-smoke-results.md
+# server (arc-testnet): Terminal A, as in x402-smoke-results.md
 # then:
 X402_BUYER_PRIVATE_KEY=0x<funded buyer> \
 X402_SMOKE_URL=http://localhost:3001/api/x402/openrails-artifact \
-ARC_RPC_URL=https://rpc.testnet.arc.network \
+ARC_RPC_URL=https://rpc.testnet.arc.io \
 npm run smoke:x402:stream
 ```
 Optional tuning: `X402_STREAM_ALLOCATION` (base units, default 50000), `X402_STREAM_VELOCITY`,

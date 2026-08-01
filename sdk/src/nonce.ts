@@ -6,6 +6,18 @@
  * deterministically from a task-type string so that independent workloads
  * avoid contention while preserving replay protection within each lane.
  */
+import { randomBytes } from 'ethers';
+
+const MAX_SAFE_NONCE_CHANNEL = BigInt(Number.MAX_SAFE_INTEGER);
+
+/** Generate a non-zero nonce lane that survives JSON number serialization exactly. */
+export function randomRailsCardNonceChannel(): number {
+  const bytes = randomBytes(7);
+  let channel = 0n;
+  for (const byte of bytes) channel = (channel << 8n) | BigInt(byte);
+  channel &= MAX_SAFE_NONCE_CHANNEL;
+  return Number(channel === 0n ? 1n : channel);
+}
 
 // ---------------------------------------------------------------------------
 // Cache adapter interface

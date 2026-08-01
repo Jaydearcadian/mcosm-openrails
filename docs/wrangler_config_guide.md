@@ -31,7 +31,8 @@ compatibility_date = "2026-06-24"
 # Environment Variables passed into the Worker (e.g. env.ARC_RPC_URL)
 [vars]
 ARC_CHAIN_ID = "5042002"
-ARC_RPC_URL = "https://rpc.testnet.arc.network"
+ARC_RPC_URL = "https://rpc.testnet.arc.io"
+ARC_RPC_FALLBACK_URL = "https://rpc.drpc.testnet.arc.io"
 OPENRAILS_HUB_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 ARC_USDC_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
@@ -51,6 +52,15 @@ database_id = "YOUR_D1_DATABASE_UUID"
 [triggers]
 crons = ["*/1 * * * *"]
 ```
+
+Set the managed Canteen endpoint as a Worker secret so its token is never committed or bundled in
+the browser:
+
+```bash
+npx wrangler secret put ARC_CANTEEN_RPC_URL
+```
+
+Workers try `ARC_CANTEEN_RPC_URL` first, then the two public endpoints above.
 
 ---
 

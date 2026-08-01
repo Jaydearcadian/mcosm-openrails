@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { createArcProvider, safeRpcError } from "../../shared/rpc";
 
 const HUB_ABI = [
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
@@ -8,6 +9,9 @@ const HUB_ABI = [
 export interface OpenSessionParams {
   hubAddress: string;
   rpcUrl: string;
+  canteenRpcUrl?: string;
+  fallbackRpcUrl?: string;
+  chainId?: number;
   relayerPrivateKey: string; // The sidecar's own key for gas
   listenerAddress: string;
   artistWallet: string;
@@ -43,7 +47,12 @@ function decodeEnvelope(token: string) {
 }
 
 export async function openListeningSession(params: OpenSessionParams) {
-  const provider = new ethers.JsonRpcProvider(params.rpcUrl);
+  const provider = createArcProvider({
+    ARC_CANTEEN_RPC_URL: params.canteenRpcUrl,
+    ARC_RPC_URL: params.rpcUrl,
+    ARC_RPC_FALLBACK_URL: params.fallbackRpcUrl,
+    ARC_CHAIN_ID: params.chainId?.toString(),
+  });
   const relayerWallet = new ethers.Wallet(params.relayerPrivateKey, provider);
   const hub = new ethers.Contract(params.hubAddress, HUB_ABI, relayerWallet);
 
@@ -222,7 +231,7 @@ export async function openListeningSession(params: OpenSessionParams) {
     // Perform dry-run on-chain precheck to catch revert reasons before submitting transaction
     await hub.openPaycardChannel.staticCall(...args);
   } catch (err) {
-    throw new Error(`On-chain precheck failed for openPaycardChannel: ${(err as Error).message}`);
+    throw new Error(`On-chain precheck failed for openPaycardChannel: ${safeRpcError(err)}`);
   }
 
   const tx = await hub.openPaycardChannel(...args);

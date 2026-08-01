@@ -13,6 +13,22 @@ the **Faucet Worker**.
   npx wrangler login
   ```
 
+### RPC provider order
+
+RPC-backed Workers use the managed Arc Canteen endpoint first and fail over to the public Arc
+endpoints in `wrangler.toml`. Set the managed endpoint as a secret in each Worker directory:
+
+```bash
+npx wrangler secret put ARC_CANTEEN_RPC_URL
+```
+
+Use the tokenized URL from `arc-canteen rpc-url` as the secret value. Do not commit it or expose it
+through a browser environment variable. The configured order is:
+
+1. `ARC_CANTEEN_RPC_URL`
+2. `ARC_RPC_URL` (`https://rpc.testnet.arc.io`)
+3. `ARC_RPC_FALLBACK_URL` (`https://rpc.drpc.testnet.arc.io`)
+
 ---
 
 ## 2. Database & KV Setup
@@ -60,15 +76,15 @@ This database acts as the off-chain cache database tracking pending play events 
 ### B. Deploy the Settler Cron Worker (reconciliation-worker)
 
 A cron keeper that periodically **drip-settles active Paycard Streams** so recipients get paid
-without anyone clicking "settle". It **only settles** (`processDripSettle`) — it never opens or
+without anyone clicking "settle". It **only settles** (`processDripSettle`): it never opens or
 closes a rail; opening and closure (residual flush) stay with the payer/merchant/creator. Settling
 is permissionless and non-custodial: funds always flow payer → recipient per on-chain state; the
 keeper only pays gas.
 
 - **`SETTLER_MODE = "chain"` (default):** enumerates active streams from chain
-  (`PaycardProvisioned` logs → `registry`) — **no D1 required**. Streaming rails settle repeatedly
+  (`PaycardProvisioned` logs → `registry`): **no D1 required**. Streaming rails settle repeatedly
   once accrued value clears `MIN_ACCRUED_USDC`; one-time (`lifespanSeconds == 0`) rails settle once.
-- **`SETTLER_MODE = "d1"`:** legacy — settle only paycards referenced by the music `plays` table
+- **`SETTLER_MODE = "d1"`:** legacy: settle only paycards referenced by the music `plays` table
   (needs the D1 setup in §2.B; uncomment `[[d1_databases]]` in the worker `wrangler.toml`).
 
 1. Fund a keeper wallet with Arc testnet gas, then set its key as a secret (never in the repo):
@@ -95,7 +111,7 @@ via `ArcOpenRailsFactoryV1`'s `CorporateVaultDeployed` event, ingests `PaycardPr
 public, CORS-enabled, GET-only read API (`/vaults`, `/streams`, `/streams/:vaultAddress/:paycardId
 /history`, `/workflows/:id`, `/transactions/:hash`) so a static-hosted frontend (e.g. the cockpit on
 Cloudflare Pages) can reach indexer-backed reads without needing any backend of its own. Every
-response is explicitly `authoritative: false` — the onchain Vault is always the source of truth.
+response is explicitly `authoritative: false`: the onchain Vault is always the source of truth.
 
 This worker uses its **own** D1 database (`openrails_indexer_db`) rather than the music sidecar's
 `openrails_stream_db`, since nothing in this repo has actually provisioned that database yet
@@ -123,12 +139,12 @@ This worker uses its **own** D1 database (`openrails_indexer_db`) rather than th
 4. Runs every 5 minutes (`crons = ["*/5 * * * *"]`); tune `SCAN_WINDOW_BLOCKS`,
    `MAX_CHUNKS_PER_TICK`, and `INITIAL_BACKFILL_BLOCKS` in `wrangler.toml`. Trigger manually with an
    authenticated `POST /tick` when `INDEXER_ADMIN_TOKEN` is set. Does not index V1 (`0x01EC…`,
-   frozen/draining) or attempt reorg rollback — same last-write-wins/append-only policy as
+   frozen/draining) or attempt reorg rollback: same last-write-wins/append-only policy as
    `stream-gateway` (see `docs/stream_indexing.md`).
 
 ### D. Deploy the Faucet Worker (`faucet-worker`)
 
-A capped, self-serve testnet USDC drip for brand-new wallets — on Arc, USDC is also the native
+A capped, self-serve testnet USDC drip for brand-new wallets: on Arc, USDC is also the native
 gas token, so one drip covers both. Funded from its **own dedicated keeper wallet**, never the
 deployer/governance wallet. Abuse-resistant by design: skips wallets that already hold enough,
 cools down per-address *and* per-IP, and caps total drips per day on top of the wallet's own

@@ -488,7 +488,7 @@ function readPrivateKeyFromEnv(flags: FlagMap, env: NodeJS.ProcessEnv): string {
 
 // Arc testnet V2 defaults so the CLI works with just a signer key. Any of these is
 // overridden by its flag or env var (precedence: flag > OPENRAILS_* env > ARC_* env > default).
-const DEFAULT_RPC_URL = 'https://rpc.testnet.arc.network';
+const DEFAULT_RPC_URL = 'https://rpc.testnet.arc.io';
 const DEFAULT_CHAIN_ID = '5042002';
 const DEFAULT_HUB_ADDRESS = '0x941C8029F0f912df3fAb7423890ab2359b996D0b'; // V2 canonical hub
 const DEFAULT_USDC_ADDRESS = '0x3600000000000000000000000000000000000000';

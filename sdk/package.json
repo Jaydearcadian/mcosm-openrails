@@ -1,6 +1,6 @@
 {
   "name": "openrails-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "OpenRails SDK + `openrails` CLI — intent-driven clearing & settlement for streamed USDC work on Arc (RailsFlow, RailsCard, Paycard Streams, nonce lanes, receipts).",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",

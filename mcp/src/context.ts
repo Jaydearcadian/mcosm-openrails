@@ -44,7 +44,7 @@ export function buildContext(): OpenRailsContext {
   const config: OpenRailsMcpConfig = {
     networkMode: env('OPENRAILS_NETWORK_MODE', 'arc-testnet'),
     chainId: Number(env('OPENRAILS_CHAIN_ID', '5042002')),
-    rpcUrl: env('OPENRAILS_RPC_URL', 'https://rpc.testnet.arc.network'),
+    rpcUrl: env('OPENRAILS_RPC_URL', 'https://rpc.testnet.arc.io'),
     hubAddress: env('OPENRAILS_HUB_ADDRESS', '0x941C8029F0f912df3fAb7423890ab2359b996D0b'),
     usdcAddress: env('OPENRAILS_USDC_ADDRESS', '0x3600000000000000000000000000000000000000'),
     relayUrl: env('OPENRAILS_RELAY_URL', 'https://openrails-reconciliation-worker.microcosm.workers.dev'),

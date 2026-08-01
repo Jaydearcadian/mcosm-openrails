@@ -1,8 +1,27 @@
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState, type ReactNode } from "react";
 import { useAccount } from "wagmi";
 import { QRCodeSVG } from "qrcode.react";
 import { PrimaryButton, SecondaryButton, TextInput, FieldLabel } from "./Panel";
 import { useNewPayment, type NewPaymentMode, type NewPaymentCardVariant, type NewPaymentType } from "../../lib/newPayment";
+
+class QRBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    if (this.state.failed) {
+      return (
+        <div style={{ width: 132, height: 132, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: 10, lineHeight: 1.5, color: "rgba(11,17,32,0.5)", background: "rgba(11,17,32,0.04)", border: "1px dashed rgba(11,17,32,0.15)", borderRadius: 8, padding: 8 }}>
+          Link is too long for a QR code. Use Copy or Share.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function SegButton({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
@@ -131,7 +150,7 @@ export function NewPaymentModal({
           <div style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.55, color: "rgba(11,17,32,0.55)" }}>
             {mode === "railsflow"
               ? "A request link — whoever opens it becomes the payer and signs."
-              : "A payer-signed value link, pre-funded, claimable by the holder."}
+              : "A payer-signed value link, pre-authorized for a later claim."}
           </div>
 
           {isCard && (
@@ -194,7 +213,9 @@ export function NewPaymentModal({
             <div style={{ marginTop: 14, background: "rgba(0,158,96,0.06)", border: "1px solid rgba(0,158,96,0.25)", borderRadius: 12, padding: 14 }}>
               <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                 <div style={{ flex: "0 0 auto", background: "#FFFFFF", border: "1px solid rgba(11,17,32,0.1)", borderRadius: 12, padding: 10, lineHeight: 0 }}>
-                  <QRCodeSVG value={link} size={132} level="M" marginSize={0} />
+                  <QRBoundary key={link}>
+                    <QRCodeSVG value={link} size={132} level="L" marginSize={0} />
+                  </QRBoundary>
                 </div>
                 <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9.5, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(11,17,32,0.42)" }}>
@@ -272,8 +293,12 @@ export function NewPaymentModal({
               {!isConnected ? "Connect a wallet first" : busy ? statusLabel(status) : ""}
             </div>
             <div style={{ display: "flex", gap: 9 }}>
-              <SecondaryButton onClick={handleGenerateLink} disabled={!isConnected && mode !== "railsflow"}>
-                Generate link
+              <SecondaryButton onClick={handleGenerateLink} disabled={busy || (!isConnected && mode !== "railsflow")}>
+                {busy
+                  ? statusLabel(status)
+                  : mode === "railscard"
+                    ? "Authorize & generate"
+                    : "Generate request"}
               </SecondaryButton>
               <PrimaryButton onClick={() => submit(params, "gasless")} disabled={busy || !isConnected || isBearer}>
                 {busy ? statusLabel(status) : "Pay · gas sponsored"}
@@ -296,6 +321,7 @@ export function NewPaymentModal({
 }
 
 function statusLabel(status: { id: string }): string {
+  if (status.id === "checking") return "Checking funding...";
   if (status.id === "approving") return "Approving USDC…";
   if (status.id === "signing") return "Sign in your wallet…";
   if (status.id === "submitting") return "Submitting…";
