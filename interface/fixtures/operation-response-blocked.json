@@ -1,0 +1,37 @@
+{
+  "interfaceVersion": "1.0.1",
+  "executionProfile": "delegated-runtime",
+  "operationId": "proposal.evaluate",
+  "capability": "proposal.evaluate",
+  "lifecycleState": "BLOCKED",
+  "authorizationClass": "PREPARE_ONLY",
+  "subject": { "actorRef": { "type": "Actor", "id": "actor:delegate" }, "role": "delegate" },
+  "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+  "workspaceRef": { "type": "Workspace", "id": "workspace:1" },
+  "pathRef": { "type": "Path", "id": "path:1" },
+  "intentRef": { "type": "Intent", "id": "intent:1" },
+  "proposalRef": { "type": "Proposal", "id": "proposal:1" },
+  "data": null,
+  "transaction": {
+    "interfaceVersion": "1.0.1",
+    "status": "NOT_REQUESTED",
+    "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+    "financialEffect": "NONE",
+    "observedAt": "2026-08-02T00:00:00Z"
+  },
+  "errors": [{
+    "interfaceVersion": "1.0.1",
+    "code": "POLICY_BLOCKED",
+    "message": "Baphomet blocked the proposal before Pact creation.",
+    "retryable": false,
+    "financialEffect": "NONE",
+    "lifecycleState": "BLOCKED",
+    "transactionState": "NOT_REQUESTED",
+    "operationId": "proposal.evaluate",
+    "occurredAt": "2026-08-02T00:00:00Z",
+    "provenance": { "source": "runtime-evaluation", "authority": "Baphomet", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+  }],
+  "provenance": { "source": "runtime-evaluation", "authority": "Baphomet", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] },
+  "createdAt": "2026-08-02T00:00:00Z",
+  "updatedAt": "2026-08-02T00:00:00Z"
+}

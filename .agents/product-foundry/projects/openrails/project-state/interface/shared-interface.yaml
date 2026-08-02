@@ -1,0 +1,382 @@
+interface:
+  id: openrails-shared-interface
+  version: 1.0.1
+  status: canonical-specification
+  live_status: not-live
+  product_truth: 2.0.1
+  owner: interface-ecosystem-engine
+  implementation_target: https://github.com/Jaydearcadian/mcosm-OpenRails
+  design_webapp_source: https://github.com/cooke-dev/mcosm-OpenRails
+  default_network: arc
+  lead_narrative: Intent-driven clearing and settlement infrastructure for streamed and one-time work.
+  anchor_required: false
+  contract_level: semantic-vocabulary-contract
+  implementation_schema_status: implemented-validated
+  invariants:
+  - wallet_is_authorization_boundary
+  - vault_is_canonical_financial_state_per_network
+  - blocked_proposal_has_no_financial_effect
+  - goalsession_is_not_workspace_or_path
+  - sidecars_are_not_custodians_or_settlement_authorities
+  - network_capabilities_are_declared_not_assumed
+  - arc_default_does_not_override_peer_deployment_authority
+
+objects:
+- id: Workspace
+  purpose: Durable ownership and operating context.
+- id: Actor
+  purpose: Registered person, application, agent, service, or sidecar.
+- id: Path
+  purpose: Signed bounded delegated authority.
+- id: Intent
+  purpose: Chain-neutral expression of a desired economic action.
+- id: Proposal
+  purpose: Runtime normalization of an Intent for policy evaluation.
+- id: SettlementIntent
+  purpose: Chain-bound signed settlement authorization envelope.
+- id: Decision
+  purpose: Baphomet ALLOW or BLOCK result bound to exact inputs.
+- id: Pact
+  purpose: Immutable accepted commercial terms.
+- id: WorkUsageEvent
+  purpose: Observed work or usage input that is not settlement truth.
+- id: Proof
+  purpose: Verified evidence satisfying a governing Pact or SettlementIntent policy before its declared gated transition.
+- id: RailsFlow
+  purpose: Request-to-pay artifact.
+- id: RailsCard
+  purpose: Payer-signed bearer or recipient-bound claimable-value artifact.
+- id: PaycardStream
+  purpose: Funded Vault state for one-time or streamed settlement.
+- id: Receipt
+  purpose: Verified authorization, clearing, settlement, and final-state evidence.
+- id: GaiaCase
+  purpose: Bounded exceptional-outcome and resolution record.
+
+payment_model:
+  access_modes:
+  - RailsFlow
+  - RailsCard
+  railscard_variants:
+  - bearer
+  - recipient-bound
+  settlement_shapes:
+  - one-time
+  - streamed
+  rule: Access mode and settlement shape are independent dimensions.
+
+execution_profiles:
+  direct-wallet-authorized:
+    required_context:
+    - IntentOrPaymentArtifact
+    - WalletAuthorization
+    - SettlementIntentOrClaim
+    - RailsFlowOrRailsCard
+    - PaycardStream
+    - Receipt
+    conditional_context:
+    - Workspace
+    - Path
+    - Pact
+    - Proof
+    rule: Workspace, Path, Pact, and Proof are not mandatory when the principal directly authorizes the exact settlement action in the wallet.
+  delegated-runtime:
+    required_context:
+    - Workspace
+    - Path
+    - Intent
+    - Proposal
+    - Decision
+    - Pact
+    - WalletAuthorization
+    - RailsFlowOrRailsCard
+    - PaycardStream
+    - Receipt
+    conditional_context:
+    - Proof
+    - GaiaCase
+    rule: A blocked Proposal creates no Pact, requests no financial wallet action, opens no Paycard, and moves no value.
+
+funding_and_proof_order:
+  paycard_may_be_funded_before_work: true
+  proof_requirement: conditional-on-signed-terms
+  placement_rule: Insert Proof immediately before the transition selected by the signed proof policy. There is no universal fixed Proof position.
+  allowed_proof_gates:
+  - NONE
+  - AUTHORIZATION
+  - CLAIM
+  - CHECKPOINT
+  - FINAL_SETTLEMENT
+  direct_branches:
+    RailsFlow:
+    - RAILSFLOW_REQUEST
+    - OPTIONAL_AUTHORIZATION_PROOF
+    - WALLET_SETTLEMENT_INTENT_AUTHORIZATION
+    - PAYCARD_FUNDING
+    - OPTIONAL_CHECKPOINT_OR_FINAL_PROOF
+    - SETTLEMENT
+    - RECEIPT
+    RailsCard:
+    - RAILSCARD_PREPARATION
+    - OPTIONAL_AUTHORIZATION_PROOF
+    - PAYER_SIGNATURE_AND_ISSUANCE
+    - OPTIONAL_CLAIM_PROOF
+    - RECIPIENT_CLAIM
+    - PAYCARD_FUNDING
+    - OPTIONAL_CHECKPOINT_OR_FINAL_PROOF
+    - SETTLEMENT
+    - RECEIPT
+
+lifecycle_states:
+- DRAFT
+- PREPARED
+- AWAITING_AUTHORIZATION
+- EVALUATING
+- BLOCKED
+- ALLOWED
+- COMMITTED
+- EXECUTING
+- PROOF_PENDING
+- PROOF_VERIFIED
+- CLEARING_READY
+- SUBMITTED
+- CONFIRMED
+- SETTLING
+- SETTLED
+- RESOLVING
+- RESOLVED
+- FAILED
+- CANCELLED
+
+transaction_states:
+- NOT_REQUESTED
+- WALLET_REQUIRED
+- WALLET_REJECTED
+- SUBMITTED
+- PENDING_CONFIRMATION
+- CONFIRMED
+- REVERTED
+- REPLACED
+- DROPPED
+- UNKNOWN
+
+authorization_classes:
+- PUBLIC_READ
+- AUTHENTICATED_READ
+- PREPARE_ONLY
+- WALLET_SIGNATURE
+- WALLET_TRANSACTION
+- RELAY_SIGNED_ENVELOPE
+- OPERATOR_ADMIN
+
+capabilities:
+- network.list
+- network.get
+- network.capabilities
+- workspace.prepare
+- workspace.get
+- workspace.list
+- actor.prepareRegistration
+- actor.list
+- path.prepare
+- path.activate
+- path.revoke
+- path.evaluate
+- intent.prepare
+- intent.validate
+- proposal.evaluate
+- pact.prepare
+- pact.get
+- pact.activate
+- proof.submit
+- proof.verify
+- proof.get
+- railsflow.create
+- railsflow.inspect
+- railsflow.pay
+- railscard.issue
+- railscard.inspect
+- railscard.claim
+- paycard.open
+- paycard.get
+- paycard.list
+- paycard.settle
+- paycard.flushResidual
+- receipt.get
+- receipt.list
+- receipt.verify
+- gaia.open
+- gaia.get
+- gaia.resolve
+
+capability_statuses:
+- VERIFIED
+- LIVE
+- RECORDED
+- DEMONSTRATION
+- PLANNED
+- UNAVAILABLE
+
+error_taxonomy:
+- INPUT_INVALID
+- NETWORK_UNSUPPORTED
+- CAPABILITY_UNAVAILABLE
+- WRONG_NETWORK
+- AUTHORIZATION_REQUIRED
+- WALLET_REJECTED
+- SIGNATURE_INVALID
+- SIGNATURE_EXPIRED
+- NONCE_CONFLICT
+- POLICY_BLOCKED
+- TERMS_MISMATCH
+- PROOF_REQUIRED
+- PROOF_INVALID
+- INSUFFICIENT_BALANCE
+- INSUFFICIENT_ALLOWANCE
+- RPC_UNAVAILABLE
+- SIMULATION_REVERTED
+- TRANSACTION_REVERTED
+- TRANSACTION_REPLACED
+- TRANSACTION_DROPPED
+- RECEIPT_UNVERIFIED
+- STATE_STALE
+- RATE_LIMITED
+- INTERNAL_ERROR
+
+network_manifest:
+  required_fields:
+  - interfaceVersion
+  - networkId
+  - displayName
+  - chainId
+  - status
+  - nativeAsset
+  - settlementAssets
+  - rpc
+  - explorer
+  - contracts
+  - typedDataDomains
+  - capabilities
+  - finalityPolicy
+  - receiptMappings
+  - provenance
+  networks:
+  - id: arc
+    role: default
+    authority: peer-deployment
+  - id: giwa
+    role: adapter
+    authority: peer-deployment
+  - id: x-layer
+    role: adapter
+    authority: peer-deployment
+
+operation_envelope:
+  required_fields:
+  - interfaceVersion
+  - executionProfile
+  - operationId
+  - capability
+  - lifecycleState
+  - authorizationClass
+  - subject
+  - network
+  - data
+  - errors
+  - provenance
+  - createdAt
+  optional_fields:
+  - workspaceRef
+  - pathRef
+  - intentRef
+  - proposalRef
+  - pactRef
+  - proofRefs
+  - transaction
+  - receipts
+  - updatedAt
+
+vertical_profiles:
+- id: agent
+  clients:
+  - MidiumOR
+  - GoalSession
+  additions:
+  - goalSessionRef
+  - providerRef
+  - toolOrServiceRef
+  - usageMetrics
+- id: creator
+  clients:
+  - SubsonicSidecar
+  additions:
+  - creatorRef
+  - workRef
+  - usageEventRef
+  - distributionTerms
+- id: institutional
+  additions:
+  - organisationRef
+  - departmentRef
+  - vendorOrMerchantRef
+  - invoiceOrOrderRef
+  - approvalPolicyRef
+
+client_boundaries:
+  MidiumOR:
+    allowed: [read, prepare, explain, wallet-handoff]
+    prohibited: [user-key-custody, authority-expansion]
+  GoalSession:
+    allowed: [read, prepare, orchestrate, receipt-compose]
+    prohibited: [workspace-identity, path-identity, runtime-signing, runtime-broadcast]
+  Sidecar:
+    allowed: [observe, prepare, proof-submit]
+    prohibited: [user-key-custody, canonical-settlement-claims]
+  MCP:
+    allowed: [read, prepare, verify]
+    prohibited: [private-key-input, wallet-signing, autonomous-broadcast]
+
+public_packages:
+- name: openrails-sdk
+  current_version: 0.1.3
+  target_version: 1.0.0
+  target_source: https://github.com/Jaydearcadian/mcosm-OpenRails
+  status: migration-required
+- name: openrails-mcp
+  current_version: 0.1.2
+  target_version: 1.0.0
+  target_source: https://github.com/Jaydearcadian/mcosm-OpenRails
+  status: migration-required
+
+compatibility_policy:
+  interface_semver: true
+  breaking_changes: major-only
+  additive_changes: minor
+  fixes_and_evidence: patch
+  adapter_declaration_required: true
+  false_parity_prohibited: true
+  legacy_0x_status: supported-until-1x-migration-release
+
+go_live_gates:
+- typed-implementation-schema-package
+- canonical-schema-validation
+- arc-adapter-capability-manifest
+- giwa-adapter-capability-manifest
+- x-layer-adapter-capability-manifest
+- arc-successful-operation-conformance
+- arc-blocked-or-failed-operation-conformance
+- wallet-and-signature-boundary-tests
+- sdk-build-test-and-pack
+- mcp-build-test-and-safe-tool-review
+- rest-contract-tests
+- arc-led-shared-web-integration
+- cooke-design-migration-review
+- security-review
+- staged-deployment-and-rollback
+
+ecosystem_integration_gates:
+- giwa-behavioral-conformance
+- x-layer-behavioral-conformance
+- midiumor-integration-test
+- goalsession-integration-test
+- sidecar-non-custodial-proof

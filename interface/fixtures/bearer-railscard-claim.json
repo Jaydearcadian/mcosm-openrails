@@ -1,0 +1,36 @@
+{
+  "interfaceVersion": "1.0.1",
+  "id": "railscard:bearer:1",
+  "executionProfile": "direct-wallet-authorized",
+  "variant": "bearer",
+  "claimPolicy": "first-claimant",
+  "paymentTerms": {
+    "asset": { "symbol": "USDC", "decimals": 6, "address": "0x3600000000000000000000000000000000000000", "kind": "erc20" },
+    "amount": "500000",
+    "settlementShape": "one-time"
+  },
+  "proofPolicy": {
+    "interfaceVersion": "1.0.1",
+    "id": "proof-policy:bearer:1",
+    "executionProfile": "direct-wallet-authorized",
+    "requiredGate": "NONE",
+    "beforeTransition": "NONE",
+    "placement": "immediately-before",
+    "required": false,
+    "policyVersion": "policy-1",
+    "termsHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "status": "COMMITTED",
+  "signatureBinding": {
+    "signer": "0x1111111111111111111111111111111111111111",
+    "signature": "0x1111",
+    "nonce": "1",
+    "issuedAt": "2026-08-02T00:00:00Z",
+    "expiresAt": "2026-08-03T00:00:00Z",
+    "chainId": "5042002",
+    "verifyingContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+    "domain": { "name": "OpenRails Network", "version": "2.0.0", "chainId": "5042002", "verifyingContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b" }
+  },
+  "createdAt": "2026-08-02T00:00:00Z",
+  "provenance": { "source": "wallet-signed", "authority": "payer wallet", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+}

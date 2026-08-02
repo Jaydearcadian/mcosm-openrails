@@ -1,0 +1,22 @@
+{
+  "interfaceVersion": "1.0.1",
+  "executionProfile": "direct-wallet-authorized",
+  "operationId": "network.get",
+  "capability": "network.get",
+  "lifecycleState": "CANCELLED",
+  "authorizationClass": "PUBLIC_READ",
+  "subject": { "walletAddress": "0x1111111111111111111111111111111111111111", "role": "payer" },
+  "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+  "data": null,
+  "transaction": {
+    "interfaceVersion": "1.0.1",
+    "status": "NOT_REQUESTED",
+    "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+    "financialEffect": "NONE",
+    "observedAt": "2026-08-02T00:00:00Z"
+  },
+  "errors": [],
+  "provenance": { "source": "operator-record", "authority": "OpenRails interface tests", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["TEST-OR-PR1"] },
+  "createdAt": "2026-08-02T00:00:00Z",
+  "updatedAt": "2026-08-02T00:00:00Z"
+}

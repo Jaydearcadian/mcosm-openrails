@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openrails.dev/openrails/1.0.1/work-usage-event.schema.json",
+  "title": "WorkUsageEvent",
+  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/models.schema.json#/$defs/WorkUsageEvent"
+}

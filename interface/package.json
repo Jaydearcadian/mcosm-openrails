@@ -1,0 +1,41 @@
+{
+  "name": "@openrails/shared-interface",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private JSON Schema and generated TypeScript contract for OpenRails Shared Interface 1.0.1.",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "schemas",
+    "manifests",
+    "registries",
+    "fixtures",
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "schemas:validate": "node scripts/validate-schemas.mjs",
+    "generate": "node scripts/generate-types.mjs",
+    "generate:check": "node scripts/generate-types.mjs --check",
+    "test": "npm run schemas:validate && npm run generate:check && npm run build && node scripts/type-fixture-check.mjs && node --test test/*.test.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json && node scripts/type-fixture-check.mjs",
+    "build": "tsc -p tsconfig.json",
+    "pack:check": "npm pack --dry-run && node scripts/pack-smoke.mjs",
+    "check": "npm test && npm run typecheck && npm run build && npm run pack:check"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.9.3"
+  }
+}
