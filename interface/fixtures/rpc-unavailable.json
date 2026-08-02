@@ -1,0 +1,13 @@
+{
+  "interfaceVersion": "1.0.1",
+  "code": "RPC_UNAVAILABLE",
+  "message": "The RPC provider did not answer during transaction reconciliation.",
+  "retryable": true,
+  "financialEffect": "UNKNOWN",
+  "lifecycleState": "FAILED",
+  "transactionState": "UNKNOWN",
+  "operationId": "receipt.verify",
+  "details": { "providerCode": "ETIMEDOUT" },
+  "occurredAt": "2026-08-02T00:00:00Z",
+  "provenance": { "source": "network-observation", "authority": "Arc RPC", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+}

@@ -1,0 +1,27 @@
+{
+  "interfaceVersion": "1.0.1",
+  "executionProfile": "direct-wallet-authorized",
+  "operationId": "railscard.claim",
+  "capability": "railscard.claim",
+  "lifecycleState": "FAILED",
+  "authorizationClass": "WALLET_TRANSACTION",
+  "subject": { "walletAddress": "0x1111111111111111111111111111111111111111", "role": "payer" },
+  "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+  "data": null,
+  "errors": [{
+    "interfaceVersion": "1.0.1",
+    "code": "SIGNATURE_EXPIRED",
+    "message": "The wallet authorization expired before submission.",
+    "retryable": true,
+    "financialEffect": "NONE",
+    "lifecycleState": "FAILED",
+    "transactionState": "NOT_REQUESTED",
+    "operationId": "railscard.claim",
+    "expiresAt": "2026-08-01T00:00:00Z",
+    "occurredAt": "2026-08-02T00:00:00Z",
+    "provenance": { "source": "wallet-signed", "authority": "wallet boundary", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+  }],
+  "provenance": { "source": "wallet-signed", "authority": "wallet boundary", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] },
+  "createdAt": "2026-08-02T00:00:00Z",
+  "updatedAt": "2026-08-02T00:00:00Z"
+}

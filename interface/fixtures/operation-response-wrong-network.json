@@ -1,0 +1,28 @@
+{
+  "interfaceVersion": "1.0.1",
+  "executionProfile": "direct-wallet-authorized",
+  "operationId": "railsflow.pay",
+  "capability": "railsflow.pay",
+  "lifecycleState": "FAILED",
+  "authorizationClass": "WALLET_TRANSACTION",
+  "subject": { "walletAddress": "0x1111111111111111111111111111111111111111", "role": "payer" },
+  "network": { "networkId": "unknown-network", "chainId": "1" },
+  "data": null,
+  "errors": [{
+    "interfaceVersion": "1.0.1",
+    "code": "WRONG_NETWORK",
+    "message": "The connected wallet chain does not match the Arc Testnet manifest.",
+    "retryable": true,
+    "financialEffect": "NONE",
+    "lifecycleState": "FAILED",
+    "transactionState": "NOT_REQUESTED",
+    "operationId": "railsflow.pay",
+    "expectedNetwork": { "networkId": "arc-testnet", "chainId": "5042002" },
+    "actualNetwork": { "networkId": "unknown-network", "chainId": "1" },
+    "occurredAt": "2026-08-02T00:00:00Z",
+    "provenance": { "source": "configuration", "authority": "wallet boundary", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+  }],
+  "provenance": { "source": "configuration", "authority": "wallet boundary", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] },
+  "createdAt": "2026-08-02T00:00:00Z",
+  "updatedAt": "2026-08-02T00:00:00Z"
+}
