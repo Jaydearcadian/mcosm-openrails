@@ -1,0 +1,14 @@
+{
+  "interfaceVersion": "1.0.1",
+  "id": "decision:allow:1",
+  "executionProfile": "delegated-runtime",
+  "proposalRef": { "type": "Proposal", "id": "proposal:1" },
+  "decision": "ALLOW",
+  "policyVersion": "baphomet-1",
+  "inputHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reasonCodes": ["PATH_WITHIN_LIMIT"],
+  "pactRef": { "type": "Pact", "id": "pact:1" },
+  "effects": { "financialEffect": "NONE", "walletAction": "REQUIRED", "paycardCreated": false, "valueMoved": false },
+  "decidedAt": "2026-08-02T00:00:00Z",
+  "provenance": { "source": "runtime-evaluation", "authority": "Baphomet Runtime", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-008"] }
+}

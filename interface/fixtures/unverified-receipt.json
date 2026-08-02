@@ -1,0 +1,25 @@
+{
+  "interfaceVersion": "1.0.1",
+  "id": "receipt:unverified:1",
+  "executionProfile": "direct-wallet-authorized",
+  "receiptType": "SETTLEMENT",
+  "operationId": "paycard.settle",
+  "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+  "transaction": {
+    "interfaceVersion": "1.0.1",
+    "status": "CONFIRMED",
+    "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+    "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "blockHash": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "blockNumber": "100",
+    "confirmedAt": "2026-08-02T00:00:02Z",
+    "observedAt": "2026-08-02T00:00:03Z",
+    "financialEffect": "RECONCILIATION_REQUIRED"
+  },
+  "receiptStatus": "UNVERIFIED",
+  "financialOutcome": "PENDING",
+  "verification": { "status": "UNVERIFIED", "reasons": ["Vault state was not reconciled." ] },
+  "canonicalReconciliation": { "status": "PENDING", "observedAt": "2026-08-02T00:00:03Z" },
+  "provenance": { "source": "network-observation", "authority": "Arc RPC", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:03Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] },
+  "createdAt": "2026-08-02T00:00:03Z"
+}

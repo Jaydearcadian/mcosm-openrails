@@ -1,0 +1,40 @@
+{
+  "interfaceVersion": "1.0.1",
+  "lifecycleStates": ["DRAFT", "PREPARED", "AWAITING_AUTHORIZATION", "EVALUATING", "BLOCKED", "ALLOWED", "COMMITTED", "EXECUTING", "PROOF_PENDING", "PROOF_VERIFIED", "CLEARING_READY", "SUBMITTED", "CONFIRMED", "SETTLING", "SETTLED", "RESOLVING", "RESOLVED", "FAILED", "CANCELLED"],
+  "transactionStates": ["NOT_REQUESTED", "WALLET_REQUIRED", "WALLET_REJECTED", "SUBMITTED", "PENDING_CONFIRMATION", "CONFIRMED", "REVERTED", "REPLACED", "DROPPED", "UNKNOWN"],
+  "allowedTransitions": [
+    { "from": "DRAFT", "to": "PREPARED", "trigger": "PREPARE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "PREPARED", "to": "AWAITING_AUTHORIZATION", "trigger": "REQUEST_WALLET_AUTHORIZATION", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": ["WALLET_AUTHORIZATION"] },
+    { "from": "AWAITING_AUTHORIZATION", "to": "COMMITTED", "trigger": "WALLET_AUTHORIZED", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "COMMITTED", "requires": ["WALLET_AUTHORIZATION"] },
+    { "from": "EVALUATING", "to": "ALLOWED", "trigger": "ALLOW_DECISION", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": ["ALLOW_DECISION"] },
+    { "from": "EVALUATING", "to": "BLOCKED", "trigger": "BLOCK_DECISION", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "ALLOWED", "to": "COMMITTED", "trigger": "ACTIVATE_PACT", "allowedProfiles": ["delegated-runtime"], "financialEffect": "COMMITTED", "requires": ["ALLOW_DECISION", "PACT"] },
+    { "from": "COMMITTED", "to": "EXECUTING", "trigger": "FUND_PAYCARD", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["WALLET_AUTHORIZATION"] },
+    { "from": "EXECUTING", "to": "PROOF_PENDING", "trigger": "REQUIRE_PROOF", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": [] },
+    { "from": "PROOF_PENDING", "to": "PROOF_VERIFIED", "trigger": "VERIFY_PROOF", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["VERIFIED_PROOF"] },
+    { "from": "PROOF_VERIFIED", "to": "CLEARING_READY", "trigger": "RELEASE_GATED_TRANSITION", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["VERIFIED_PROOF"] },
+    { "from": "EXECUTING", "to": "CLEARING_READY", "trigger": "NO_PROOF_REQUIRED", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": [] },
+    { "from": "CLEARING_READY", "to": "SUBMITTED", "trigger": "SUBMIT_TRANSACTION", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["WALLET_AUTHORIZATION"] },
+    { "from": "SUBMITTED", "to": "CONFIRMED", "trigger": "CONFIRM_TRANSACTION", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["CONFIRMED_TRANSACTION"] },
+    { "from": "CONFIRMED", "to": "SETTLING", "trigger": "RECONCILE_VAULT", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "PENDING", "requires": ["CONFIRMED_TRANSACTION", "EXACT_RECEIPT"] },
+    { "from": "SETTLING", "to": "SETTLED", "trigger": "VERIFY_SETTLEMENT", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "RECONCILED", "requires": ["EXACT_RECEIPT", "CANONICAL_VAULT_RECONCILIATION"] },
+    { "from": "SETTLED", "to": "RESOLVING", "trigger": "OPEN_GAIA_CASE", "allowedProfiles": ["delegated-runtime"], "financialEffect": "RECONCILED", "requires": [] },
+    { "from": "RESOLVING", "to": "RESOLVED", "trigger": "RESOLVE_GAIA_CASE", "allowedProfiles": ["delegated-runtime"], "financialEffect": "RECONCILED", "requires": [] },
+    { "from": "DRAFT", "to": "CANCELLED", "trigger": "CANCEL", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "PREPARED", "to": "CANCELLED", "trigger": "CANCEL", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "AWAITING_AUTHORIZATION", "to": "CANCELLED", "trigger": "CANCEL", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "EVALUATING", "to": "FAILED", "trigger": "EVALUATION_FAILURE", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": [] },
+    { "from": "SUBMITTED", "to": "FAILED", "trigger": "TRANSACTION_FAILURE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "UNKNOWN", "requires": [] },
+    { "from": "EXECUTING", "to": "FAILED", "trigger": "EXECUTION_FAILURE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "UNKNOWN", "requires": [] }
+  ],
+  "outcomeRules": [
+    { "outcome": "success", "lifecycleState": "SETTLED", "transactionState": "CONFIRMED", "financialEffect": "RECONCILED", "valueMovementAllowed": true, "receiptRequirement": "exact-verified-receipt-and-reconciliation", "errorCode": null, "retryable": false, "notes": "Submission and confirmation are intermediate states. Financial success requires exact event verification and Vault reconciliation." },
+    { "outcome": "blocked", "lifecycleState": "BLOCKED", "transactionState": "NOT_REQUESTED", "financialEffect": "NONE", "valueMovementAllowed": false, "receiptRequirement": "none", "errorCode": "POLICY_BLOCKED", "retryable": false, "notes": "A blocked delegated Proposal creates no Pact, wallet action, Paycard, or value movement." },
+    { "outcome": "failed", "lifecycleState": "FAILED", "transactionState": "UNKNOWN", "financialEffect": "UNKNOWN", "valueMovementAllowed": false, "receiptRequirement": "unverified-receipt-only", "errorCode": "INTERNAL_ERROR", "retryable": true, "notes": "Unknown financial state must be reconciled before retry or any success claim." },
+    { "outcome": "cancelled", "lifecycleState": "CANCELLED", "transactionState": "NOT_REQUESTED", "financialEffect": "NONE", "valueMovementAllowed": false, "receiptRequirement": "none", "errorCode": null, "retryable": false, "notes": "Cancellation before submission has no financial effect." },
+    { "outcome": "signature-expired", "lifecycleState": "FAILED", "transactionState": "NOT_REQUESTED", "financialEffect": "NONE", "valueMovementAllowed": false, "receiptRequirement": "none", "errorCode": "SIGNATURE_EXPIRED", "retryable": true, "notes": "An expired signature cannot authorize or submit a transaction." },
+    { "outcome": "transaction-reverted", "lifecycleState": "FAILED", "transactionState": "REVERTED", "financialEffect": "NONE", "valueMovementAllowed": false, "receiptRequirement": "unverified-receipt-only", "errorCode": "TRANSACTION_REVERTED", "retryable": true, "notes": "A reverted transaction is not settlement success." },
+    { "outcome": "wrong-network", "lifecycleState": "FAILED", "transactionState": "NOT_REQUESTED", "financialEffect": "NONE", "valueMovementAllowed": false, "receiptRequirement": "none", "errorCode": "WRONG_NETWORK", "retryable": true, "notes": "Reject before wallet authorization or submission when chain identity does not match." },
+    { "outcome": "rpc-unavailable", "lifecycleState": "FAILED", "transactionState": "UNKNOWN", "financialEffect": "UNKNOWN", "valueMovementAllowed": false, "receiptRequirement": "unverified-receipt-only", "errorCode": "RPC_UNAVAILABLE", "retryable": true, "notes": "RPC loss does not prove failure or success. Reconcile by transaction hash and Vault state before retry." }
+  ]
+}

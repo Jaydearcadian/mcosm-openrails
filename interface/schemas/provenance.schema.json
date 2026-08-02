@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openrails.dev/openrails/1.0.1/provenance.schema.json",
+  "title": "Provenance",
+  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/Provenance"
+}

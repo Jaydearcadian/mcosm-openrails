@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openrails.dev/openrails/1.0.1/capability-list.schema.json",
+  "title": "CapabilityList",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interfaceVersion", "capabilities"],
+  "properties": {
+    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/InterfaceVersion" },
+    "capabilities": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$" }, "uniqueItems": true }
+  }
+}

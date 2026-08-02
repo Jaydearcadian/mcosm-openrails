@@ -1,0 +1,11 @@
+{
+  "interfaceVersion": "1.0.1",
+  "id": "proof-policy:invalid:1",
+  "executionProfile": "direct-wallet-authorized",
+  "requiredGate": "CLAIM",
+  "beforeTransition": "SETTLEMENT",
+  "placement": "immediately-before",
+  "required": true,
+  "policyVersion": "policy-1",
+  "termsHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

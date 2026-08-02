@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json",
+  "title": "OpenRailsCommon",
+  "$defs": {
+    "InterfaceVersion": {
+      "type": "string",
+      "const": "1.0.1"
+    },
+    "Identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "ObjectType": {
+      "type": "string",
+      "enum": [
+        "Workspace",
+        "WorkspaceMember",
+        "Actor",
+        "Path",
+        "Intent",
+        "Proposal",
+        "BaphometDecision",
+        "SettlementIntent",
+        "Pact",
+        "PaymentTerms",
+        "WorkUsageEvent",
+        "ProofPolicy",
+        "Proof",
+        "RailsFlow",
+        "RailsCard",
+        "PaycardStream",
+        "Receipt",
+        "GaiaCase",
+        "RectificationObligation",
+        "InterfaceError",
+        "TransactionState",
+        "OperationEnvelope",
+        "NetworkManifest",
+        "CapabilityDeclaration",
+        "Provenance"
+      ]
+    },
+    "Address": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{40}$",
+      "x-openrails-format": "evm-address"
+    },
+    "NonZeroAddress": {
+      "type": "string",
+      "pattern": "^(?!0x0{40}$)0x[a-fA-F0-9]{40}$",
+      "x-openrails-format": "evm-nonzero-address"
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{64}$",
+      "x-openrails-format": "hex-32-byte-hash"
+    },
+    "HexData": {
+      "type": "string",
+      "pattern": "^0x(?:[a-fA-F0-9]{2})*$",
+      "x-openrails-format": "hex-bytes"
+    },
+    "ChainId": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$",
+      "x-openrails-format": "unsigned-decimal-chain-id"
+    },
+    "NonNegativeIntegerString": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$",
+      "x-openrails-format": "unsigned-decimal"
+    },
+    "PositiveIntegerString": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "x-openrails-format": "positive-unsigned-decimal"
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ExecutionProfile": {
+      "type": "string",
+      "enum": [
+        "direct-wallet-authorized",
+        "delegated-runtime"
+      ]
+    },
+    "LifecycleState": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "PREPARED",
+        "AWAITING_AUTHORIZATION",
+        "EVALUATING",
+        "BLOCKED",
+        "ALLOWED",
+        "COMMITTED",
+        "EXECUTING",
+        "PROOF_PENDING",
+        "PROOF_VERIFIED",
+        "CLEARING_READY",
+        "SUBMITTED",
+        "CONFIRMED",
+        "SETTLING",
+        "SETTLED",
+        "RESOLVING",
+        "RESOLVED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "TransactionStateName": {
+      "type": "string",
+      "enum": [
+        "NOT_REQUESTED",
+        "WALLET_REQUIRED",
+        "WALLET_REJECTED",
+        "SUBMITTED",
+        "PENDING_CONFIRMATION",
+        "CONFIRMED",
+        "REVERTED",
+        "REPLACED",
+        "DROPPED",
+        "UNKNOWN"
+      ]
+    },
+    "AuthorizationClass": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_READ",
+        "AUTHENTICATED_READ",
+        "PREPARE_ONLY",
+        "WALLET_SIGNATURE",
+        "WALLET_TRANSACTION",
+        "RELAY_SIGNED_ENVELOPE",
+        "OPERATOR_ADMIN"
+      ]
+    },
+    "CapabilityStatus": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "LIVE",
+        "RECORDED",
+        "DEMONSTRATION",
+        "PLANNED",
+        "UNAVAILABLE"
+      ]
+    },
+    "ErrorCode": {
+      "type": "string",
+      "enum": [
+        "INPUT_INVALID",
+        "NETWORK_UNSUPPORTED",
+        "CAPABILITY_UNAVAILABLE",
+        "WRONG_NETWORK",
+        "AUTHORIZATION_REQUIRED",
+        "WALLET_REJECTED",
+        "SIGNATURE_INVALID",
+        "SIGNATURE_EXPIRED",
+        "NONCE_CONFLICT",
+        "POLICY_BLOCKED",
+        "TERMS_MISMATCH",
+        "PROOF_REQUIRED",
+        "PROOF_INVALID",
+        "INSUFFICIENT_BALANCE",
+        "INSUFFICIENT_ALLOWANCE",
+        "RPC_UNAVAILABLE",
+        "SIMULATION_REVERTED",
+        "TRANSACTION_REVERTED",
+        "TRANSACTION_REPLACED",
+        "TRANSACTION_DROPPED",
+        "RECEIPT_UNVERIFIED",
+        "STATE_STALE",
+        "RATE_LIMITED",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "ProofGate": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "AUTHORIZATION",
+        "CLAIM",
+        "CHECKPOINT",
+        "FINAL_SETTLEMENT"
+      ]
+    },
+    "NetworkReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["networkId", "chainId"],
+      "properties": {
+        "networkId": { "$ref": "#/$defs/Identifier" },
+        "chainId": { "$ref": "#/$defs/ChainId" }
+      }
+    },
+    "ObjectRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "$ref": "#/$defs/ObjectType" },
+        "id": { "$ref": "#/$defs/Identifier" },
+        "network": { "$ref": "#/$defs/NetworkReference" }
+      }
+    },
+    "WorkspaceRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Workspace" } } }
+      ]
+    },
+    "WorkspaceMemberRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "WorkspaceMember" } } }
+      ]
+    },
+    "ActorRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Actor" } } }
+      ]
+    },
+    "PathRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Path" } } }
+      ]
+    },
+    "IntentRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Intent" } } }
+      ]
+    },
+    "ProposalRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Proposal" } } }
+      ]
+    },
+    "BaphometDecisionRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "BaphometDecision" } } }
+      ]
+    },
+    "SettlementIntentRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "SettlementIntent" } } }
+      ]
+    },
+    "PactRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Pact" } } }
+      ]
+    },
+    "WorkUsageEventRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "WorkUsageEvent" } } }
+      ]
+    },
+    "ProofPolicyRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "ProofPolicy" } } }
+      ]
+    },
+    "ProofRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Proof" } } }
+      ]
+    },
+    "RailsFlowRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "RailsFlow" } } }
+      ]
+    },
+    "RailsCardRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "RailsCard" } } }
+      ]
+    },
+    "PaycardStreamRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "PaycardStream" } } }
+      ]
+    },
+    "ReceiptRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Receipt" } } }
+      ]
+    },
+    "GaiaCaseRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "GaiaCase" } } }
+      ]
+    },
+    "RectificationObligationRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "RectificationObligation" } } }
+      ]
+    },
+    "InterfaceErrorRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "InterfaceError" } } }
+      ]
+    },
+    "TransactionStateRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "TransactionState" } } }
+      ]
+    },
+    "OperationEnvelopeRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "OperationEnvelope" } } }
+      ]
+    },
+    "NetworkManifestRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "NetworkManifest" } } }
+      ]
+    },
+    "CapabilityDeclarationRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "CapabilityDeclaration" } } }
+      ]
+    },
+    "ProvenanceRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "Provenance" } } }
+      ]
+    },
+    "PaymentArtifactRef": {
+      "oneOf": [
+        { "$ref": "#/$defs/RailsFlowRef" },
+        { "$ref": "#/$defs/RailsCardRef" }
+      ]
+    },
+    "PathResourceRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "enum": ["Workspace", "Actor", "Intent", "Proposal", "Pact", "Proof", "RailsFlow", "RailsCard", "PaycardStream", "Receipt", "GaiaCase", "RectificationObligation"] } } }
+      ]
+    },
+    "SubjectObjectRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "enum": ["Actor", "Intent", "Proposal", "RailsFlow", "RailsCard", "PaycardStream", "Receipt", "WorkUsageEvent", "GaiaCase", "RectificationObligation"] } } }
+      ]
+    },
+    "Asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "decimals", "address", "kind"],
+      "properties": {
+        "symbol": { "type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[A-Z0-9._-]+$" },
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "address": { "$ref": "#/$defs/Address" },
+        "kind": { "type": "string", "enum": ["erc20", "native"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "erc20" } }, "required": ["kind"] },
+          "then": { "properties": { "address": { "$ref": "#/$defs/NonZeroAddress" } } }
+        }
+      ]
+    },
+    "PaymentTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset", "amount", "settlementShape"],
+      "properties": {
+        "asset": { "$ref": "#/$defs/Asset" },
+        "amount": { "$ref": "#/$defs/PositiveIntegerString" },
+        "settlementShape": { "type": "string", "enum": ["one-time", "streamed"] },
+        "recipient": { "$ref": "#/$defs/NonZeroAddress" },
+        "velocityPerSecond": { "$ref": "#/$defs/PositiveIntegerString" },
+        "lifespanSeconds": { "$ref": "#/$defs/PositiveIntegerString" },
+        "allowanceAmount": { "$ref": "#/$defs/NonNegativeIntegerString" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "settlementShape": { "const": "streamed" } }, "required": ["settlementShape"] },
+          "then": { "required": ["velocityPerSecond", "lifespanSeconds"] }
+        },
+        {
+          "if": { "properties": { "settlementShape": { "const": "one-time" } }, "required": ["settlementShape"] },
+          "then": { "not": { "anyOf": [{ "required": ["velocityPerSecond"] }, { "required": ["lifespanSeconds"] }] } }
+        }
+      ]
+    },
+    "SignatureDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "chainId", "verifyingContract"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "chainId": { "$ref": "#/$defs/ChainId" },
+        "verifyingContract": { "$ref": "#/$defs/NonZeroAddress" },
+        "salt": { "$ref": "#/$defs/Hash" }
+      }
+    },
+    "SignatureBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signer", "signature", "nonce", "issuedAt", "expiresAt", "chainId", "verifyingContract", "domain"],
+      "properties": {
+        "signer": { "$ref": "#/$defs/NonZeroAddress" },
+        "signature": { "$ref": "#/$defs/HexData" },
+        "nonce": { "$ref": "#/$defs/NonNegativeIntegerString" },
+        "issuedAt": { "$ref": "#/$defs/Timestamp" },
+        "expiresAt": { "$ref": "#/$defs/Timestamp" },
+        "chainId": { "$ref": "#/$defs/ChainId" },
+        "verifyingContract": { "$ref": "#/$defs/NonZeroAddress" },
+        "domain": { "$ref": "#/$defs/SignatureDomain" }
+      }
+    },
+    "Subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actorRef": { "$ref": "#/$defs/ActorRef" },
+        "walletAddress": { "$ref": "#/$defs/NonZeroAddress" },
+        "role": { "type": "string", "enum": ["owner", "payer", "recipient", "delegate", "operator", "observer"] }
+      },
+      "anyOf": [
+        { "required": ["actorRef"] },
+        { "required": ["walletAddress"] }
+      ]
+    },
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "authority", "evidenceLevel", "observedAt"],
+      "properties": {
+        "source": { "type": "string", "enum": ["repository-evidence", "network-observation", "configuration", "wallet-signed", "runtime-evaluation", "operator-record"] },
+        "authority": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "evidenceLevel": { "type": "string", "enum": ["repository-asserted", "independently-verified", "buyer-validated", "configuration-only", "runtime-observed"] },
+        "observedAt": { "$ref": "#/$defs/Timestamp" },
+        "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "commit": { "type": "string", "pattern": "^[a-fA-F0-9]{7,64}$" },
+        "evidenceRefs": { "type": "array", "items": { "$ref": "#/$defs/Identifier" }, "uniqueItems": true },
+        "notes": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "ExtensionData": {
+      "type": "object",
+      "propertyNames": { "pattern": "^x-[a-z0-9][a-z0-9._-]*$" },
+      "additionalProperties": true
+    }
+  }
+}

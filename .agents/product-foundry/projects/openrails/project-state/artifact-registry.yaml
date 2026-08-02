@@ -1,0 +1,136 @@
+artifacts:
+- id: product-truth
+  title: OpenRails Product Truth
+  path: project-state/product/product-truth.md
+  owner:
+    skill: product-truth-engine
+  status: canonical
+  version: 2.0.1
+  canonical_for:
+  - primary_user
+  - painful_moment
+  - desired_outcome
+  - product_definition
+  - product_primitive
+  - decisive_workflow
+  - product_invariants
+  - authority_boundaries
+  - peer_network_authority
+  - repository_authority
+  - shared_design_authority
+  - arc_anchor_status
+  - adoption_wedge_status
+  - canonical_lifecycle
+  - direct_and_delegated_execution_profiles
+  - canonical_object_semantics
+  - vertical_profile_model
+  - shared_interface_direction
+  - unified_implementation_target
+  - arc_lead_narrative
+  - mvp_scope
+  - non_goals
+- id: product-truth-v1
+  title: OpenRails Product Truth 1.0.0
+  path: project-state/product/product-truth-v1.0.0.md
+  owner:
+    skill: product-truth-engine
+  status: superseded
+  version: 1.0.0
+  superseded_by: product-truth@2.0.1
+  canonical_for:
+  - decision_history
+- id: repository-manifest
+  title: OpenRails Repository Authority Manifest
+  path: project-state/repository/repository-manifest.yaml
+  owner:
+    skill: canonical-repository-implementation-engine
+  status: canonical
+  version: 2.0.1
+  canonical_for:
+  - implementation_status
+  - repository_authority
+  - release_truth
+- id: repository-drift-report
+  title: OpenRails Repository Drift Report
+  path: project-state/repository/repository-drift-report.md
+  owner:
+    skill: canonical-repository-implementation-engine
+  status: canonical
+  version: 2.0.1
+  canonical_for:
+  - cross_repository_drift
+  - repository_unification_direction
+  - migration_order
+- id: shared-interface-spec
+  title: OpenRails Shared Interface 1.0
+  path: project-state/interface/shared-interface.md
+  owner:
+    skill: interface-ecosystem-engine
+  status: canonical
+  version: 1.0.1
+  canonical_for:
+  - capability_exposure
+  - object_and_lifecycle_contract
+  - client_boundaries
+  - package_authority
+  - web_projection
+  - go_live_gates
+- id: shared-interface-contract
+  title: OpenRails Shared Interface Semantic Contract
+  path: project-state/interface/shared-interface.yaml
+  owner:
+    skill: interface-ecosystem-engine
+  status: canonical
+  version: 1.0.1
+  canonical_for:
+  - capability_names
+  - lifecycle_states
+  - transaction_states
+  - authorization_classes
+  - error_taxonomy
+  - network_manifest
+  - vertical_profiles
+  - compatibility_policy
+  - execution_profiles
+  - proof_gating_semantics
+- id: unified-interface-implementation-handoff
+  title: OpenRails Unified Interface Implementation Handoff
+  path: project-state/repository/unified-interface-implementation-handoff.md
+  owner:
+    skill: canonical-repository-implementation-engine
+  status: proposed
+  version: 1.0.0
+  canonical_for:
+  - proposed_frontend_migration_topology
+  - proposed_file_level_scope
+  - source_adoption_boundaries
+  - rollout_and_rollback_plan
+  - implementation_acceptance_criteria
+- id: openrails-shared-interface-typed-package
+  title: OpenRails Shared Interface Typed Package PR1
+  path: ../../../../interface/package.json
+  owner:
+    skill: interface-ecosystem-engine
+  status: implemented-validated
+  version: 0.1.0
+  package:
+    package_json: ../../../../interface/package.json
+    schema_version: 1.0.1
+    root: ../../../../interface
+    lockfile: ../../../../interface/package-lock.json
+    schemas: ../../../../interface/schemas
+    registries: ../../../../interface/registries
+    manifests: ../../../../interface/manifests
+    generated_types: ../../../../interface/src/generated.ts
+    runtime_api_source: ../../../../interface/src/operations.ts
+    runtime_api_built: ../../../../interface/dist/index.js
+    pack_import_smoke: ../../../../interface/scripts/pack-smoke.mjs
+    tests: ../../../../interface/test/contract.test.mjs
+  canonical_for:
+  - portable_json_schema_contract
+  - deterministic_typescript_types
+  - operation_contract_registry
+  - lifecycle_transition_rules
+  - structured_error_payloads
+  - receipt_verification_contract
+  - arc_testnet_capability_manifest

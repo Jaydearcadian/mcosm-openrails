@@ -1,0 +1,13 @@
+{
+  "interfaceVersion": "1.0.1",
+  "code": "TRANSACTION_REVERTED",
+  "message": "The settlement transaction was mined but reverted.",
+  "retryable": true,
+  "financialEffect": "NONE",
+  "lifecycleState": "FAILED",
+  "transactionState": "REVERTED",
+  "operationId": "paycard.settle",
+  "details": { "reason": "Vault state rejected the settlement transition." },
+  "occurredAt": "2026-08-02T00:00:00Z",
+  "provenance": { "source": "network-observation", "authority": "Arc RPC", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-02T00:00:00Z", "repository": "Jaydearcadian/mcosm-OpenRails", "commit": "e153dca6d46a8531c3ad45aad5906dbf0a2088ed", "evidenceRefs": ["EVD-OR-004"] }
+}

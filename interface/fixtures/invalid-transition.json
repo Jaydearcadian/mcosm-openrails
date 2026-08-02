@@ -1,0 +1,6 @@
+{
+  "from": "SUBMITTED",
+  "to": "SETTLED",
+  "trigger": "SHORTCUT_SETTLEMENT",
+  "executionProfile": "direct-wallet-authorized"
+}
