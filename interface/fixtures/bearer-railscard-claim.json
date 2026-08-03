@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "id": "railscard:bearer:1",
   "executionProfile": "direct-wallet-authorized",
   "variant": "bearer",
@@ -10,7 +10,7 @@
     "settlementShape": "one-time"
   },
   "proofPolicy": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "id": "proof-policy:bearer:1",
     "executionProfile": "direct-wallet-authorized",
     "requiredGate": "NONE",

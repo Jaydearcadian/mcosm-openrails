@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json",
+  "title": "WalletHandoff",
+  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/WalletHandoff"
+}

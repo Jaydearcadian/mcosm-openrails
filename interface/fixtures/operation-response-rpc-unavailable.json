@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "executionProfile": "direct-wallet-authorized",
   "operationId": "receipt.verify",
   "capability": "receipt.verify",
@@ -9,14 +9,14 @@
   "network": { "networkId": "arc-testnet", "chainId": "5042002" },
   "data": null,
   "transaction": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "status": "UNKNOWN",
     "network": { "networkId": "arc-testnet", "chainId": "5042002" },
     "financialEffect": "UNKNOWN",
     "observedAt": "2026-08-02T00:00:00Z"
   },
   "errors": [{
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "code": "RPC_UNAVAILABLE",
     "message": "The RPC provider did not answer during transaction reconciliation.",
     "retryable": true,

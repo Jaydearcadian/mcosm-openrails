@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/workspace-member.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.1.0/workspace-member.schema.json",
   "title": "WorkspaceMember",
-  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/models.schema.json#/$defs/WorkspaceMember"
+  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/WorkspaceMember"
 }

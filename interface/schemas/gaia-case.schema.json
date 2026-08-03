@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/gaia-case.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json",
   "title": "GaiaCase",
-  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/models.schema.json#/$defs/GaiaCase"
+  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/GaiaCase"
 }

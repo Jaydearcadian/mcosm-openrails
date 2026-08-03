@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "capabilities": [
     "network.list",
     "network.get",
@@ -38,6 +38,9 @@
     "receipt.verify",
     "gaia.open",
     "gaia.get",
-    "gaia.resolve"
+    "gaia.resolve",
+    "wallet.handoff.prepare",
+    "wallet.handoff.get",
+    "wallet.handoff.verify"
   ]
 }

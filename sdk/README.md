@@ -12,6 +12,20 @@ is performed → recover residual. Usable by humans or agents.
 npm i openrails-sdk        # library + the `openrails` CLI
 ```
 
+## 1.0 release candidate
+
+`1.0.0-rc.1` makes the package root the Shared Interface 1.1 safe surface. It exports canonical
+types, the Arc capability manifest, operation envelopes, receipts, errors, and external-wallet
+`WalletHandoff` helpers. The root prepares, reads, records, and verifies. It does not accept
+private keys, create signers, or broadcast transactions.
+
+```ts
+import { prepareWalletHandoff, verifyWalletHandoff } from "openrails-sdk";
+```
+
+Existing 0.1.3 Arc APIs remain available from `openrails-sdk/arc`. The Arc examples below use that
+compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary and RC status.
+
 ## Library
 ```ts
 import {
@@ -23,7 +37,7 @@ import {
   submitFlushWithSigner,
   approveOpenRailsSpend,
   readNonce,
-} from "openrails-sdk";
+} from "openrails-sdk/arc";
 
 // 1) sign an EIP-712 permission envelope for a Paycard Stream
 const client = new LeptonOpenRailsClient(privateKey, hubAddress, chainId);
@@ -46,7 +60,7 @@ OpenRails authenticates the **signature, not the transaction sender**. The V2 Hu
 EIP-1271 signatures, so submission can be sponsored when the account can sign the intent.
 
 ```ts
-import { LeptonOpenRailsClient, payGasless, claimGasless, RelayClient, signUsdcPermit } from "openrails-sdk";
+import { LeptonOpenRailsClient, payGasless, claimGasless, RelayClient, signUsdcPermit } from "openrails-sdk/arc";
 import { ethersToSubmitter } from "openrails-sdk/adapters/ethers";
 
 // Any OpenRailsAccount works: no raw private key required.
@@ -83,7 +97,7 @@ import {
   randomRailsCardNonceChannel,
   reserveRailsCardAllowance,
   readNonce,
-} from "openrails-sdk";
+} from "openrails-sdk/arc";
 
 const nonceChannel = randomRailsCardNonceChannel();
 const nonceValue = await readNonce(provider, hubAddress, payer, nonceChannel);
@@ -110,7 +124,7 @@ A Privy embedded wallet exposes a standard EIP-1193 provider: bridge it into an
 ```tsx
 import { useWallets } from "@privy-io/react-auth";
 import { privyToAccount } from "openrails-sdk/adapters/privy";
-import { LeptonOpenRailsClient, payGasless, RelayClient } from "openrails-sdk";
+import { LeptonOpenRailsClient, payGasless, RelayClient } from "openrails-sdk/arc";
 
 const { wallets } = useWallets();
 const embedded = wallets.find(

@@ -7,23 +7,28 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "openrails-pack-"));
+const npmCache = path.join(temporaryRoot, "npm-cache");
+const commandEnvironment = { ...process.env, npm_config_cache: npmCache };
 
 try {
   const packDestination = path.join(temporaryRoot, "archive");
   const consumerPrefix = path.join(temporaryRoot, "consumer");
+  fs.mkdirSync(npmCache);
   fs.mkdirSync(packDestination);
   fs.mkdirSync(consumerPrefix);
 
   const packed = JSON.parse(execFileSync("npm", ["pack", "--json", "--pack-destination", packDestination], {
     cwd: packageRoot,
-    encoding: "utf8"
+    encoding: "utf8",
+    env: commandEnvironment
   }));
   assert.equal(packed.length, 1, "npm pack should produce one archive");
   const archive = path.join(packDestination, packed[0].filename);
 
-  execFileSync("npm", ["install", "--offline", "--ignore-scripts", "--no-package-lock", "--prefix", consumerPrefix, archive], {
+  execFileSync("npm", ["install", "--ignore-scripts", "--no-package-lock", "--prefix", consumerPrefix, archive], {
     cwd: packageRoot,
-    stdio: "inherit"
+    stdio: "inherit",
+    env: commandEnvironment
   });
 
   const installedRoot = path.join(consumerPrefix, "node_modules", "@openrails", "shared-interface");
