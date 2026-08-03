@@ -65,6 +65,54 @@ export type CanonicalReconciliation = {
   status: "MATCHED" | "MISMATCHED" | "PENDING" | "NOT_APPLICABLE";
   vaultRef?: PaycardStreamRef;
 };
+export type CanonicalRecord = {
+  ciphertextHash: Hash;
+  createdAt: Timestamp;
+  encryptedKeys: Array<{
+    counterpartyRef: ActorRef;
+    encryptedKey: HexData;
+    keyId: Identifier;
+  }>;
+  encryption: {
+    algorithm: string;
+    keyAgreement: string;
+    mode: "encrypted" | "public";
+  };
+  executionProfile: ExecutionProfile;
+  extensions?: ExtensionData;
+  id: Identifier;
+  interfaceVersion: InterfaceVersion;
+  pactRef: PactRef;
+  plaintextCommitment: Hash;
+  previousCommitment: Hash;
+  provenance: Provenance;
+  sequence: NonNegativeIntegerString;
+  settlementReferences: Array<{
+    amount?: NonNegativeIntegerString;
+    kind: "vault" | "receipt" | "transaction" | "event";
+    reference: ObjectRef;
+  }>;
+  signatures: Array<{
+    actorRef: ActorRef;
+    algorithm: "eip-712";
+    signature: HexData & unknown;
+    signedAt: Timestamp;
+    signedCommitment: Hash;
+  }>;
+  storageLocators: Array<{
+    contentHash: Hash;
+    kind: "ciphertext" | "plaintext" | "metadata";
+    uri: string;
+  }>;
+};
+export type CanonicalRecordPolicy = {
+  exposure: "encrypted" | "public";
+  mode: "omitted" | "optional" | "required";
+  signatureRequirement: "bilateral-typed-actor-signatures";
+};
+export type CanonicalRecordRef = ObjectRef & {
+  type?: "CanonicalRecord";
+};
 export type CapabilitiesResponse = {
   capabilities: Array<CapabilityDeclaration>;
 };
@@ -269,12 +317,13 @@ export type ObjectRef = {
   network?: NetworkReference;
   type: ObjectType;
 };
-export type ObjectType = "Workspace" | "WorkspaceMember" | "Actor" | "Path" | "Intent" | "Proposal" | "BaphometDecision" | "SettlementIntent" | "Pact" | "PaymentTerms" | "WorkUsageEvent" | "ProofPolicy" | "Proof" | "RailsFlow" | "RailsCard" | "PaycardStream" | "Receipt" | "GaiaCase" | "RectificationObligation" | "InterfaceError" | "TransactionState" | "OperationEnvelope" | "WalletHandoff" | "NetworkManifest" | "CapabilityDeclaration" | "Provenance";
+export type ObjectType = "Workspace" | "WorkspaceMember" | "Actor" | "Path" | "Intent" | "Proposal" | "BaphometDecision" | "SettlementIntent" | "Pact" | "PaymentTerms" | "WorkUsageEvent" | "ProofPolicy" | "Proof" | "RailsFlow" | "RailsCard" | "PaycardStream" | "Receipt" | "CanonicalRecord" | "GaiaCase" | "RectificationObligation" | "InterfaceError" | "TransactionState" | "OperationEnvelope" | "WalletHandoff" | "NetworkManifest" | "CapabilityDeclaration" | "Provenance";
 export type OperationEnvelope = {
   authorizationClass: AuthorizationClass;
+  canonicalRecordRef?: CanonicalRecordRef;
   capability: string;
   createdAt: Timestamp;
-  data: Workspace | WorkspaceMember | Actor | Path | Intent | Proposal | BaphometDecision | SettlementIntent | Pact | WorkUsageEvent | Proof | RailsFlow | RailsCard | PaycardStream | Receipt | GaiaCase | RectificationObligation | NetworkManifest | CapabilityDeclaration | WalletHandoff;
+  data: Workspace | WorkspaceMember | Actor | Path | Intent | Proposal | BaphometDecision | SettlementIntent | Pact | WorkUsageEvent | Proof | RailsFlow | RailsCard | PaycardStream | Receipt | CanonicalRecord | GaiaCase | RectificationObligation | NetworkManifest | CapabilityDeclaration | WalletHandoff;
   errors: Array<InterfaceError>;
   executionProfile: ExecutionProfile;
   intentRef?: IntentRef;
@@ -331,6 +380,7 @@ export type OperationRegistry = {
 };
 export type OperationRequest = {
   authorizationClass: AuthorizationClass;
+  canonicalRecordRef?: CanonicalRecordRef;
   capability: string;
   createdAt: Timestamp;
   data: EmptyRequest | NetworkIdRequest | WorkspaceRefRequest | PathRefRequest | PactRefRequest | ProofRefRequest | PaycardRefRequest | ReceiptRefRequest | GaiaCaseRefRequest | WorkspaceRequest | ActorRequest | PathRequest | PathEvaluateRequest | IntentRequest | ProposalRequest | PactRequest | ProofRequest | RailsFlowRequest | RailsFlowInspectRequest | RailsFlowPayRequest | RailsCardRequest | RailsCardInspectRequest | RailsCardClaimRequest | PaycardOpenRequest | PaycardActionRequest | PaycardListRequest | ReceiptListRequest | ReceiptVerifyRequest | WalletHandoffRequest | WalletHandoffRefRequest | WalletHandoffVerifyRequest | GaiaCaseRequest | GaiaResolveRequest;
@@ -349,6 +399,7 @@ export type OperationRequest = {
 };
 export type OperationResponse = {
   authorizationClass: AuthorizationClass;
+  canonicalRecordRef?: CanonicalRecordRef;
   capability: string;
   createdAt: Timestamp;
   data: null | NetworkListResponse | NetworkResponse | CapabilitiesResponse | WorkspaceResponse | WorkspaceListResponse | ActorResponse | ActorListResponse | PathResponse | DecisionResponse | IntentResponse | ValidationResponse | ProposalResponse | PactResponse | ProofResponse | RailsFlowResponse | RailsCardResponse | PaycardResponse | PaycardListResponse | ReceiptResponse | ReceiptListResponse | WalletHandoffResponse | GaiaCaseResponse;
@@ -372,6 +423,8 @@ export type OperationResponse = {
 };
 export type Pact = {
   activatedAt?: Timestamp;
+  canonicalRecordPolicy?: CanonicalRecordPolicy;
+  canonicalRecordRef?: CanonicalRecordRef;
   createdAt: Timestamp;
   decisionRef?: BaphometDecisionRef;
   executionProfile: ExecutionProfile;
@@ -675,6 +728,7 @@ export type Receipt = {
   amount?: NonNegativeIntegerString;
   asset?: Asset;
   canonicalReconciliation: CanonicalReconciliation;
+  canonicalRecordRef?: CanonicalRecordRef;
   createdAt: Timestamp;
   executionProfile: ExecutionProfile;
   extensions?: ExtensionData;

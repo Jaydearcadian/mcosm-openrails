@@ -43,6 +43,7 @@ export interface OperationContext {
   intentRef?: OperationRequest["intentRef"];
   proposalRef?: OperationRequest["proposalRef"];
   pactRef?: OperationRequest["pactRef"];
+  canonicalRecordRef?: OperationRequest["canonicalRecordRef"];
   proofRefs?: OperationRequest["proofRefs"];
 }
 
@@ -105,6 +106,7 @@ export function createOperationRequest(
     ...(context.intentRef ? { intentRef: context.intentRef } : {}),
     ...(context.proposalRef ? { proposalRef: context.proposalRef } : {}),
     ...(context.pactRef ? { pactRef: context.pactRef } : {}),
+    ...(context.canonicalRecordRef ? { canonicalRecordRef: context.canonicalRecordRef } : {}),
     ...(context.proofRefs ? { proofRefs: context.proofRefs } : {}),
   };
 
@@ -135,6 +137,7 @@ export function createOperationResponse(
     ...(context.intentRef ? { intentRef: context.intentRef } : {}),
     ...(context.proposalRef ? { proposalRef: context.proposalRef } : {}),
     ...(context.pactRef ? { pactRef: context.pactRef } : {}),
+    ...(context.canonicalRecordRef ? { canonicalRecordRef: context.canonicalRecordRef } : {}),
     ...(context.proofRefs ? { proofRefs: context.proofRefs } : {}),
     ...(context.receipts ? { receipts: context.receipts } : {}),
     ...(context.transaction ? { transaction: context.transaction } : {}),

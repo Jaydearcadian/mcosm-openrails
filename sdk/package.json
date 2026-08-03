@@ -24,6 +24,14 @@
       "types": "./dist/wallet-handoff.d.ts",
       "default": "./dist/wallet-handoff.js"
     },
+    "./circle-gas-station": {
+      "types": "./dist/circle-gas-station.d.ts",
+      "default": "./dist/circle-gas-station.js"
+    },
+    "./canonical-record": {
+      "types": "./dist/canonical-record.d.ts",
+      "default": "./dist/canonical-record.js"
+    },
     "./arc": {
       "types": "./dist/arc.d.ts",
       "default": "./dist/arc.js"

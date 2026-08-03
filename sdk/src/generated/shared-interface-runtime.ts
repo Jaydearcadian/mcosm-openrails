@@ -10,6 +10,12 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.openrails.dev/openrails/1.1.0/canonical-record.schema.json",
+    "title": "CanonicalRecord",
+    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/CanonicalRecord"
+  },
+  {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json",
     "title": "CapabilityDeclaration",
     "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/CapabilityDeclaration"
@@ -74,6 +80,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "RailsCard",
           "PaycardStream",
           "Receipt",
+          "CanonicalRecord",
           "GaiaCase",
           "RectificationObligation",
           "InterfaceError",
@@ -486,6 +493,20 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "properties": {
               "type": {
                 "const": "Receipt"
+              }
+            }
+          }
+        ]
+      },
+      "CanonicalRecordRef": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/ObjectRef"
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "CanonicalRecord"
               }
             }
           }
@@ -1933,6 +1954,35 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           }
         ]
       },
+      "CanonicalRecordPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode",
+          "exposure",
+          "signatureRequirement"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "omitted",
+              "optional",
+              "required"
+            ]
+          },
+          "exposure": {
+            "type": "string",
+            "enum": [
+              "encrypted",
+              "public"
+            ]
+          },
+          "signatureRequirement": {
+            "const": "bilateral-typed-actor-signatures"
+          }
+        }
+      },
       "Pact": {
         "type": "object",
         "additionalProperties": false,
@@ -1983,6 +2033,12 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           },
           "proofPolicy": {
             "$ref": "#/$defs/ProofPolicy"
+          },
+          "canonicalRecordPolicy": {
+            "$ref": "#/$defs/CanonicalRecordPolicy"
+          },
+          "canonicalRecordRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
           },
           "status": {
             "type": "string",
@@ -2057,6 +2113,278 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               "required": [
                 "workspaceRef"
               ]
+            }
+          }
+        ]
+      },
+      "CanonicalRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "interfaceVersion",
+          "id",
+          "executionProfile",
+          "pactRef",
+          "sequence",
+          "previousCommitment",
+          "plaintextCommitment",
+          "ciphertextHash",
+          "encryption",
+          "encryptedKeys",
+          "storageLocators",
+          "signatures",
+          "settlementReferences",
+          "createdAt",
+          "provenance"
+        ],
+        "properties": {
+          "interfaceVersion": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+          },
+          "id": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+          },
+          "executionProfile": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+          },
+          "pactRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+          },
+          "sequence": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+          },
+          "previousCommitment": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+          },
+          "plaintextCommitment": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+          },
+          "ciphertextHash": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+          },
+          "encryption": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "algorithm",
+              "keyAgreement"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "encrypted",
+                  "public"
+                ]
+              },
+              "algorithm": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "keyAgreement": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          },
+          "encryptedKeys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "counterpartyRef",
+                "encryptedKey",
+                "keyId"
+              ],
+              "properties": {
+                "counterpartyRef": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+                },
+                "encryptedKey": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+                },
+                "keyId": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+                }
+              }
+            }
+          },
+          "storageLocators": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "uri",
+                "contentHash",
+                "kind"
+              ],
+              "properties": {
+                "uri": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+                  "maxLength": 2000
+                },
+                "contentHash": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "ciphertext",
+                    "plaintext",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "signatures": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "actorRef",
+                "algorithm",
+                "signature",
+                "signedAt",
+                "signedCommitment"
+              ],
+              "properties": {
+                "actorRef": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+                },
+                "algorithm": {
+                  "const": "eip-712"
+                },
+                "signature": {
+                  "allOf": [
+                    {
+                      "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+                    },
+                    {
+                      "pattern": "^0x(?:[0-9a-fA-F]{2})+$"
+                    }
+                  ]
+                },
+                "signedAt": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+                },
+                "signedCommitment": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+                }
+              }
+            }
+          },
+          "settlementReferences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "reference"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "vault",
+                    "receipt",
+                    "transaction",
+                    "event"
+                  ]
+                },
+                "reference": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ObjectRef"
+                },
+                "amount": {
+                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+          },
+          "provenance": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+          },
+          "extensions": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "encryption": {
+                  "properties": {
+                    "mode": {
+                      "const": "public"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "encryption"
+              ]
+            },
+            "then": {
+              "properties": {
+                "encryption": {
+                  "properties": {
+                    "algorithm": {
+                      "const": "none"
+                    },
+                    "keyAgreement": {
+                      "const": "none"
+                    }
+                  }
+                },
+                "encryptedKeys": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "encryption": {
+                  "properties": {
+                    "mode": {
+                      "const": "encrypted"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "encryption"
+              ]
+            },
+            "then": {
+              "properties": {
+                "encryption": {
+                  "not": {
+                    "properties": {
+                      "algorithm": {
+                        "const": "none"
+                      }
+                    }
+                  }
+                },
+                "encryptedKeys": {
+                  "minItems": 2
+                }
+              }
             }
           }
         ]
@@ -3141,6 +3469,9 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           },
           "pactRef": {
             "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+          },
+          "canonicalRecordRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
           },
           "transaction": {
             "$ref": "#/$defs/TransactionState"
@@ -4688,6 +5019,9 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "pactRef": {
             "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
           },
+          "canonicalRecordRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+          },
           "proofRefs": {
             "type": "array",
             "items": {
@@ -4741,6 +5075,9 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               },
               {
                 "$ref": "#/$defs/Receipt"
+              },
+              {
+                "$ref": "#/$defs/CanonicalRecord"
               },
               {
                 "$ref": "#/$defs/GaiaCase"
@@ -5859,6 +6196,9 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
       "pactRef": {
         "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
       },
+      "canonicalRecordRef": {
+        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+      },
       "proofRefs": {
         "type": "array",
         "items": {
@@ -5867,7 +6207,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "uniqueItems": true
       },
       "data": {
-        "oneOf": [
+        "anyOf": [
           {
             "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest"
           },
@@ -6225,6 +6565,9 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
       },
       "pactRef": {
         "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+      },
+      "canonicalRecordRef": {
+        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
       },
       "proofRefs": {
         "type": "array",

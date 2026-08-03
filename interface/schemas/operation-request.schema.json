@@ -18,8 +18,9 @@
     "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef" },
     "proposalRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef" },
     "pactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef" },
+    "canonicalRecordRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef" },
     "proofRefs": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }, "uniqueItems": true },
-    "data": { "oneOf": [
+    "data": { "anyOf": [
       { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest" },
       { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkIdRequest" },
       { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest" },

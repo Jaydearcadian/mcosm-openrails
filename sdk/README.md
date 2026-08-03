@@ -23,6 +23,20 @@ private keys, create signers, or broadcast transactions.
 import { prepareWalletHandoff, verifyWalletHandoff } from "openrails-sdk";
 ```
 
+Canonical Records are optional per Pact policy. The SDK can create and structurally verify
+encrypted or public record envelopes, bind them to Pact parties and settlement references, and
+leave cryptographic actor verification to an application-provided verifier. See
+[`../docs/shared-interface-1.1.md`](../docs/shared-interface-1.1.md).
+
+The Circle Gas Station subpath prepares a credential-gated Arc Testnet SCA handoff without
+custody of keys or direct transaction broadcast. It reports configuration or runtime evidence
+without claiming live sponsorship until a real Circle transaction is independently reconciled.
+
+```ts
+import { CircleGasStationAdapter } from "openrails-sdk/circle-gas-station";
+import { createCanonicalRecord, verifyCanonicalRecord } from "openrails-sdk/canonical-record";
+```
+
 Existing 0.1.3 Arc APIs remain available from `openrails-sdk/arc`. The Arc examples below use that
 compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary and RC status.
 
