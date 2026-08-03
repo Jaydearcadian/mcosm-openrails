@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "executionProfile": "direct-wallet-authorized",
   "operationId": "paycard.settle",
   "capability": "paycard.settle",
@@ -8,7 +8,7 @@
   "subject": { "walletAddress": "0x1111111111111111111111111111111111111111", "role": "payer" },
   "network": { "networkId": "arc-testnet", "chainId": "5042002" },
   "data": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "id": "paycard:arc:1",
     "executionProfile": "direct-wallet-authorized",
     "network": { "networkId": "arc-testnet", "chainId": "5042002" },
@@ -22,7 +22,7 @@
     "settledAmount": "1000000",
     "status": "SETTLED",
     "transaction": {
-      "interfaceVersion": "1.0.1",
+      "interfaceVersion": "1.1.0",
       "status": "CONFIRMED",
       "network": { "networkId": "arc-testnet", "chainId": "5042002" },
       "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -54,7 +54,7 @@
     }
   },
   "transaction": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "status": "CONFIRMED",
     "network": { "networkId": "arc-testnet", "chainId": "5042002" },
     "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -69,14 +69,14 @@
   },
   "receipts": [
     {
-      "interfaceVersion": "1.0.1",
+      "interfaceVersion": "1.1.0",
       "id": "receipt:arc:1",
       "executionProfile": "direct-wallet-authorized",
       "receiptType": "SETTLEMENT",
       "operationId": "paycard.settle",
       "network": { "networkId": "arc-testnet", "chainId": "5042002" },
       "transaction": {
-        "interfaceVersion": "1.0.1",
+        "interfaceVersion": "1.1.0",
         "status": "CONFIRMED",
         "network": { "networkId": "arc-testnet", "chainId": "5042002" },
         "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

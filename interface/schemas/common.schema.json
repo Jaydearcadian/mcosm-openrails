@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json",
   "title": "OpenRailsCommon",
   "$defs": {
     "InterfaceVersion": {
       "type": "string",
-      "const": "1.0.1"
+      "const": "1.1.0"
     },
     "Identifier": {
       "type": "string",
@@ -38,6 +38,7 @@
         "InterfaceError",
         "TransactionState",
         "OperationEnvelope",
+        "WalletHandoff",
         "NetworkManifest",
         "CapabilityDeclaration",
         "Provenance"
@@ -333,6 +334,12 @@
       "allOf": [
         { "$ref": "#/$defs/ObjectRef" },
         { "properties": { "type": { "const": "OperationEnvelope" } } }
+      ]
+    },
+    "WalletHandoffRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "WalletHandoff" } } }
       ]
     },
     "NetworkManifestRef": {

@@ -24,7 +24,7 @@ import {
 } from "../scripts/contract-rules.mjs";
 
 const ajv = createAjv();
-const schema = (name) => `https://schemas.openrails.dev/openrails/1.0.1/${name}.schema.json`;
+const schema = (name) => `https://schemas.openrails.dev/openrails/1.1.0/${name}.schema.json`;
 const timestamp = "2026-08-02T00:00:00Z";
 const provenance = {
   source: "runtime-evaluation",
@@ -46,7 +46,7 @@ function ref(type, id) {
 
 function delegatedEnvelope(data, lifecycleState, transaction, errors = []) {
   return {
-    interfaceVersion: "1.0.1",
+    interfaceVersion: "1.1.0",
     executionProfile: "delegated-runtime",
     operationId: "proposal.evaluate",
     capability: "proposal.evaluate",
@@ -71,7 +71,7 @@ function operationEnvelope(operationId, data, direction = "request", overrides =
   const operation = readJson("registries/operation-registry.json").operations.find((entry) => entry.operationId === operationId);
   if (!operation) throw new Error(`Unknown test operation ${operationId}`);
   const envelope = {
-    interfaceVersion: "1.0.1",
+    interfaceVersion: "1.1.0",
     executionProfile: "direct-wallet-authorized",
     operationId,
     capability: operation.capability,
@@ -100,7 +100,7 @@ function oneTimeTerms(overrides = {}) {
 
 function validPath(signatureBinding) {
   return {
-    interfaceVersion: "1.0.1",
+    interfaceVersion: "1.1.0",
     id: "path:test:1",
     executionProfile: "delegated-runtime",
     workspaceRef: ref("Workspace", "workspace:test"),
@@ -261,7 +261,7 @@ test("Path keeps signed nonce and timestamps in one authoritative binding", () =
 
 test("RailsFlow and RailsCard use exactly one authoritative fixed recipient", () => {
   const railsflow = {
-    interfaceVersion: "1.0.1",
+    interfaceVersion: "1.1.0",
     id: "railsflow:test:1",
     executionProfile: "direct-wallet-authorized",
     paymentTerms: oneTimeTerms({ recipient: "0x3333333333333333333333333333333333333333" }),
@@ -303,6 +303,53 @@ test("receipt transaction identity is single-source and exact verification canno
   assertValid(ajv, schema("receipt"), confirmedOnly, "confirmed transaction without financial success");
 });
 
+test("WalletHandoff carries prepared context and keeps external-wallet states explicit", () => {
+  const prepared = fixture("wallet-handoff-prepared");
+  assertValid(ajv, schema("wallet-handoff"), prepared, "prepared wallet handoff");
+  assert.equal(prepared.preparedRequest.kind, "evm-transaction");
+  assert.equal(prepared.preparedRequest.chainId, prepared.network.chainId);
+  assert.equal(prepared.walletAuthorization.mode, "external-wallet");
+  assert.equal(prepared.transaction.status, "WALLET_REQUIRED");
+  assert.equal(prepared.receiptVerification.status, "NOT_REQUESTED");
+  assert.equal(prepared.errors.length, 0);
+
+  for (const name of [
+    "wallet-handoff-wrong-network",
+    "wallet-handoff-signature-expired",
+    "wallet-handoff-transaction-reverted",
+    "wallet-handoff-unverified-receipt"
+  ]) {
+    assertValid(ajv, schema("wallet-handoff"), fixture(name), name);
+  }
+
+  const unexpectedSecret = structuredClone(prepared);
+  unexpectedSecret.privateKey = "0xnot-accepted";
+  assertInvalid(ajv, schema("wallet-handoff"), unexpectedSecret, "WalletHandoff private key");
+
+  const expired = fixture("wallet-handoff-signature-expired");
+  assert.equal(expired.lifecycleState, "FAILED");
+  assert.equal(expired.transaction.status, "NOT_REQUESTED");
+  assert.equal(expired.errors[0].code, "SIGNATURE_EXPIRED");
+
+  const reverted = fixture("wallet-handoff-transaction-reverted");
+  assert.equal(reverted.transaction.status, "REVERTED");
+  assert.equal(reverted.lifecycleState, "FAILED");
+  assert.equal(reverted.receiptVerification.status, "UNVERIFIED");
+
+  const unverified = fixture("wallet-handoff-unverified-receipt");
+  assert.equal(unverified.transaction.status, "CONFIRMED");
+  assert.equal(unverified.receiptVerification.status, "UNVERIFIED");
+  assert.notEqual(unverified.transaction.financialEffect, "RECONCILIATION_REQUIRED");
+
+  const prepareRequest = operationEnvelope("wallet.handoff.prepare", { walletHandoff: prepared });
+  assert.equal(validateOperation("wallet.handoff.prepare", prepareRequest, "request").valid, true);
+  const verifyRequest = operationEnvelope("wallet.handoff.verify", {
+    handoffRef: ref("WalletHandoff", prepared.id),
+    receipt: fixture("unverified-receipt")
+  });
+  assert.equal(validateOperation("wallet.handoff.verify", verifyRequest, "request").valid, true);
+});
+
 test("delegated ALLOW and BLOCK preserve the Pact boundary and financial effect", () => {
   const allow = fixture("delegated-allow");
   const block = fixture("delegated-block");
@@ -320,7 +367,7 @@ test("delegated ALLOW and BLOCK preserve the Pact boundary and financial effect"
   });
 
   const blockedEnvelope = delegatedEnvelope(block, "BLOCKED", {
-    interfaceVersion: "1.0.1",
+    interfaceVersion: "1.1.0",
     status: "NOT_REQUESTED",
     network: { networkId: "arc-testnet", chainId: "5042002" },
     financialEffect: "NONE",
@@ -354,7 +401,7 @@ test("error fixtures and every Product Foundry error taxonomy code are structure
   const codes = readJson("schemas/common.schema.json").$defs.ErrorCode.enum;
   for (const code of codes) {
     const value = {
-      interfaceVersion: "1.0.1",
+      interfaceVersion: "1.1.0",
       code,
       message: `Structured ${code} error.`,
       retryable: false,
@@ -470,7 +517,7 @@ test("Proof gate placement is immediately before the mapped transition", () => {
 test("operation registry is complete, typed, and never equates submission with success", () => {
   const registry = readJson("registries/operation-registry.json");
   const capabilities = readJson("registries/capability-list.json").capabilities;
-  assert.equal(registry.operations.length, 38);
+  assert.equal(registry.operations.length, 41);
   assert.deepEqual(registry.operations.map((operation) => operation.capability), capabilities);
   for (const operation of registry.operations) {
     assert.equal(operation.requestSchema, schema("operation-request"));
@@ -588,6 +635,7 @@ test("all operation reference-bearing request fields enforce their registry obje
     { operationId: "paycard.settle", data: { paycardRef: ref("PaycardStream", "paycard:1"), proofRef: ref("Proof", "proof:1") }, fields: [["paycardRef", "PaycardStream"], ["proofRef", "Proof"]] },
     { operationId: "paycard.flushResidual", data: { paycardRef: ref("PaycardStream", "paycard:1"), proofRef: ref("Proof", "proof:1") }, fields: [["paycardRef", "PaycardStream"], ["proofRef", "Proof"]] },
     { operationId: "receipt.verify", data: { receiptRef: ref("Receipt", "receipt:1") }, fields: [["receiptRef", "Receipt"]] },
+    { operationId: "wallet.handoff.get", data: { handoffRef: ref("WalletHandoff", "handoff:1") }, fields: [["handoffRef", "WalletHandoff"]] },
     { operationId: "gaia.resolve", data: { caseRef: ref("GaiaCase", "case:1"), obligationRefs: [ref("RectificationObligation", "obligation:1")] }, fields: [["caseRef", "GaiaCase"], ["obligationRefs", "RectificationObligation"]] }
   ];
 
@@ -623,7 +671,8 @@ test("reusable model reference definitions reject wrong object types", () => {
     ["PaycardStreamRef", "PaycardStream"],
     ["ReceiptRef", "Receipt"],
     ["GaiaCaseRef", "GaiaCase"],
-    ["RectificationObligationRef", "RectificationObligation"]
+    ["RectificationObligationRef", "RectificationObligation"],
+    ["WalletHandoffRef", "WalletHandoff"]
   ];
   for (const [definition, expectedType] of cases) {
     const refValue = ref(expectedType, `${definition}:1`);

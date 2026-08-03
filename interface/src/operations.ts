@@ -158,3 +158,11 @@ export function assertValidOperation<T = unknown>(
   }
   return envelope;
 }
+
+export function assertValidSchema<T = unknown>(schemaRef: string, value: T): T {
+  const validator = validatorFor(schemaRef);
+  if (!validator(value)) {
+    throw new Error(`Invalid value for ${schemaRef}:\n${JSON.stringify(validator.errors ?? [], null, 2)}`);
+  }
+  return value;
+}

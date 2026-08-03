@@ -1,6 +1,6 @@
 # OpenRails Shared Interface
 
-Private PR1 package for the OpenRails Shared Interface 1.0.1 contract.
+Private PR1 package for the OpenRails Shared Interface 1.1.0 contract.
 
 The package is owned by the `Jaydearcadian/mcosm-OpenRails` implementation target. JSON Schema 2020-12 is the portable canonical contract. `src/generated.ts` is deterministic output derived from the schemas and is not an independent source of truth.
 
@@ -11,7 +11,7 @@ PR1 provides:
 - reusable schemas for OpenRails objects, profiles, proofs, payments, receipts, errors, transactions, manifests, and operation envelopes;
 - explicit direct wallet-authorized and delegated Runtime reference rules;
 - machine-readable lifecycle and transaction outcome rules;
-- a complete registry for the 38 capabilities in Product Foundry Shared Interface 1.0.1;
+- a complete registry for the 38 capabilities in Product Foundry Shared Interface 1.1.0;
 - an Arc Testnet manifest grounded in repository constants;
 - generated TypeScript types, fixtures, and focused contract tests.
 
@@ -50,7 +50,7 @@ Contract-bound replay nonces are unsigned decimal strings and may start at `0`. 
 
 ## Status
 
-The package is private PR1 implementation evidence. The schema interface version is `1.0.1`; the package version is `0.1.0` until a reviewed release line is established. The Arc manifest uses `LIVE`, `VERIFIED`, `RECORDED`, `PLANNED`, and `UNAVAILABLE` only where repository evidence supports the label. It does not mark Workspace Runtime live.
+The package is private PR1 implementation evidence. The schema interface version is `1.1.0`; the package version is `0.1.0` until a reviewed release line is established. The Arc manifest uses `LIVE`, `VERIFIED`, `RECORDED`, `PLANNED`, and `UNAVAILABLE` only where repository evidence supports the label. It does not mark Workspace Runtime live.
 
 ## Extension and versioning
 

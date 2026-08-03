@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/operation-payloads.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json",
   "title": "OpenRailsOperationPayloads",
   "$defs": {
     "EmptyRequest": {
@@ -11,233 +11,255 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["networkId"],
-      "properties": { "networkId": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/Identifier" } }
+      "properties": { "networkId": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier" } }
     },
     "WorkspaceRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/WorkspaceRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef" } }
     },
     "PathRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PathRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef" } }
     },
     "PactRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PactRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef" } }
     },
     "ProofRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ProofRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" } }
     },
     "PaycardRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PaycardStreamRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef" } }
     },
     "ReceiptRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ReceiptRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ReceiptRef" } }
     },
     "GaiaCaseRefRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["objectRef"],
-      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/GaiaCaseRef" } }
+      "properties": { "objectRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/GaiaCaseRef" } }
     },
     "WorkspaceRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["workspace"],
-      "properties": { "workspace": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/workspace.schema.json" } }
+      "properties": { "workspace": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json" } }
     },
     "ActorRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["actor"],
-      "properties": { "actor": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/actor.schema.json" } }
+      "properties": { "actor": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json" } }
     },
     "PathRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["path"],
-      "properties": { "path": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/path.schema.json" } }
+      "properties": { "path": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/path.schema.json" } }
     },
     "PathEvaluateRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["pathRef", "intentRef"],
       "properties": {
-        "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PathRef" },
-        "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/IntentRef" }
+        "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef" },
+        "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef" }
       }
     },
     "IntentRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["intent"],
-      "properties": { "intent": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/intent.schema.json" } }
+      "properties": { "intent": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/intent.schema.json" } }
     },
     "ProposalRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["proposal"],
-      "properties": { "proposal": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/proposal.schema.json" } }
+      "properties": { "proposal": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proposal.schema.json" } }
     },
     "PactRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["pact"],
-      "properties": { "pact": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/pact.schema.json" } }
+      "properties": { "pact": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/pact.schema.json" } }
     },
     "ProofRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["proof"],
-      "properties": { "proof": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/proof.schema.json" } }
+      "properties": { "proof": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proof.schema.json" } }
     },
     "RailsFlowRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railsflow"],
-      "properties": { "railsflow": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/railsflow.schema.json" } }
+      "properties": { "railsflow": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railsflow.schema.json" } }
     },
     "RailsFlowInspectRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railsflowRef"],
-      "properties": { "railsflowRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/RailsFlowRef" } }
+      "properties": { "railsflowRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsFlowRef" } }
     },
     "RailsFlowPayRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railsflowRef", "settlementIntentRef"],
       "properties": {
-        "railsflowRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/RailsFlowRef" },
-        "settlementIntentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/SettlementIntentRef" },
-        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ProofRef" }
+        "railsflowRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsFlowRef" },
+        "settlementIntentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SettlementIntentRef" },
+        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }
       }
     },
     "RailsCardRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railscard"],
-      "properties": { "railscard": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/railscard.schema.json" } }
+      "properties": { "railscard": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railscard.schema.json" } }
     },
     "RailsCardInspectRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railscardRef"],
-      "properties": { "railscardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/RailsCardRef" } }
+      "properties": { "railscardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsCardRef" } }
     },
     "RailsCardClaimRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["railscardRef", "claimant"],
       "properties": {
-        "railscardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/RailsCardRef" },
-        "claimant": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/NonZeroAddress" },
-        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ProofRef" }
+        "railscardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsCardRef" },
+        "claimant": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress" },
+        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }
       }
     },
     "PaycardOpenRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["paymentArtifactRef"],
-      "properties": { "paymentArtifactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PaymentArtifactRef" } }
+      "properties": { "paymentArtifactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentArtifactRef" } }
     },
     "PaycardActionRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["paycardRef"],
       "properties": {
-        "paycardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/PaycardStreamRef" },
-        "amount": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/NonNegativeIntegerString" },
-        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ProofRef" }
+        "paycardRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef" },
+        "amount": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString" },
+        "proofRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }
       }
     },
     "PaycardListRequest": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "walletAddress": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/NonZeroAddress" },
-        "network": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/NetworkReference" }
+        "walletAddress": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress" },
+        "network": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference" }
       }
     },
     "ReceiptListRequest": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/Subject" },
-        "network": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/NetworkReference" }
+        "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject" },
+        "network": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference" }
       }
     },
     "ReceiptVerifyRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["receiptRef"],
-      "properties": { "receiptRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ReceiptRef" } }
+      "properties": { "receiptRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ReceiptRef" } }
+    },
+    "WalletHandoffRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["walletHandoff"],
+      "properties": { "walletHandoff": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json" } }
+    },
+    "WalletHandoffRefRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoffRef"],
+      "properties": { "handoffRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WalletHandoffRef" } }
+    },
+    "WalletHandoffVerifyRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoffRef", "receipt"],
+      "properties": {
+        "handoffRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WalletHandoffRef" },
+        "receipt": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json" }
+      }
     },
     "GaiaCaseRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["case"],
-      "properties": { "case": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/gaia-case.schema.json" } }
+      "properties": { "case": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json" } }
     },
     "GaiaResolveRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": ["caseRef", "obligationRefs"],
       "properties": {
-        "caseRef": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/GaiaCaseRef" },
-        "obligationRefs": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/RectificationObligationRef" }, "uniqueItems": true }
+        "caseRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/GaiaCaseRef" },
+        "obligationRefs": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RectificationObligationRef" }, "uniqueItems": true }
       }
     },
     "NetworkListResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": ["networks"],
-      "properties": { "networks": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/network-manifest.schema.json" } } }
+      "properties": { "networks": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json" } } }
     },
     "NetworkResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": ["network"],
-      "properties": { "network": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/network-manifest.schema.json" } }
+      "properties": { "network": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json" } }
     },
     "CapabilitiesResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": ["capabilities"],
-      "properties": { "capabilities": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/capability-declaration.schema.json" } } }
+      "properties": { "capabilities": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json" } } }
     },
-    "WorkspaceResponse": { "type": "object", "additionalProperties": false, "required": ["workspace"], "properties": { "workspace": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/workspace.schema.json" } } },
-    "WorkspaceListResponse": { "type": "object", "additionalProperties": false, "required": ["workspaces"], "properties": { "workspaces": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/workspace.schema.json" } } } },
-    "ActorResponse": { "type": "object", "additionalProperties": false, "required": ["actor"], "properties": { "actor": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/actor.schema.json" } } },
-    "ActorListResponse": { "type": "object", "additionalProperties": false, "required": ["actors"], "properties": { "actors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/actor.schema.json" } } } },
-    "PathResponse": { "type": "object", "additionalProperties": false, "required": ["path"], "properties": { "path": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/path.schema.json" } } },
-    "DecisionResponse": { "type": "object", "additionalProperties": false, "required": ["decision"], "properties": { "decision": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/decision.schema.json" } } },
-    "IntentResponse": { "type": "object", "additionalProperties": false, "required": ["intent"], "properties": { "intent": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/intent.schema.json" } } },
-    "ValidationResponse": { "type": "object", "additionalProperties": false, "required": ["valid", "errors"], "properties": { "valid": { "type": "boolean" }, "errors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/interface-error.schema.json" } } } },
-    "ProposalResponse": { "type": "object", "additionalProperties": false, "required": ["proposal"], "properties": { "proposal": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/proposal.schema.json" } } },
-    "PactResponse": { "type": "object", "additionalProperties": false, "required": ["pact"], "properties": { "pact": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/pact.schema.json" } } },
-    "ProofResponse": { "type": "object", "additionalProperties": false, "required": ["proof"], "properties": { "proof": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/proof.schema.json" } } },
-    "RailsFlowResponse": { "type": "object", "additionalProperties": false, "required": ["railsflow"], "properties": { "railsflow": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/railsflow.schema.json" } } },
-    "RailsCardResponse": { "type": "object", "additionalProperties": false, "required": ["railscard"], "properties": { "railscard": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/railscard.schema.json" } } },
-    "PaycardResponse": { "type": "object", "additionalProperties": false, "required": ["paycard"], "properties": { "paycard": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/paycard-stream.schema.json" } } },
-    "PaycardListResponse": { "type": "object", "additionalProperties": false, "required": ["paycards"], "properties": { "paycards": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/paycard-stream.schema.json" } } } },
-    "ReceiptResponse": { "type": "object", "additionalProperties": false, "required": ["receipt"], "properties": { "receipt": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/receipt.schema.json" } } },
-    "ReceiptListResponse": { "type": "object", "additionalProperties": false, "required": ["receipts"], "properties": { "receipts": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/receipt.schema.json" } } } },
-    "GaiaCaseResponse": { "type": "object", "additionalProperties": false, "required": ["case"], "properties": { "case": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/gaia-case.schema.json" } } }
+    "WorkspaceResponse": { "type": "object", "additionalProperties": false, "required": ["workspace"], "properties": { "workspace": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json" } } },
+    "WorkspaceListResponse": { "type": "object", "additionalProperties": false, "required": ["workspaces"], "properties": { "workspaces": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json" } } } },
+    "ActorResponse": { "type": "object", "additionalProperties": false, "required": ["actor"], "properties": { "actor": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json" } } },
+    "ActorListResponse": { "type": "object", "additionalProperties": false, "required": ["actors"], "properties": { "actors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json" } } } },
+    "PathResponse": { "type": "object", "additionalProperties": false, "required": ["path"], "properties": { "path": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/path.schema.json" } } },
+    "DecisionResponse": { "type": "object", "additionalProperties": false, "required": ["decision"], "properties": { "decision": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/decision.schema.json" } } },
+    "IntentResponse": { "type": "object", "additionalProperties": false, "required": ["intent"], "properties": { "intent": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/intent.schema.json" } } },
+    "ValidationResponse": { "type": "object", "additionalProperties": false, "required": ["valid", "errors"], "properties": { "valid": { "type": "boolean" }, "errors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/interface-error.schema.json" } } } },
+    "ProposalResponse": { "type": "object", "additionalProperties": false, "required": ["proposal"], "properties": { "proposal": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proposal.schema.json" } } },
+    "PactResponse": { "type": "object", "additionalProperties": false, "required": ["pact"], "properties": { "pact": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/pact.schema.json" } } },
+    "ProofResponse": { "type": "object", "additionalProperties": false, "required": ["proof"], "properties": { "proof": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proof.schema.json" } } },
+    "RailsFlowResponse": { "type": "object", "additionalProperties": false, "required": ["railsflow"], "properties": { "railsflow": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railsflow.schema.json" } } },
+    "RailsCardResponse": { "type": "object", "additionalProperties": false, "required": ["railscard"], "properties": { "railscard": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railscard.schema.json" } } },
+    "PaycardResponse": { "type": "object", "additionalProperties": false, "required": ["paycard"], "properties": { "paycard": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/paycard-stream.schema.json" } } },
+    "PaycardListResponse": { "type": "object", "additionalProperties": false, "required": ["paycards"], "properties": { "paycards": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/paycard-stream.schema.json" } } } },
+    "ReceiptResponse": { "type": "object", "additionalProperties": false, "required": ["receipt"], "properties": { "receipt": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json" } } },
+    "ReceiptListResponse": { "type": "object", "additionalProperties": false, "required": ["receipts"], "properties": { "receipts": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json" } } } },
+    "WalletHandoffResponse": { "type": "object", "additionalProperties": false, "required": ["walletHandoff"], "properties": { "walletHandoff": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json" } } },
+    "GaiaCaseResponse": { "type": "object", "additionalProperties": false, "required": ["case"], "properties": { "case": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json" } } }
   }
 }

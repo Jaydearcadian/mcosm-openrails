@@ -1,0 +1,50 @@
+{
+  "interfaceVersion": "1.1.0",
+  "id": "handoff:wallet:signature-expired",
+  "executionProfile": "direct-wallet-authorized",
+  "operationId": "paycard.open",
+  "capability": "paycard.open",
+  "correlationId": "correlation:wallet:signature-expired",
+  "subject": { "walletAddress": "0x1111111111111111111111111111111111111111", "role": "payer" },
+  "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+  "preparedRequest": {
+    "kind": "evm-transaction",
+    "from": "0x1111111111111111111111111111111111111111",
+    "to": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+    "data": "0x1234",
+    "value": "0",
+    "chainId": "5042002"
+  },
+  "expiresAt": "2026-08-01T00:00:00Z",
+  "lifecycleState": "FAILED",
+  "walletAuthorization": { "mode": "external-wallet", "status": "EXPIRED", "expiresAt": "2026-08-01T00:00:00Z" },
+  "transaction": {
+    "interfaceVersion": "1.1.0",
+    "status": "NOT_REQUESTED",
+    "network": { "networkId": "arc-testnet", "chainId": "5042002" },
+    "financialEffect": "NONE",
+    "observedAt": "2026-08-03T00:00:00Z"
+  },
+  "receiptVerification": { "status": "NOT_REQUESTED", "reasons": [] },
+  "errors": [{
+    "interfaceVersion": "1.1.0",
+    "code": "SIGNATURE_EXPIRED",
+    "message": "The external wallet authorization expired before submission.",
+    "retryable": true,
+    "financialEffect": "NONE",
+    "lifecycleState": "FAILED",
+    "transactionState": "NOT_REQUESTED",
+    "operationId": "paycard.open",
+    "expiresAt": "2026-08-01T00:00:00Z",
+    "occurredAt": "2026-08-03T00:00:00Z",
+    "provenance": { "source": "runtime-evaluation", "authority": "OpenRails SDK", "evidenceLevel": "runtime-observed", "observedAt": "2026-08-03T00:00:00Z" }
+  }],
+  "createdAt": "2026-08-01T00:00:00Z",
+  "updatedAt": "2026-08-03T00:00:00Z",
+  "provenance": {
+    "source": "runtime-evaluation",
+    "authority": "OpenRails SDK",
+    "evidenceLevel": "runtime-observed",
+    "observedAt": "2026-08-03T00:00:00Z"
+  }
+}

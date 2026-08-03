@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "id": "railscard:recipient-bound:1",
   "executionProfile": "direct-wallet-authorized",
   "variant": "recipient-bound",
@@ -11,7 +11,7 @@
     "settlementShape": "one-time"
   },
   "proofPolicy": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "id": "proof-policy:recipient-bound:1",
     "executionProfile": "direct-wallet-authorized",
     "requiredGate": "CLAIM",
