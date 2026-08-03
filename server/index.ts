@@ -18,6 +18,7 @@ import {
   validateOpenPaycardRequest,
   validateOpenRailsAccessRequest,
 } from "./validation";
+import { registerSharedInterfaceRoutes } from "./shared-interface";
 
 const { createGatewayMiddleware } = require("@circle-fin/x402-batching/server") as {
   createGatewayMiddleware: (config: {
@@ -32,6 +33,7 @@ const { createGatewayMiddleware } = require("@circle-fin/x402-batching/server") 
 export const app = express();
 app.use(cors());
 app.use(express.json());
+registerSharedInterfaceRoutes(app);
 
 const PORT = process.env.PORT || 3001;
 const PROVIDER_URL = process.env.PROVIDER_URL || "http://127.0.0.1:8545";

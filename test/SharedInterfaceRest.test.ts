@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { registerSharedInterfaceRoutes } from "../server/shared-interface";
+import { app as serverApp } from "../server/index";
 
 type Handler = (req: any, res: any) => void;
 
@@ -51,6 +52,20 @@ const context = {
 
 describe("Shared Interface REST boundary", () => {
   const routes = routeTable();
+
+  it("is registered on the production Express app", () => {
+    const paths = ((serverApp as any)._router?.stack ?? [])
+      .filter((layer: any) => layer.route)
+      .map((layer: any) => `${Object.keys(layer.route.methods)[0].toUpperCase()} ${layer.route.path}`);
+    expect(paths).to.include.members([
+      "GET /api/interface/capabilities",
+      "POST /api/interface/prepare",
+      "POST /api/interface/validate",
+      "POST /api/interface/verify",
+      "GET /api/interface/read",
+      "GET /api/interface/read/:type/:id",
+    ]);
+  });
 
   it("reports a safe surface and credential-gated Circle capability", () => {
     const res = response();
