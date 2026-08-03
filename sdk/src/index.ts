@@ -18,3 +18,5 @@ export {
 } from "./operations";
 export type { OperationContext, OperationResponseContext } from "./operations";
 export * from "./wallet-handoff";
+export * from "./canonical-record";
+export * from "./circle-gas-station";

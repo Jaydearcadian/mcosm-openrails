@@ -1,7 +1,7 @@
 {
   "name": "openrails-mcp",
-  "version": "0.1.2",
-  "description": "OpenRails MCP server — let agents transact on the Arc USDC rail (pay a link, issue a RailsCard, read paycard state) over stdio, gasless by default.",
+  "version": "0.2.0-rc.1",
+  "description": "OpenRails MCP safe-only Shared Interface 1.1 prepare, validate, verify, and read tools over stdio.",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",
   "type": "module",
@@ -17,6 +17,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -30,7 +31,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "ethers": "^6.13.0",
-    "openrails-sdk": "^0.1.3",
+    "openrails-sdk": "^1.0.0-rc.1",
     "zod": "^3.23.0"
   },
   "devDependencies": {

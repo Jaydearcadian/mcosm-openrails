@@ -33,6 +33,7 @@
         "RailsCard",
         "PaycardStream",
         "Receipt",
+        "CanonicalRecord",
         "GaiaCase",
         "RectificationObligation",
         "InterfaceError",
@@ -304,6 +305,12 @@
       "allOf": [
         { "$ref": "#/$defs/ObjectRef" },
         { "properties": { "type": { "const": "Receipt" } } }
+      ]
+    },
+    "CanonicalRecordRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "CanonicalRecord" } } }
       ]
     },
     "GaiaCaseRef": {

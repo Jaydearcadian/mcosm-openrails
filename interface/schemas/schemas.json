@@ -5,6 +5,7 @@
     { "name": "Actor", "path": "actor.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json" },
     { "name": "CapabilityDeclaration", "path": "capability-declaration.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json" },
     { "name": "CapabilityList", "path": "capability-list.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-list.schema.json" },
+    { "name": "CanonicalRecord", "path": "canonical-record.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/canonical-record.schema.json" },
     { "name": "Common", "path": "common.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json" },
     { "name": "Decision", "path": "decision.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/decision.schema.json" },
     { "name": "GaiaCase", "path": "gaia-case.schema.json", "$id": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json" },

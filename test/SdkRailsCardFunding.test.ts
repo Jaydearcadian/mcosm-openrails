@@ -5,7 +5,7 @@ import {
   nextRailsCardAllowance,
   randomRailsCardNonceChannel,
   reserveRailsCardAllowance,
-} from "../sdk/src";
+} from "../sdk/src/arc";
 import { ethersToSubmitter } from "../sdk/src/adapters/ethers";
 
 describe("SDK RailsCard funding", function () {

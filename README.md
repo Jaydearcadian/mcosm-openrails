@@ -45,12 +45,14 @@ to new opens and left to drain.
 
 **What's shipped:** EIP-1271 **smart accounts** *and* EOAs (humans via embedded wallets, agents via
 server wallets); **gasless** relaying via the keeper worker; streaming + instant settlement; automatic
-residual return; on-chain receipts; a published SDK/CLI and MCP server; a deployed cockpit at
-[openrails.pages.dev](https://openrails.pages.dev). Test baseline: **84 Hardhat + 9 Foundry** passing.
+residual return; on-chain receipts; published 0.1.x SDK/CLI and MCP packages; and a deployed cockpit at
+[openrails.pages.dev](https://openrails.pages.dev). The Shared Interface 1.1 SDK and safe MCP are
+release candidates in this branch, pending npm publication. Test baseline: **84 Hardhat + 9 Foundry** passing.
 
-**Not yet:** mainnet, a security audit, session keys, USDC paymaster / Circle Gateway, and a real
-Circle Smart Account end-to-end (the contract accepts EIP-1271 today; the Circle-specific adapter is
-next). See [`HANDOFF.md`](HANDOFF.md) for the full roadmap.
+**Not yet:** mainnet, a security audit, session keys, a live Circle Gas Station transaction, Canonical
+Record storage and cryptographic actor verification, and Arc Workspace Runtime. The contract accepts
+EIP-1271 today; the Circle-specific handoff is an adapter boundary until real Circle evidence exists.
+See [`HANDOFF.md`](HANDOFF.md) for the full roadmap.
 
 ---
 
@@ -74,18 +76,19 @@ auto-derived. Mutating commands are dry-run until `--execute`; keys come from en
 npm install openrails-sdk
 ```
 ```ts
-import { LeptonOpenRailsClient, payGasless } from "openrails-sdk";
+import { LeptonOpenRailsClient, payGasless } from "openrails-sdk/arc";
+// the safe Shared Interface surface is exported from "openrails-sdk"
 // pluggable signers: openrails-sdk/adapters/{ethers,privy,turnkey}
 ```
 
 **Agent (MCP):** register with an MCP client (e.g. Claude Desktop):
 ```json
 { "mcpServers": { "openrails": {
-  "command": "npx", "args": ["openrails-mcp"],
-  "env": { "OPENRAILS_MCP_SIGNER_KEY": "0x<funded-key>" } } } }
+  "command": "npx", "args": ["openrails-mcp"] } }
 ```
-Tools: `pay_link`, `create_request_link`, `issue_railscard`, `paycard_status`, `openrails_config`.
-Omit the signer key for read-only.
+The release candidate exposes safe-only `openrails_capabilities`, `openrails_prepare`,
+`openrails_validate`, `openrails_verify`, and `openrails_read` tools. It does not accept signer keys,
+sign, relay, or broadcast.
 
 **Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev): connect a wallet,
 create/pay a link, issue/claim a RailsCard.
@@ -108,8 +111,9 @@ Settle    on Arc                : USDC-native, fast, low-cost finality
   tenants can mint their own isolated clones. V2 verifies signatures via OpenZeppelin
   `SignatureChecker` (EOA + EIP-1271) with an explicit `payer` argument; EIP-712 domain version
   `2.0.0`.
-- **SDK + CLI** (`sdk/`): `LeptonOpenRailsClient` (version-aware EIP-712 signing), gasless helpers
-  (`payGasless`/`claimGasless`), pluggable-signer `adapters/*`, and the `openrails` CLI.
+- **SDK + CLI** (`sdk/`): a safe Shared Interface root for preparation, validation, receipts,
+  Canonical Records, and wallet handoffs; the legacy Arc transaction surface under `openrails-sdk/arc`;
+  pluggable-signer `adapters/*`; and the `openrails` CLI.
 - **Keeper** (`workers/reconciliation-worker/`): a Cloudflare Worker that cron-settles active streams
   and sponsors gas for opens/claims (`/relay-open`, `/relay-claim`).
 - **Cockpit** (`cockpit/`): the React/Vite product surface.

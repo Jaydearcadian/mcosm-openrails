@@ -1,61 +1,56 @@
 # openrails-mcp
 
-MCP server that lets an agent transact on the OpenRails USDC rail (Arc) over stdio. Opens and
-claims are **gasless by default** through the keeper relay. The server is
-**non-custodial**: it signs with its own configured account and never holds anyone else's keys.
+Safe-only MCP server for the OpenRails Shared Interface 1.1 surface over stdio. The server can
+read the bundled Arc Testnet manifest, prepare operation envelopes, validate envelopes, and verify
+Pact-declared Canonical Record bindings.
+
+The MCP process does not create or custody signers, accept private keys, sign wallet requests,
+submit transactions, or autonomously relay financial actions. The existing OpenRails keeper relay
+remains a separate compatibility path for legacy application and server flows.
 
 ## Tools
 
 | Tool | Purpose |
 |---|---|
-| `openrails_config` | Network config, the server signer address, and its USDC balance. Read-only. |
-| `pay_link` | Pay an OpenRails link: a RailsFlow request (the signer becomes the payer, gasless open) or a RailsCard (claimed to the signer). Returns the tx hash. |
-| `create_request_link` | Create a RailsFlow request link to **receive** payment. No signing/tx. |
-| `issue_railscard` | Reserve Hub allowance and issue a claimable RailsCard on its own nonce lane. Returns the claim link, paycardId, and approval transaction hash when approval was needed. |
-| `paycard_status` | Read a paycard/stream state from chain by id. |
+| `openrails_capabilities` | Report Shared Interface capabilities and safe-only execution limits. |
+| `openrails_prepare` | Prepare a request envelope for an external wallet or runtime. |
+| `openrails_validate` | Validate a request or response envelope against the registry. |
+| `openrails_verify` | Verify an envelope and optional Canonical Record binding without claiming financial success. |
+| `openrails_read` | Read the bundled network manifest or capability declarations. Other objects need an indexer adapter. |
 
-## Configuration (env)
+Canonical Records are optional. A Pact may omit them, allow them, or require them. When present,
+the SDK validates the bilateral typed actor signature commitment, Pact party and encrypted key
+coverage, exposure policy, and settlement references. Cryptographic actor verification requires an
+application verifier. Vault state remains the canonical financial state.
+
+## Configuration
 
 | Var | Default | Notes |
 |---|---|---|
-| `OPENRAILS_MCP_SIGNER_KEY` | none | Dev signer (raw key). Omit for read-only. For prod, wire a Turnkey/Privy account via `openrails-sdk/adapters` (see below). |
-| `OPENRAILS_RPC_URL` | `https://rpc.testnet.arc.io` | Public Arc RPC. |
-| `OPENRAILS_CHAIN_ID` | `5042002` | |
-| `OPENRAILS_HUB_ADDRESS` | `0x941C…6D0b` | Canonical V2 Hub. |
-| `OPENRAILS_USDC_ADDRESS` | `0x3600…0000` | |
-| `OPENRAILS_RELAY_URL` | deployed keeper | Sponsors gas for opens/claims. |
-| `OPENRAILS_APP_BASE_URL` | `https://openrails.pages.dev` | Base for generated links. |
-| `OPENRAILS_EXPLORER_BASE_URL` | `https://testnet.arcscan.app` | |
+| `OPENRAILS_NETWORK_MODE` | `arc-testnet` | Network manifest selected by the safe context. |
+| `OPENRAILS_RPC_URL` | `https://rpc.testnet.arc.io` | Displayed configuration only. The MCP does not create an RPC signer or broadcast. |
+| `OPENRAILS_CHAIN_ID` | `5042002` | Arc Testnet chain id. |
+| `OPENRAILS_HUB_ADDRESS` | `0x941C...6D0b` | Canonical OpenRails Hub configuration. |
+| `OPENRAILS_USDC_ADDRESS` | `0x3600...0000` | Arc USDC configuration. |
+| `OPENRAILS_RELAY_URL` | deployed keeper | Retained for compatibility reporting. The safe MCP does not call it. |
+| `OPENRAILS_APP_BASE_URL` | `https://openrails.pages.dev` | Application reference. |
+| `OPENRAILS_EXPLORER_BASE_URL` | `https://testnet.arcscan.app` | Explorer reference. |
+
+No signer key environment variable is accepted by this package.
 
 ## Run
 
 ```bash
-npm install && npm run build
-OPENRAILS_MCP_SIGNER_KEY=0x... node dist/index.js   # stdio server
+npm install
+npm run build
+node dist/index.js
 ```
 
-Register with an MCP client (e.g. Claude Desktop `mcpServers`):
+The MCP server communicates over stdio. A wallet or application integration must authorize and
+submit any prepared wallet transaction through its own custody boundary.
 
-```json
-{
-  "openrails": {
-    "command": "npx",
-    "args": ["openrails-mcp"],
-    "env": { "OPENRAILS_MCP_SIGNER_KEY": "0x..." }
-  }
-}
+## Smoke test
+
+```bash
+npm run build && node smoke.mjs
 ```
-
-Smoke test: `OPENRAILS_MCP_SIGNER_KEY=0x... node smoke.mjs [paycardId]`.
-
-`issue_railscard` sends an approval transaction when additional Hub allowance is required. The
-configured signer must have enough Arc testnet USDC for the card allocation and transaction gas.
-The card itself is claimed through the sponsored relay.
-
-## Signer is pluggable
-
-The server builds its signer via the SDK account abstraction (`openrails-sdk`). Dev uses a raw key
-(`ethersToSubmitter`); for production swap in `turnkeyToAccount` (server wallets / agents) or
-`privyToAccount` (humans) from `openrails-sdk/adapters/*` in `src/context.ts`. Because the OpenRails
-Hub authenticates the signature (not `msg.sender`), any EOA-backed account works with no contract
-change.
