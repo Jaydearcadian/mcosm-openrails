@@ -59,7 +59,7 @@ Modular Wallet Gas Station transaction. The Cockpit now has an optional credenti
 passkey path, but this checkout has no live Console credentials or proven Circle Wallet transaction.
 See
 [`docs/circle-gas-station-boundary.md`](docs/circle-gas-station-boundary.md) and
-[`HANDOFF.md`](HANDOFF.md) for the limits and roadmap.
+the [documentation index](docs/README.md) for integration boundaries and verification records.
 
 ---
 
@@ -104,6 +104,9 @@ and `openrails_read`. The MCP does not create signers, custody keys, sign, or br
 
 **Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev) — connect a wallet,
 create/pay a link, issue/claim a RailsCard.
+
+**Documentation:** [docs/README.md](docs/README.md) — current API, runtime, integration, and
+verification references.
 
 ---
 
