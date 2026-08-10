@@ -14,7 +14,7 @@ receipt, and recovery layer on top.
 > payments can be relayed and gas-sponsored), and escrow is **bounded by construction** (a bug, a bad
 > actor, or a runaway agent can never move more than was signed for).
 
-**Core primitives** *(vocabulary is fixed: do not rename):*
+**Core protocol primitives:**
 
 | Primitive | Meaning |
 | :--- | :--- |
@@ -23,6 +23,9 @@ receipt, and recovery layer on top.
 | **Paycard Stream** | The on-chain Vault row that escrows funds and meters settlement. |
 | **Nonce Lane** | Replay/concurrency protection for parallel agent payments (`nonceChannel` / `nonceValue`). |
 | **Receipts** | Verifiable proof of every open, settlement, and residual return. |
+
+The product UI uses **Payment Request** for RailsFlow and **Claimable Payment** for RailsCard.
+The protocol names remain unchanged in the SDK, REST, MCP, schemas, and contract-facing code.
 
 The agent economy and the creator economy are the flagship verticals; the rail itself is
 vertical-agnostic.
@@ -43,23 +46,34 @@ to new opens and left to drain.
 | SDK + CLI | [`openrails-sdk`](https://www.npmjs.com/package/openrails-sdk) (npm) |
 | Agent server | [`openrails-mcp`](https://www.npmjs.com/package/openrails-mcp) (npm) |
 
-**What's shipped:** EIP-1271 **smart accounts** *and* EOAs (humans via embedded wallets, agents via
-server wallets); **gasless** relaying via the keeper worker; streaming + instant settlement; automatic
-residual return; on-chain receipts; published 0.1.x SDK/CLI and MCP packages; and a deployed cockpit at
-[openrails.pages.dev](https://openrails.pages.dev). The Shared Interface 1.1 SDK and safe MCP are
-release candidates in this branch, pending npm publication. Test baseline: **84 Hardhat + 9 Foundry** passing.
+**What's shipped:** EIP-1271-compatible **smart accounts** *and* EOAs (humans via embedded wallets,
+agents via server wallets), including a local and test proof of the Hub's EIP-1271 verification
+path against the deployed V2 Hub on Arc testnet (real tx hashes:
+[`experiments/circle-sa-live-proof/results.md`](experiments/circle-sa-live-proof/results.md));
+**gasless** relaying via the keeper worker; streaming + instant settlement; automatic
+residual return; on-chain receipts; a published SDK/CLI and MCP server; a deployed cockpit at
+[openrails.pages.dev](https://openrails.pages.dev). Test baseline: **90 Hardhat + 9 Foundry** passing.
 
-**Not yet:** mainnet, a security audit, session keys, a live Circle Gas Station transaction, Canonical
-Record storage and cryptographic actor verification, and Arc Workspace Runtime. The contract accepts
-EIP-1271 today; the Circle-specific handoff is an adapter boundary until real Circle evidence exists.
-See [`HANDOFF.md`](HANDOFF.md) for the full roadmap.
+**Not yet:** mainnet, a security audit, session keys, USDC paymaster, and a proven live Circle
+Modular Wallet Gas Station transaction. The Cockpit now has an optional credential-gated Circle
+passkey path, but this checkout has no live Console credentials or proven Circle Wallet transaction.
+See
+[`docs/circle-gas-station-boundary.md`](docs/circle-gas-station-boundary.md) and
+the [documentation index](docs/README.md) for integration boundaries and verification records.
 
 ---
 
 ## Quick start
 
-The fastest paths need no repo checkout: the packages default to Arc-testnet-V2. Full walkthrough in
-[`GETTING_STARTED.md`](GETTING_STARTED.md).
+**Start here.** Want to just use it? → **Cockpit** (no install). Building an app or bot? → **SDK**
+(library, pluggable signers). Scripting or a one-off transaction? → **CLI**. Wiring up an AI agent?
+→ **MCP**. All four below hit the same live V2 Hub; pick one and go.
+
+The fastest paths need no repo checkout — the packages default to Arc-testnet-V2. No testnet USDC
+yet? See "Get testnet funds" in [`GETTING_STARTED.md`](GETTING_STARTED.md#0-what-you-need) — the
+faucet drips both escrow funds and gas (USDC is Arc's native gas token) to any address in one call.
+Full walkthrough in [`GETTING_STARTED.md`](GETTING_STARTED.md). The safe MCP prepares and verifies
+the same shared objects but leaves authorization and submission to an external wallet.
 
 **CLI (one command to a first payment):**
 ```bash
@@ -77,21 +91,22 @@ npm install openrails-sdk
 ```
 ```ts
 import { LeptonOpenRailsClient, payGasless } from "openrails-sdk/arc";
-// the safe Shared Interface surface is exported from "openrails-sdk"
-// pluggable signers: openrails-sdk/adapters/{ethers,privy,turnkey}
+// Shared Interface preparation and verification use the safe package root.
 ```
 
-**Agent (MCP):** register with an MCP client (e.g. Claude Desktop):
+**Agent (MCP):** register the safe-only MCP surface with an MCP client (e.g. Claude Desktop):
 ```json
 { "mcpServers": { "openrails": {
-  "command": "npx", "args": ["openrails-mcp"] } }
+  "command": "npx", "args": ["openrails-mcp"] } } }
 ```
-The release candidate exposes safe-only `openrails_capabilities`, `openrails_prepare`,
-`openrails_validate`, `openrails_verify`, and `openrails_read` tools. It does not accept signer keys,
-sign, relay, or broadcast.
+Tools: `openrails_capabilities`, `openrails_prepare`, `openrails_validate`, `openrails_verify`,
+and `openrails_read`. The MCP does not create signers, custody keys, sign, or broadcast.
 
 **Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev): connect a wallet,
 create/pay a link, issue/claim a RailsCard.
+
+**Documentation:** [docs/README.md](docs/README.md) — current API, runtime, integration, and
+verification references.
 
 ---
 
@@ -117,6 +132,9 @@ Settle    on Arc                : USDC-native, fast, low-cost finality
 - **Keeper** (`workers/reconciliation-worker/`): a Cloudflare Worker that cron-settles active streams
   and sponsors gas for opens/claims (`/relay-open`, `/relay-claim`).
 - **Cockpit** (`cockpit/`): the React/Vite product surface.
+
+Every HTTP route across the legacy server and all 4 Cloudflare Workers — method, path, purpose,
+auth model — is in one table: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
 ---
 
@@ -156,7 +174,7 @@ Receipts distinguish open, settlement, residual return, and workflow timelines.
 ```bash
 npm install
 npm run compile          # Hardhat compile (viaIR)
-npm run test             # Hardhat: 74 passing
+npm run test             # Hardhat: 90 passing
 npm run test:foundry     # Foundry fuzz/invariant: 9 passing
 npm run build:sdk        # tsc build of the SDK + CLI
 npm --prefix cockpit run build

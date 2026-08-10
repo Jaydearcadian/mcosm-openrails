@@ -39,19 +39,18 @@ const WINDOW = 9000n; // public RPC caps getLogs at ~10k blocks
 const stringifyArgs = (a: Record<string, unknown> = {}): Record<string, unknown> =>
   Object.fromEntries(Object.entries(a).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v]));
 
+/** Retry a complete fallback pass to absorb short multi-provider outages. */
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3, baseMs = 500): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  let lastErr: unknown;
+  for (let i = 0; i < maxAttempts; i++) {
     try {
       return await fn();
-    } catch (error) {
-      lastError = error;
-      if (attempt < maxAttempts - 1) {
-        await new Promise((resolve) => setTimeout(resolve, baseMs * 2 ** attempt));
-      }
+    } catch (err) {
+      lastErr = err;
+      if (i < maxAttempts - 1) await new Promise((r) => setTimeout(r, baseMs * 2 ** i));
     }
   }
-  throw lastError;
+  throw lastErr;
 }
 
 const client = createPublicClient({ chain: arcTestnet, transport: createArcTransport() });

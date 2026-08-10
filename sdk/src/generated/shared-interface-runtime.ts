@@ -4,25 +4,25 @@
 export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json",
     "title": "Actor",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Actor"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Actor"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/canonical-record.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/canonical-record.schema.json",
     "title": "CanonicalRecord",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/CanonicalRecord"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/CanonicalRecord"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/capability-declaration.schema.json",
     "title": "CapabilityDeclaration",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/CapabilityDeclaration"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/CapabilityDeclaration"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-list.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/capability-list.schema.json",
     "title": "CapabilityList",
     "type": "object",
     "additionalProperties": false,
@@ -32,7 +32,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "capabilities": {
         "type": "array",
@@ -47,12 +47,15 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json",
     "title": "OpenRailsCommon",
     "$defs": {
       "InterfaceVersion": {
         "type": "string",
-        "const": "1.1.0"
+        "enum": [
+          "1.1.0",
+          "1.2.0"
+        ]
       },
       "Identifier": {
         "type": "string",
@@ -909,6 +912,90 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           }
         }
       },
+      "RuntimeSignatureDomain": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "chainId",
+          "salt"
+        ],
+        "properties": {
+          "name": {
+            "const": "OpenRails Runtime"
+          },
+          "version": {
+            "const": "1.2.0"
+          },
+          "chainId": {
+            "$ref": "#/$defs/ChainId"
+          },
+          "salt": {
+            "$ref": "#/$defs/Hash"
+          }
+        }
+      },
+      "RuntimeSignatureBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "signatureStandard",
+          "primaryType",
+          "signaturePurpose",
+          "operationId",
+          "payloadHash",
+          "signer",
+          "signature",
+          "nonce",
+          "issuedAt",
+          "expiresAt",
+          "chainId",
+          "anchorContract",
+          "domain"
+        ],
+        "properties": {
+          "signatureStandard": {
+            "const": "eip-712"
+          },
+          "primaryType": {
+            "const": "OpenRailsRuntimeTransition"
+          },
+          "signaturePurpose": {
+            "const": "offchain-runtime"
+          },
+          "operationId": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "payloadHash": {
+            "$ref": "#/$defs/Hash"
+          },
+          "signer": {
+            "$ref": "#/$defs/NonZeroAddress"
+          },
+          "signature": {
+            "$ref": "#/$defs/HexData"
+          },
+          "nonce": {
+            "$ref": "#/$defs/NonNegativeIntegerString"
+          },
+          "issuedAt": {
+            "$ref": "#/$defs/Timestamp"
+          },
+          "expiresAt": {
+            "$ref": "#/$defs/Timestamp"
+          },
+          "chainId": {
+            "$ref": "#/$defs/ChainId"
+          },
+          "anchorContract": {
+            "$ref": "#/$defs/NonZeroAddress"
+          },
+          "domain": {
+            "$ref": "#/$defs/RuntimeSignatureDomain"
+          }
+        }
+      },
       "Subject": {
         "type": "object",
         "additionalProperties": false,
@@ -1015,31 +1102,31 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/decision.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/decision.schema.json",
     "title": "BaphometDecision",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/BaphometDecision"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/BaphometDecision"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/gaia-case.schema.json",
     "title": "GaiaCase",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/GaiaCase"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/GaiaCase"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/intent.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/intent.schema.json",
     "title": "Intent",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Intent"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Intent"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/interface-error.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/interface-error.schema.json",
     "title": "InterfaceError",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/InterfaceError"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/InterfaceError"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/manifest-index.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/manifest-index.schema.json",
     "title": "ManifestIndex",
     "type": "object",
     "additionalProperties": false,
@@ -1049,7 +1136,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "manifests": {
         "type": "array",
@@ -1064,7 +1151,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json",
     "title": "OpenRailsModels",
     "$defs": {
       "Workspace": {
@@ -1082,10 +1169,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "name": {
             "type": "string",
@@ -1097,7 +1184,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "maxLength": 2000
           },
           "ownerActorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "status": {
             "type": "string",
@@ -1109,16 +1196,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "updatedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -1137,16 +1224,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "actorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "role": {
             "type": "string",
@@ -1168,20 +1255,20 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "joinedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "permissions": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
             },
             "uniqueItems": true
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -1199,10 +1286,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "kind": {
             "type": "string",
@@ -1229,19 +1316,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "walletAddress": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "externalSubject": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -1256,25 +1343,25 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "asset": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
           },
           "maxAmount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "maxAmountPerTransaction": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "maxTransactionsPerPeriod": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PositiveIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PositiveIntegerString"
           },
           "periodSeconds": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PositiveIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PositiveIntegerString"
           },
           "maxVelocityPerSecond": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "maxLifespanSeconds": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PositiveIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PositiveIntegerString"
           }
         }
       },
@@ -1296,35 +1383,35 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
             "const": "delegated-runtime"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "issuerActorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "delegateActorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "capabilities": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
             },
             "uniqueItems": true
           },
           "resourceRefs": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathResourceRef"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathResourceRef"
             },
             "uniqueItems": true
           },
@@ -1345,13 +1432,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "signatureBinding": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SignatureBinding"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SignatureBinding"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -1373,16 +1460,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "subject": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
           },
           "action": {
             "type": "string",
@@ -1397,37 +1484,37 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "paymentTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "requestedNetwork": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "nonce": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "expiresAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "status": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -1481,31 +1568,31 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
             "const": "delegated-runtime"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "normalizedTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "inputHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "policyVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "status": {
             "type": "string",
@@ -1517,13 +1604,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -1545,16 +1632,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
             "const": "delegated-runtime"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "decision": {
             "type": "string",
@@ -1564,21 +1651,21 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "policyVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "inputHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "reasonCodes": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
             },
             "uniqueItems": true
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "effects": {
             "type": "object",
@@ -1615,13 +1702,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             }
           },
           "decidedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -1697,34 +1784,34 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "paymentTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "status": {
             "type": "string",
@@ -1737,13 +1824,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "signatureBinding": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SignatureBinding"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SignatureBinding"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -1782,7 +1869,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ]
       },
       "PaymentTerms": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
       },
       "ProofPolicy": {
         "type": "object",
@@ -1800,16 +1887,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "requiredGate": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofGate"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofGate"
           },
           "beforeTransition": {
             "type": "string",
@@ -1829,13 +1916,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "type": "boolean"
           },
           "policyVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "termsHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -2000,36 +2087,36 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "decisionRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/BaphometDecisionRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef"
           },
           "parties": {
             "type": "array",
             "minItems": 2,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
             },
             "uniqueItems": true
           },
           "paymentTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "proofPolicy": {
             "$ref": "#/$defs/ProofPolicy"
@@ -2038,7 +2125,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "$ref": "#/$defs/CanonicalRecordPolicy"
           },
           "canonicalRecordRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef"
           },
           "status": {
             "type": "string",
@@ -2050,19 +2137,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "activatedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "signatureBinding": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SignatureBinding"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SignatureBinding"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -2139,28 +2226,28 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "sequence": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "previousCommitment": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "plaintextCommitment": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "ciphertextHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "encryption": {
             "type": "object",
@@ -2202,13 +2289,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               ],
               "properties": {
                 "counterpartyRef": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
                 },
                 "encryptedKey": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/HexData"
                 },
                 "keyId": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
                 }
               }
             }
@@ -2231,7 +2318,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   "maxLength": 2000
                 },
                 "contentHash": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
                 },
                 "kind": {
                   "type": "string",
@@ -2259,7 +2346,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               ],
               "properties": {
                 "actorRef": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
                 },
                 "algorithm": {
                   "const": "eip-712"
@@ -2267,7 +2354,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 "signature": {
                   "allOf": [
                     {
-                      "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+                      "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/HexData"
                     },
                     {
                       "pattern": "^0x(?:[0-9a-fA-F]{2})+$"
@@ -2275,10 +2362,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   ]
                 },
                 "signedAt": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
                 },
                 "signedCommitment": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
                 }
               }
             }
@@ -2303,22 +2390,22 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   ]
                 },
                 "reference": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ObjectRef"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ObjectRef"
                 },
                 "amount": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
                 }
               }
             }
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -2405,16 +2492,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "actorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "subjectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SubjectObjectRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SubjectObjectRef"
           },
           "eventType": {
             "type": "string",
@@ -2423,10 +2510,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "pattern": "^[A-Za-z0-9._:-]+$"
           },
           "observedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "quantity": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "unit": {
             "type": "string",
@@ -2442,7 +2529,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 "maxLength": 160
               },
               "idempotencyKey": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
               }
             }
           },
@@ -2450,10 +2537,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "const": false
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -2476,34 +2563,34 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "policyRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofPolicyRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofPolicyRef"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "gate": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofGate"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofGate"
           },
           "beforeTransition": {
             "type": "string",
@@ -2529,25 +2616,25 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "subjectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SubjectObjectRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SubjectObjectRef"
           },
           "evidenceHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "submittedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "verifiedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "verifierActorRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -2710,46 +2797,46 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "paymentTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "proofPolicy": {
             "$ref": "#/$defs/ProofPolicy"
           },
           "settlementIntentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SettlementIntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SettlementIntentRef"
           },
           "paycardRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaycardStreamRef"
           },
           "nonce": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "expiresAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "status": {
             "type": "string",
@@ -2766,13 +2853,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -2844,13 +2931,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "variant": {
             "type": "string",
@@ -2867,31 +2954,31 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "paymentTerms": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
           },
           "proofPolicy": {
             "$ref": "#/$defs/ProofPolicy"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "settlementIntentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SettlementIntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SettlementIntentRef"
           },
           "paycardRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaycardStreamRef"
           },
           "status": {
             "type": "string",
@@ -2908,16 +2995,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "signatureBinding": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SignatureBinding"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SignatureBinding"
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -3024,40 +3111,40 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "status": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/TransactionStateName"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "txHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "blockHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "nonce": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "blockNumber": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "confirmations": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "submittedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "confirmedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "observedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "failureCode": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ErrorCode"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ErrorCode"
           },
           "failureReason": {
             "type": "string",
@@ -3178,46 +3265,46 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "vaultAddress": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "paycardId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "asset": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
           },
           "payer": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "recipient": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "settlementShape": {
             "type": "string",
@@ -3227,10 +3314,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "fundedAmount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "settledAmount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "status": {
             "type": "string",
@@ -3266,27 +3353,27 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 ]
               },
               "observedAt": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
               },
               "vaultRecordHash": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
               },
               "expectedFundedAmount": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
               },
               "actualFundedAmount": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
               }
             }
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -3352,10 +3439,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "eventIndex": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "contractAddress": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "eventName": {
             "type": "string",
@@ -3368,7 +3455,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "maxLength": 200
           },
           "observedValuesHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           }
         }
       },
@@ -3390,19 +3477,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "observedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "vaultRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaycardStreamRef"
           },
           "expectedAmount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "actualAmount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "stateHash": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Hash"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Hash"
           },
           "reason": {
             "type": "string",
@@ -3430,13 +3517,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "receiptType": {
             "type": "string",
@@ -3450,28 +3537,28 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "operationId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "canonicalRecordRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef"
           },
           "transaction": {
             "$ref": "#/$defs/TransactionState"
@@ -3525,19 +3612,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "$ref": "#/$defs/CanonicalReconciliation"
           },
           "amount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "asset": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -3671,13 +3758,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "caseRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/GaiaCaseRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/GaiaCaseRef"
           },
           "obligationType": {
             "type": "string",
@@ -3690,7 +3777,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "assigneeRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ActorRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ActorRef"
           },
           "terms": {
             "type": "object",
@@ -3705,10 +3792,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 "maxLength": 2000
               },
               "amount": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
               },
               "asset": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
               }
             }
           },
@@ -3723,13 +3810,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "dueAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -3749,19 +3836,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
             "const": "delegated-runtime"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "caseType": {
             "type": "string",
@@ -3773,7 +3860,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "subjectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SubjectObjectRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SubjectObjectRef"
           },
           "status": {
             "type": "string",
@@ -3787,21 +3874,21 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "obligationRefs": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RectificationObligationRef"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RectificationObligationRef"
             },
             "uniqueItems": true
           },
           "openedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "resolvedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         }
       },
@@ -3821,31 +3908,31 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "const": "evm-transaction"
           },
           "from": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "to": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "data": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/HexData"
           },
           "value": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "chainId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ChainId"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ChainId"
           },
           "nonce": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "gasLimit": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "maxFeePerGas": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "maxPriorityFeePerGas": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           }
         }
       },
@@ -3871,16 +3958,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "signer": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "signature": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/HexData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/HexData"
           },
           "signedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "expiresAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "reason": {
             "type": "string",
@@ -3945,7 +4032,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "receiptRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ReceiptRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ReceiptRef"
           },
           "reasons": {
             "type": "array",
@@ -3955,7 +4042,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             }
           },
           "verifiedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           }
         },
         "allOf": [
@@ -4004,53 +4091,53 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "id": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "operationId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "capability": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
           },
           "correlationId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "subject": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "preparedRequest": {
             "$ref": "#/$defs/WalletTransactionRequest"
           },
           "expiresAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "lifecycleState": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
           },
           "walletAuthorization": {
             "$ref": "#/$defs/WalletAuthorization"
@@ -4068,16 +4155,16 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             }
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "updatedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "extensions": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExtensionData"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExtensionData"
           }
         },
         "allOf": [
@@ -4306,10 +4393,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "code": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ErrorCode"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ErrorCode"
           },
           "message": {
             "type": "string",
@@ -4329,22 +4416,22 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           },
           "lifecycleState": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
           },
           "transactionState": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/TransactionStateName"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName"
           },
           "operationId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "expectedNetwork": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "actualNetwork": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "expiresAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "details": {
             "type": "object",
@@ -4365,10 +4452,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             }
           },
           "occurredAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           }
         },
         "allOf": [
@@ -4510,20 +4597,20 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "capability": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
           },
           "status": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CapabilityStatus"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CapabilityStatus"
           },
           "allowedExecutionProfiles": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
             },
             "uniqueItems": true
           },
@@ -4531,7 +4618,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass"
             },
             "uniqueItems": true
           },
@@ -4575,12 +4662,12 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
             },
             "uniqueItems": true
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           }
         }
       },
@@ -4607,10 +4694,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "networkId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "displayName": {
             "type": "string",
@@ -4618,19 +4705,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "maxLength": 160
           },
           "chainId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ChainId"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ChainId"
           },
           "status": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CapabilityStatus"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CapabilityStatus"
           },
           "nativeAsset": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
           },
           "settlementAssets": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Asset"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Asset"
             },
             "uniqueItems": true
           },
@@ -4708,7 +4795,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               ],
               "properties": {
                 "id": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
                 },
                 "role": {
                   "type": "string",
@@ -4722,13 +4809,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   ]
                 },
                 "address": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
                 },
                 "status": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CapabilityStatus"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CapabilityStatus"
                 },
                 "provenance": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
                 }
               }
             }
@@ -4736,7 +4823,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "typedDataDomains": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SignatureDomain"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SignatureDomain"
             }
           },
           "capabilities": {
@@ -4766,7 +4853,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 ]
               },
               "requiredConfirmations": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
               },
               "reorgHandling": {
                 "type": "string",
@@ -4818,7 +4905,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   "maxLength": 160
                 },
                 "contractId": {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
                 },
                 "verificationFields": {
                   "type": "array",
@@ -4940,7 +5027,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "additionalProperties": false,
             "required": [
               "workspaceRuntimeStatus",
-              "delegatedRuntimeFinancialAuthority"
+              "delegatedRuntimeFinancialAuthority",
+              "signaturePurpose",
+              "signatureDomain",
+              "anchorContract"
             ],
             "properties": {
               "workspaceRuntimeStatus": {
@@ -4953,11 +5043,20 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               },
               "delegatedRuntimeFinancialAuthority": {
                 "const": "wallet-boundary"
+              },
+              "signaturePurpose": {
+                "const": "offchain-runtime"
+              },
+              "signatureDomain": {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureDomain"
+              },
+              "anchorContract": {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
               }
             }
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           }
         }
       },
@@ -4980,52 +5079,55 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "interfaceVersion": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
           },
           "executionProfile": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
           },
           "operationId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           },
           "capability": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
           },
           "lifecycleState": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
           },
           "authorizationClass": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass"
           },
           "subject": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           },
           "workspaceRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           },
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           },
           "proposalRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
+          },
+          "decisionRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef"
           },
           "pactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           },
           "canonicalRecordRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef"
           },
           "proofRefs": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
             },
             "uniqueItems": true
           },
@@ -5093,6 +5195,18 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               },
               {
                 "$ref": "#/$defs/WalletHandoff"
+              },
+              {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterRequest"
+              },
+              {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterRequest"
+              },
+              {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitRequest"
+              },
+              {
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignRequest"
               }
             ]
           },
@@ -5112,33 +5226,358 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             }
           },
           "provenance": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
           },
           "createdAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           },
           "updatedAt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
           }
         },
         "allOf": [
           {
             "if": {
-              "properties": {
-                "executionProfile": {
-                  "const": "delegated-runtime"
+              "anyOf": [
+                {
+                  "properties": {
+                    "operationId": {
+                      "enum": [
+                        "workspace.register",
+                        "actor.register",
+                        "proposal.submit",
+                        "pact.sign"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "operationId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "capability": {
+                      "enum": [
+                        "workspace.register",
+                        "actor.register",
+                        "proposal.submit",
+                        "pact.sign"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "capability"
+                  ]
                 }
-              },
-              "required": [
-                "executionProfile"
+              ]
+            },
+            "then": {
+              "properties": {
+                "interfaceVersion": {
+                  "const": "1.2.0"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "operationId": {
+                      "const": "workspace.register"
+                    }
+                  },
+                  "required": [
+                    "operationId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "capability": {
+                      "const": "workspace.register"
+                    }
+                  },
+                  "required": [
+                    "capability"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "workspaceRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "pathRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "intentRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proposalRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "decisionRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "pactRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "canonicalRecordRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proofRefs"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "operationId": {
+                      "const": "actor.register"
+                    }
+                  },
+                  "required": [
+                    "operationId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "capability": {
+                      "const": "actor.register"
+                    }
+                  },
+                  "required": [
+                    "capability"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "pathRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "intentRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proposalRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "decisionRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "pactRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "canonicalRecordRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proofRefs"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "operationId": {
+                      "const": "proposal.submit"
+                    }
+                  },
+                  "required": [
+                    "operationId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "capability": {
+                      "const": "proposal.submit"
+                    }
+                  },
+                  "required": [
+                    "capability"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "decisionRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "pactRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "canonicalRecordRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proofRefs"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "operationId": {
+                      "const": "pact.sign"
+                    }
+                  },
+                  "required": [
+                    "operationId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "capability": {
+                      "const": "pact.sign"
+                    }
+                  },
+                  "required": [
+                    "capability"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "canonicalRecordRef"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "proofRefs"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "allOf": [
+                {
+                  "properties": {
+                    "executionProfile": {
+                      "const": "delegated-runtime"
+                    }
+                  },
+                  "required": [
+                    "executionProfile"
+                  ]
+                },
+                {
+                  "not": {
+                    "properties": {
+                      "capability": {
+                        "const": "workspace.register"
+                      }
+                    },
+                    "required": [
+                      "capability"
+                    ]
+                  }
+                }
               ]
             },
             "then": {
               "required": [
-                "workspaceRef",
-                "pathRef",
-                "intentRef",
-                "proposalRef"
+                "workspaceRef"
+              ]
+            }
+          },
+          {
+            "if": {
+              "allOf": [
+                {
+                  "properties": {
+                    "executionProfile": {
+                      "const": "delegated-runtime"
+                    }
+                  },
+                  "required": [
+                    "executionProfile"
+                  ]
+                },
+                {
+                  "not": {
+                    "properties": {
+                      "capability": {
+                        "enum": [
+                          "workspace.register",
+                          "actor.register"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "capability"
+                    ]
+                  }
+                }
+              ]
+            },
+            "then": {
+              "required": [
+                "pathRef"
               ]
             }
           },
@@ -5164,6 +5603,117 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               "required": [
                 "intentRef"
               ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "capability": {
+                  "enum": [
+                    "proposal.submit",
+                    "pact.sign"
+                  ]
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            },
+            "then": {
+              "required": [
+                "intentRef",
+                "proposalRef"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "capability": {
+                  "const": "pact.sign"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            },
+            "then": {
+              "required": [
+                "decisionRef",
+                "pactRef"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "capability": {
+                  "enum": [
+                    "workspace.register",
+                    "actor.register"
+                  ]
+                },
+                "data": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "capability",
+                "data"
+              ]
+            },
+            "then": {
+              "properties": {
+                "lifecycleState": {
+                  "const": "PREPARED"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "capability": {
+                  "const": "proposal.submit"
+                },
+                "data": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "capability",
+                "data"
+              ]
+            },
+            "then": {
+              "properties": {
+                "lifecycleState": {
+                  "const": "EVALUATING"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "capability": {
+                  "const": "pact.sign"
+                },
+                "data": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "capability",
+                "data"
+              ]
+            },
+            "then": {
+              "properties": {
+                "lifecycleState": {
+                  "const": "COMMITTED"
+                }
+              }
             }
           },
           {
@@ -5234,19 +5784,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/network-manifest.schema.json",
     "title": "NetworkManifest",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/NetworkManifest"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/NetworkManifest"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-envelope.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-envelope.schema.json",
     "title": "OperationEnvelope",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/OperationEnvelope"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/OperationEnvelope"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json",
     "title": "OpenRailsOperationPayloads",
     "$defs": {
       "EmptyRequest": {
@@ -5261,7 +5811,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "networkId": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Identifier"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Identifier"
           }
         }
       },
@@ -5273,7 +5823,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
           }
         }
       },
@@ -5285,7 +5835,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5297,7 +5851,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
           }
         }
       },
@@ -5309,7 +5863,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5321,7 +5879,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaycardStreamRef"
           }
         }
       },
@@ -5333,7 +5891,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ReceiptRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ReceiptRef"
           }
         }
       },
@@ -5345,7 +5903,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "objectRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/GaiaCaseRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/GaiaCaseRef"
           }
         }
       },
@@ -5357,7 +5915,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "workspace": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json"
           }
         }
       },
@@ -5369,7 +5927,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "actor": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json"
           }
         }
       },
@@ -5381,7 +5939,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "path": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/path.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/path.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5394,10 +5956,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "pathRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
           },
           "intentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
           }
         }
       },
@@ -5409,7 +5971,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "intent": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/intent.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/intent.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5421,7 +5987,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "proposal": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proposal.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proposal.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5433,7 +6003,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "pact": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/pact.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/pact.schema.json"
           }
         }
       },
@@ -5445,7 +6015,11 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "proof": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proof.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proof.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Optional runtime authorization evidence. Required when executed as a signed Runtime transition."
           }
         }
       },
@@ -5457,7 +6031,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railsflow": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railsflow.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/railsflow.schema.json"
           }
         }
       },
@@ -5469,7 +6043,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railsflowRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsFlowRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RailsFlowRef"
           }
         }
       },
@@ -5482,13 +6056,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railsflowRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsFlowRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RailsFlowRef"
           },
           "settlementIntentRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/SettlementIntentRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/SettlementIntentRef"
           },
           "proofRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
           }
         }
       },
@@ -5500,7 +6074,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railscard": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railscard.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/railscard.schema.json"
           }
         }
       },
@@ -5512,7 +6086,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railscardRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsCardRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RailsCardRef"
           }
         }
       },
@@ -5525,13 +6099,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railscardRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RailsCardRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RailsCardRef"
           },
           "claimant": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "proofRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
           }
         }
       },
@@ -5543,7 +6117,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "paymentArtifactRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentArtifactRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentArtifactRef"
           }
         }
       },
@@ -5555,13 +6129,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "paycardRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaycardStreamRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaycardStreamRef"
           },
           "amount": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonNegativeIntegerString"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonNegativeIntegerString"
           },
           "proofRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
           }
         }
       },
@@ -5570,10 +6144,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "additionalProperties": false,
         "properties": {
           "walletAddress": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NonZeroAddress"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NonZeroAddress"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           }
         }
       },
@@ -5582,10 +6156,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "additionalProperties": false,
         "properties": {
           "subject": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
           },
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
           }
         }
       },
@@ -5597,7 +6171,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "receiptRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ReceiptRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ReceiptRef"
           }
         }
       },
@@ -5609,7 +6183,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "walletHandoff": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/wallet-handoff.schema.json"
           }
         }
       },
@@ -5621,7 +6195,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "handoffRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WalletHandoffRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WalletHandoffRef"
           }
         }
       },
@@ -5634,10 +6208,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "handoffRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WalletHandoffRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WalletHandoffRef"
           },
           "receipt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json"
           }
         }
       },
@@ -5649,7 +6223,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "case": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/gaia-case.schema.json"
           }
         }
       },
@@ -5662,17 +6236,149 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "caseRef": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/GaiaCaseRef"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/GaiaCaseRef"
           },
           "obligationRefs": {
             "type": "array",
             "minItems": 1,
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/RectificationObligationRef"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RectificationObligationRef"
             },
             "uniqueItems": true
           }
         }
+      },
+      "WorkspaceRegisterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspace",
+          "signatureBinding"
+        ],
+        "properties": {
+          "workspace": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Caller-supplied authorization evidence for this request."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "workspace.register"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ActorRegisterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspaceRef",
+          "actor",
+          "signatureBinding"
+        ],
+        "properties": {
+          "workspaceRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
+          },
+          "actor": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Caller-supplied authorization evidence for this request."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "actor.register"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProposalSubmitRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "proposal",
+          "signatureBinding"
+        ],
+        "properties": {
+          "proposal": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proposal.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Caller-supplied authorization evidence for this request."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "proposal.submit"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PactSignRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "intentRef",
+          "pact",
+          "signatureBinding"
+        ],
+        "properties": {
+          "intentRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
+          },
+          "pact": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/pact.schema.json"
+          },
+          "canonicalRecord": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/canonical-record.schema.json",
+            "description": "Optional bilateral Canonical Record bound to the Pact when its policy permits or requires one."
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "Caller-supplied authorization evidence for this request."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "pact.sign"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "NetworkListResponse": {
         "type": "object",
@@ -5684,7 +6390,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "networks": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/network-manifest.schema.json"
             }
           }
         }
@@ -5697,7 +6403,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "network": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/network-manifest.schema.json"
           }
         }
       },
@@ -5711,7 +6417,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "capabilities": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/capability-declaration.schema.json"
             }
           }
         }
@@ -5724,7 +6430,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "workspace": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json"
           }
         }
       },
@@ -5738,7 +6444,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "workspaces": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json"
             }
           }
         }
@@ -5751,7 +6457,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "actor": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json"
           }
         }
       },
@@ -5765,7 +6471,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "actors": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/actor.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json"
             }
           }
         }
@@ -5778,7 +6484,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "path": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/path.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/path.schema.json"
           }
         }
       },
@@ -5790,7 +6496,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "decision": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/decision.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/decision.schema.json"
           }
         }
       },
@@ -5802,7 +6508,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "intent": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/intent.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/intent.schema.json"
           }
         }
       },
@@ -5820,7 +6526,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "errors": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/interface-error.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/interface-error.schema.json"
             }
           }
         }
@@ -5833,7 +6539,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "proposal": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proposal.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proposal.schema.json"
           }
         }
       },
@@ -5845,7 +6551,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "pact": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/pact.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/pact.schema.json"
           }
         }
       },
@@ -5857,7 +6563,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "proof": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/proof.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proof.schema.json"
           }
         }
       },
@@ -5869,7 +6575,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railsflow": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railsflow.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/railsflow.schema.json"
           }
         }
       },
@@ -5881,7 +6587,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "railscard": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/railscard.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/railscard.schema.json"
           }
         }
       },
@@ -5893,7 +6599,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "paycard": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/paycard-stream.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/paycard-stream.schema.json"
           }
         }
       },
@@ -5907,7 +6613,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "paycards": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/paycard-stream.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/paycard-stream.schema.json"
             }
           }
         }
@@ -5920,7 +6626,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "receipt": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json"
           }
         }
       },
@@ -5934,7 +6640,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "receipts": {
             "type": "array",
             "items": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json"
             }
           }
         }
@@ -5947,7 +6653,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "walletHandoff": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/wallet-handoff.schema.json"
           }
         }
       },
@@ -5959,15 +6665,147 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         ],
         "properties": {
           "case": {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/gaia-case.schema.json"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/gaia-case.schema.json"
           }
         }
+      },
+      "WorkspaceRegisterResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspace",
+          "signatureBinding"
+        ],
+        "properties": {
+          "workspace": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "The verified request binding echoed as authorization evidence; it is not a Runtime attestation."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "workspace.register"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ActorRegisterResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspaceRef",
+          "actor",
+          "signatureBinding"
+        ],
+        "properties": {
+          "workspaceRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
+          },
+          "actor": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/actor.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "The verified request binding echoed as authorization evidence; it is not a Runtime attestation."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "actor.register"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProposalSubmitResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "proposal",
+          "signatureBinding"
+        ],
+        "properties": {
+          "proposal": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/proposal.schema.json"
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "The verified request binding echoed as authorization evidence; it is not a Runtime attestation."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "proposal.submit"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PactSignResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "intentRef",
+          "pact",
+          "signatureBinding"
+        ],
+        "properties": {
+          "intentRef": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
+          },
+          "pact": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/pact.schema.json"
+          },
+          "canonicalRecord": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/canonical-record.schema.json",
+            "description": "The validated Canonical Record bound to the Pact, when supplied."
+          },
+          "signatureBinding": {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/RuntimeSignatureBinding",
+            "description": "The verified request binding echoed as authorization evidence; it is not a Runtime attestation."
+          }
+        },
+        "allOf": [
+          {
+            "properties": {
+              "signatureBinding": {
+                "properties": {
+                  "operationId": {
+                    "const": "pact.sign"
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-registry.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-registry.schema.json",
     "title": "OperationRegistry",
     "type": "object",
     "additionalProperties": false,
@@ -5979,7 +6817,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "registryVersion": {
         "type": "string",
@@ -6016,30 +6854,33 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               "type": "string",
               "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
             },
+            "introducedIn": {
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
+            },
             "requestSchema": {
               "type": "string",
-              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.1\\.0/[a-z0-9-]+\\.schema\\.json$"
+              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.2\\.0/[a-z0-9-]+\\.schema\\.json$"
             },
             "responseSchema": {
               "type": "string",
-              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.1\\.0/[a-z0-9-]+\\.schema\\.json$"
+              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.2\\.0/[a-z0-9-]+\\.schema\\.json$"
             },
             "requestDataSchema": {
               "type": "string",
-              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.1\\.0/operation-payloads\\.schema\\.json#/\\$defs/[A-Za-z0-9]+$"
+              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.2\\.0/operation-payloads\\.schema\\.json#/\\$defs/[A-Za-z0-9]+$"
             },
             "responseDataSchema": {
               "type": "string",
-              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.1\\.0/operation-payloads\\.schema\\.json#/\\$defs/[A-Za-z0-9]+$"
+              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.2\\.0/operation-payloads\\.schema\\.json#/\\$defs/[A-Za-z0-9]+$"
             },
             "authorizationClass": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass"
             },
             "allowedExecutionProfiles": {
               "type": "array",
               "minItems": 1,
               "items": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
               },
               "uniqueItems": true
             },
@@ -6076,7 +6917,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                 "failureCodes": {
                   "type": "array",
                   "items": {
-                    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ErrorCode"
+                    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ErrorCode"
                   },
                   "uniqueItems": true
                 }
@@ -6141,7 +6982,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
     "title": "OperationRequest",
     "type": "object",
     "additionalProperties": false,
@@ -6159,10 +7000,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "executionProfile": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
       },
       "operationId": {
         "type": "string",
@@ -6173,164 +7014,509 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
       },
       "authorizationClass": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass"
       },
       "subject": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
       },
       "network": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
       },
       "workspaceRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
       },
       "pathRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
       },
       "intentRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
       },
       "proposalRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
+      },
+      "decisionRef": {
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef"
       },
       "pactRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
       },
       "canonicalRecordRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef"
       },
       "proofRefs": {
         "type": "array",
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
         },
         "uniqueItems": true
       },
       "data": {
         "anyOf": [
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/EmptyRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkIdRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkIdRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProposalRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardActionRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardActionRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterRequest"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterRequest"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitRequest"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignRequest"
           }
         ]
       },
       "provenance": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
       },
       "createdAt": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
       }
     },
     "allOf": [
       {
         "if": {
-          "properties": {
-            "executionProfile": {
-              "const": "delegated-runtime"
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "enum": [
+                    "workspace.register",
+                    "actor.register",
+                    "path.activate",
+                    "path.revoke",
+                    "intent.prepare",
+                    "proposal.evaluate",
+                    "proposal.submit",
+                    "pact.sign",
+                    "proof.submit",
+                    "proof.verify"
+                  ]
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "enum": [
+                    "workspace.register",
+                    "actor.register",
+                    "path.activate",
+                    "path.revoke",
+                    "intent.prepare",
+                    "proposal.evaluate",
+                    "proposal.submit",
+                    "pact.sign",
+                    "proof.submit",
+                    "proof.verify"
+                  ]
+                }
+              },
+              "required": [
+                "capability"
+              ]
             }
-          },
-          "required": [
-            "executionProfile"
+          ]
+        },
+        "then": {
+          "properties": {
+            "interfaceVersion": {
+              "const": "1.2.0"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "workspace.register"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "workspace.register"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "workspaceRef"
+                ]
+              },
+              {
+                "required": [
+                  "pathRef"
+                ]
+              },
+              {
+                "required": [
+                  "intentRef"
+                ]
+              },
+              {
+                "required": [
+                  "proposalRef"
+                ]
+              },
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "actor.register"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "actor.register"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "pathRef"
+                ]
+              },
+              {
+                "required": [
+                  "intentRef"
+                ]
+              },
+              {
+                "required": [
+                  "proposalRef"
+                ]
+              },
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "proposal.submit"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "proposal.submit"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "pact.sign"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "pact.sign"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "required": [
+              "proofRefs"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "allOf": [
+            {
+              "properties": {
+                "executionProfile": {
+                  "const": "delegated-runtime"
+                }
+              },
+              "required": [
+                "executionProfile"
+              ]
+            },
+            {
+              "not": {
+                "properties": {
+                  "capability": {
+                    "const": "workspace.register"
+                  }
+                },
+                "required": [
+                  "capability"
+                ]
+              }
+            }
           ]
         },
         "then": {
           "required": [
-            "workspaceRef",
+            "workspaceRef"
+          ]
+        }
+      },
+      {
+        "if": {
+          "allOf": [
+            {
+              "properties": {
+                "executionProfile": {
+                  "const": "delegated-runtime"
+                }
+              },
+              "required": [
+                "executionProfile"
+              ]
+            },
+            {
+              "not": {
+                "properties": {
+                  "capability": {
+                    "enum": [
+                      "workspace.register",
+                      "actor.register"
+                    ]
+                  }
+                },
+                "required": [
+                  "capability"
+                ]
+              }
+            }
+          ]
+        },
+        "then": {
+          "required": [
             "pathRef"
           ]
         }
@@ -6354,8 +7540,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               "enum": [
                 "path.evaluate",
                 "proposal.evaluate",
+                "proposal.submit",
                 "pact.prepare",
                 "pact.activate",
+                "pact.sign",
                 "proof.submit",
                 "proof.verify",
                 "proof.get",
@@ -6406,8 +7594,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "capability": {
               "enum": [
                 "proposal.evaluate",
+                "proposal.submit",
                 "pact.prepare",
                 "pact.activate",
+                "pact.sign",
                 "proof.submit",
                 "proof.verify",
                 "proof.get",
@@ -6458,6 +7648,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "capability": {
               "enum": [
                 "pact.activate",
+                "pact.sign",
                 "proof.submit",
                 "proof.verify",
                 "proof.get",
@@ -6501,12 +7692,66 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             ]
           }
         }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "pact.sign"
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "required": [
+            "decisionRef"
+          ]
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "intent.prepare"
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "required": [
+            "intentRef"
+          ]
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "enum": [
+                "proof.submit",
+                "proof.verify"
+              ]
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "required": [
+            "proofRefs"
+          ]
+        }
       }
     ]
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
     "title": "OperationResponse",
     "type": "object",
     "additionalProperties": false,
@@ -6526,10 +7771,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "executionProfile": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
       },
       "operationId": {
         "type": "string",
@@ -6540,39 +7785,42 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$"
       },
       "lifecycleState": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
       },
       "authorizationClass": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass"
       },
       "subject": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject"
       },
       "network": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference"
       },
       "workspaceRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef"
       },
       "pathRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef"
       },
       "intentRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef"
       },
       "proposalRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef"
+      },
+      "decisionRef": {
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef"
       },
       "pactRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef"
       },
       "canonicalRecordRef": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef"
       },
       "proofRefs": {
         "type": "array",
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef"
         },
         "uniqueItems": true
       },
@@ -6582,113 +7830,455 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             "type": "null"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkListResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkListResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorListResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorListResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/DecisionResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/DecisionResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ValidationResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ValidationResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProposalResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse"
           },
           {
-            "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse"
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterResponse"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterResponse"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitResponse"
+          },
+          {
+            "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignResponse"
           }
         ]
       },
       "transaction": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/transaction-state.schema.json"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/transaction-state.schema.json"
       },
       "receipts": {
         "type": "array",
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json"
         }
       },
       "errors": {
         "type": "array",
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/interface-error.schema.json"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/interface-error.schema.json"
         }
       },
       "provenance": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
       },
       "createdAt": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
       },
       "updatedAt": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp"
       }
     },
     "allOf": [
       {
         "if": {
-          "properties": {
-            "executionProfile": {
-              "const": "delegated-runtime"
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "enum": [
+                    "workspace.register",
+                    "actor.register",
+                    "path.activate",
+                    "path.revoke",
+                    "intent.prepare",
+                    "proposal.evaluate",
+                    "proposal.submit",
+                    "pact.sign",
+                    "proof.submit",
+                    "proof.verify"
+                  ]
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "enum": [
+                    "workspace.register",
+                    "actor.register",
+                    "path.activate",
+                    "path.revoke",
+                    "intent.prepare",
+                    "proposal.evaluate",
+                    "proposal.submit",
+                    "pact.sign",
+                    "proof.submit",
+                    "proof.verify"
+                  ]
+                }
+              },
+              "required": [
+                "capability"
+              ]
             }
-          },
-          "required": [
-            "executionProfile"
+          ]
+        },
+        "then": {
+          "properties": {
+            "interfaceVersion": {
+              "const": "1.2.0"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "workspace.register"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "workspace.register"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "workspaceRef"
+                ]
+              },
+              {
+                "required": [
+                  "pathRef"
+                ]
+              },
+              {
+                "required": [
+                  "intentRef"
+                ]
+              },
+              {
+                "required": [
+                  "proposalRef"
+                ]
+              },
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "actor.register"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "actor.register"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "pathRef"
+                ]
+              },
+              {
+                "required": [
+                  "intentRef"
+                ]
+              },
+              {
+                "required": [
+                  "proposalRef"
+                ]
+              },
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "proposal.submit"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "proposal.submit"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "decisionRef"
+                ]
+              },
+              {
+                "required": [
+                  "pactRef"
+                ]
+              },
+              {
+                "required": [
+                  "canonicalRecordRef"
+                ]
+              },
+              {
+                "required": [
+                  "proofRefs"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "anyOf": [
+            {
+              "properties": {
+                "operationId": {
+                  "const": "pact.sign"
+                }
+              },
+              "required": [
+                "operationId"
+              ]
+            },
+            {
+              "properties": {
+                "capability": {
+                  "const": "pact.sign"
+                }
+              },
+              "required": [
+                "capability"
+              ]
+            }
+          ]
+        },
+        "then": {
+          "not": {
+            "required": [
+              "proofRefs"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "allOf": [
+            {
+              "properties": {
+                "executionProfile": {
+                  "const": "delegated-runtime"
+                }
+              },
+              "required": [
+                "executionProfile"
+              ]
+            },
+            {
+              "not": {
+                "properties": {
+                  "capability": {
+                    "const": "workspace.register"
+                  }
+                },
+                "required": [
+                  "capability"
+                ]
+              }
+            }
           ]
         },
         "then": {
           "required": [
-            "workspaceRef",
+            "workspaceRef"
+          ]
+        }
+      },
+      {
+        "if": {
+          "allOf": [
+            {
+              "properties": {
+                "executionProfile": {
+                  "const": "delegated-runtime"
+                }
+              },
+              "required": [
+                "executionProfile"
+              ]
+            },
+            {
+              "not": {
+                "properties": {
+                  "capability": {
+                    "enum": [
+                      "workspace.register",
+                      "actor.register"
+                    ]
+                  }
+                },
+                "required": [
+                  "capability"
+                ]
+              }
+            }
+          ]
+        },
+        "then": {
+          "required": [
             "pathRef"
           ]
         }
@@ -6703,6 +8293,374 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           "required": [
             "workspaceRef"
           ]
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "enum": [
+                "proposal.submit",
+                "pact.sign"
+              ]
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "if": {
+            "properties": {
+              "executionProfile": {
+                "const": "delegated-runtime"
+              }
+            },
+            "required": [
+              "executionProfile"
+            ]
+          },
+          "then": {
+            "required": [
+              "intentRef"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "enum": [
+                "proposal.submit",
+                "pact.sign"
+              ]
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "if": {
+            "properties": {
+              "executionProfile": {
+                "const": "delegated-runtime"
+              }
+            },
+            "required": [
+              "executionProfile"
+            ]
+          },
+          "then": {
+            "required": [
+              "proposalRef"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "pact.sign"
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "if": {
+            "properties": {
+              "executionProfile": {
+                "const": "delegated-runtime"
+              }
+            },
+            "required": [
+              "executionProfile"
+            ]
+          },
+          "then": {
+            "required": [
+              "decisionRef",
+              "pactRef"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "intent.prepare"
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "if": {
+            "properties": {
+              "executionProfile": {
+                "const": "delegated-runtime"
+              }
+            },
+            "required": [
+              "executionProfile"
+            ]
+          },
+          "then": {
+            "required": [
+              "intentRef"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "enum": [
+                "proof.submit",
+                "proof.verify"
+              ]
+            }
+          },
+          "required": [
+            "capability"
+          ]
+        },
+        "then": {
+          "if": {
+            "properties": {
+              "executionProfile": {
+                "const": "delegated-runtime"
+              }
+            },
+            "required": [
+              "executionProfile"
+            ]
+          },
+          "then": {
+            "required": [
+              "proofRefs"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "enum": [
+                "workspace.register",
+                "actor.register"
+              ]
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "PREPARED"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "proposal.submit"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "EVALUATING"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "pact.sign"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "COMMITTED"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "path.activate"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "COMMITTED"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "path.revoke"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "CANCELLED"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "intent.prepare"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "PREPARED"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "proposal.evaluate"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "enum": [
+                "ALLOWED",
+                "BLOCKED"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "proof.submit"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "PROOF_PENDING"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "capability": {
+              "const": "proof.verify"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "capability",
+            "data"
+          ]
+        },
+        "then": {
+          "properties": {
+            "lifecycleState": {
+              "const": "PROOF_VERIFIED"
+            }
+          }
         }
       },
       {
@@ -6789,85 +8747,85 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/pact.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/pact.schema.json",
     "title": "Pact",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Pact"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Pact"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/path-limit.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/path-limit.schema.json",
     "title": "PathLimit",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/PathLimit"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/PathLimit"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/path.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/path.schema.json",
     "title": "Path",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Path"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Path"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/paycard-stream.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/paycard-stream.schema.json",
     "title": "PaycardStream",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/PaycardStream"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/PaycardStream"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/payment-terms.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/payment-terms.schema.json",
     "title": "PaymentTerms",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PaymentTerms"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PaymentTerms"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/proof-policy.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/proof-policy.schema.json",
     "title": "ProofPolicy",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/ProofPolicy"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/ProofPolicy"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/proof.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/proof.schema.json",
     "title": "Proof",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Proof"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Proof"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/proposal.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/proposal.schema.json",
     "title": "Proposal",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Proposal"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Proposal"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/provenance.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/provenance.schema.json",
     "title": "Provenance",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/railscard.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/railscard.schema.json",
     "title": "RailsCard",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/RailsCard"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/RailsCard"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/railsflow.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/railsflow.schema.json",
     "title": "RailsFlow",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/RailsFlow"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/RailsFlow"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json",
     "title": "Receipt",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Receipt"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Receipt"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/rectification-obligation.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/rectification-obligation.schema.json",
     "title": "RectificationObligation",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/RectificationObligation"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/RectificationObligation"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/schema-index.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/schema-index.schema.json",
     "title": "SchemaIndex",
     "type": "object",
     "additionalProperties": false,
@@ -6878,7 +8836,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "canonicalFormat": {
         "const": "JSON Schema 2020-12"
@@ -6905,7 +8863,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
             },
             "$id": {
               "type": "string",
-              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.1\\.0/[a-z0-9-]+\\.schema\\.json$"
+              "pattern": "^https://schemas\\.openrails\\.dev/openrails/1\\.2\\.0/[a-z0-9-]+\\.schema\\.json$"
             }
           }
         },
@@ -6915,19 +8873,19 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/settlement-intent.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/settlement-intent.schema.json",
     "title": "SettlementIntent",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/SettlementIntent"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/SettlementIntent"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/transaction-state.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/transaction-state.schema.json",
     "title": "TransactionState",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/TransactionState"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/TransactionState"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/transition-rules.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/transition-rules.schema.json",
     "title": "TransitionRules",
     "type": "object",
     "additionalProperties": false,
@@ -6940,13 +8898,13 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
     ],
     "properties": {
       "interfaceVersion": {
-        "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion"
+        "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion"
       },
       "lifecycleStates": {
         "type": "array",
         "minItems": 1,
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
         },
         "uniqueItems": true
       },
@@ -6954,7 +8912,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
         "type": "array",
         "minItems": 1,
         "items": {
-          "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/TransactionStateName"
+          "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName"
         },
         "uniqueItems": true
       },
@@ -6973,10 +8931,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
           ],
           "properties": {
             "from": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
             },
             "to": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
             },
             "trigger": {
               "type": "string",
@@ -6986,7 +8944,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               "type": "array",
               "minItems": 1,
               "items": {
-                "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile"
+                "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile"
               },
               "uniqueItems": true
             },
@@ -7011,7 +8969,8 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   "EXACT_RECEIPT",
                   "CANONICAL_VAULT_RECONCILIATION",
                   "ALLOW_DECISION",
-                  "PACT"
+                  "PACT",
+                  "RUNTIME_SIGNATURE"
                 ]
               },
               "uniqueItems": true
@@ -7049,10 +9008,10 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
               ]
             },
             "lifecycleState": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState"
             },
             "transactionState": {
-              "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/TransactionStateName"
+              "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName"
             },
             "financialEffect": {
               "type": "string",
@@ -7081,7 +9040,7 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
                   "type": "null"
                 },
                 {
-                  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ErrorCode"
+                  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ErrorCode"
                 }
               ]
             },
@@ -7099,42 +9058,42 @@ export const SHARED_INTERFACE_SCHEMAS: unknown[] = [
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/wallet-handoff.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/wallet-handoff.schema.json",
     "title": "WalletHandoff",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/WalletHandoff"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/WalletHandoff"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/work-usage-event.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/work-usage-event.schema.json",
     "title": "WorkUsageEvent",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/WorkUsageEvent"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/WorkUsageEvent"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/workspace-member.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/workspace-member.schema.json",
     "title": "WorkspaceMember",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/WorkspaceMember"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/WorkspaceMember"
   },
   {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.openrails.dev/openrails/1.1.0/workspace.schema.json",
+    "$id": "https://schemas.openrails.dev/openrails/1.2.0/workspace.schema.json",
     "title": "Workspace",
-    "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/Workspace"
+    "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/Workspace"
   }
 ];
 
 export const OPERATION_REGISTRY_ARTIFACT: unknown = {
-  "interfaceVersion": "1.1.0",
-  "registryVersion": "0.1.0",
+  "interfaceVersion": "1.2.0",
+  "registryVersion": "0.2.0",
   "sourceCapabilities": "Product Foundry shared-interface.yaml",
   "operations": [
     {
       "operationId": "network.list",
       "capability": "network.list",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkListResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/EmptyRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkListResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7165,10 +9124,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "network.get",
       "capability": "network.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkIdRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkIdRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7199,10 +9158,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "network.capabilities",
       "capability": "network.capabilities",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkIdRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkIdRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7233,10 +9192,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "workspace.prepare",
       "capability": "workspace.prepare",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7267,10 +9226,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "workspace.get",
       "capability": "workspace.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7302,10 +9261,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "workspace.list",
       "capability": "workspace.list",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/EmptyRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7337,10 +9296,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "actor.prepareRegistration",
       "capability": "actor.prepareRegistration",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7374,10 +9333,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "actor.list",
       "capability": "actor.list",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorListResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/EmptyRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorListResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7409,10 +9368,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "path.prepare",
       "capability": "path.prepare",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7444,10 +9403,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "path.activate",
       "capability": "path.activate",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -7480,10 +9439,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "path.revoke",
       "capability": "path.revoke",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -7516,10 +9475,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "path.evaluate",
       "capability": "path.evaluate",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/DecisionResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/DecisionResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -7550,10 +9509,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "intent.prepare",
       "capability": "intent.prepare",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7585,10 +9544,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "intent.validate",
       "capability": "intent.validate",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ValidationResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ValidationResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7619,10 +9578,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "proposal.evaluate",
       "capability": "proposal.evaluate",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProposalRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/DecisionResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/DecisionResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -7653,10 +9612,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "pact.prepare",
       "capability": "pact.prepare",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7688,10 +9647,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "pact.get",
       "capability": "pact.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7723,10 +9682,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "pact.activate",
       "capability": "pact.activate",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7760,10 +9719,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "proof.submit",
       "capability": "proof.submit",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofResponse",
       "authorizationClass": "RELAY_SIGNED_ENVELOPE",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7797,10 +9756,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "proof.verify",
       "capability": "proof.verify",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7832,10 +9791,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "proof.get",
       "capability": "proof.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7867,10 +9826,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railsflow.create",
       "capability": "railsflow.create",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7902,10 +9861,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railsflow.inspect",
       "capability": "railsflow.inspect",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7936,10 +9895,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railsflow.pay",
       "capability": "railsflow.pay",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "WALLET_TRANSACTION",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -7979,10 +9938,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railscard.issue",
       "capability": "railscard.issue",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8017,10 +9976,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railscard.inspect",
       "capability": "railscard.inspect",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8051,10 +10010,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "railscard.claim",
       "capability": "railscard.claim",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "WALLET_TRANSACTION",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8094,10 +10053,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "paycard.open",
       "capability": "paycard.open",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "WALLET_TRANSACTION",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8137,10 +10096,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "paycard.get",
       "capability": "paycard.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8171,10 +10130,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "paycard.list",
       "capability": "paycard.list",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8205,10 +10164,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "paycard.settle",
       "capability": "paycard.settle",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardActionRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardActionRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "WALLET_TRANSACTION",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8246,10 +10205,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "paycard.flushResidual",
       "capability": "paycard.flushResidual",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardActionRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardActionRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse",
       "authorizationClass": "WALLET_TRANSACTION",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8287,10 +10246,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "receipt.get",
       "capability": "receipt.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8322,10 +10281,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "receipt.list",
       "capability": "receipt.list",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8357,10 +10316,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "receipt.verify",
       "capability": "receipt.verify",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8392,10 +10351,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "gaia.open",
       "capability": "gaia.open",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -8425,10 +10384,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "gaia.get",
       "capability": "gaia.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -8459,10 +10418,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "gaia.resolve",
       "capability": "gaia.resolve",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse",
       "authorizationClass": "WALLET_SIGNATURE",
       "allowedExecutionProfiles": [
         "delegated-runtime"
@@ -8495,10 +10454,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "wallet.handoff.prepare",
       "capability": "wallet.handoff.prepare",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
       "authorizationClass": "PREPARE_ONLY",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8531,10 +10490,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "wallet.handoff.get",
       "capability": "wallet.handoff.get",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
       "authorizationClass": "AUTHENTICATED_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8566,10 +10525,10 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
     {
       "operationId": "wallet.handoff.verify",
       "capability": "wallet.handoff.verify",
-      "requestSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
-      "responseSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
-      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest",
-      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse",
       "authorizationClass": "PUBLIC_READ",
       "allowedExecutionProfiles": [
         "direct-wallet-authorized",
@@ -8599,12 +10558,163 @@ export const OPERATION_REGISTRY_ARTIFACT: unknown = {
         "onRecorded": "preserve provenance and do not upgrade to LIVE without new evidence",
         "successClaimRule": "financial success requires exact verified receipt and canonical reconciliation"
       }
+    },
+    {
+      "operationId": "workspace.register",
+      "capability": "workspace.register",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterResponse",
+      "introducedIn": "1.2.0",
+      "authorizationClass": "RELAY_SIGNED_ENVELOPE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none",
+        "failureCodes": [
+          "INPUT_INVALID",
+          "AUTHORIZATION_REQUIRED",
+          "SIGNATURE_INVALID",
+          "SIGNATURE_EXPIRED",
+          "NONCE_CONFLICT"
+        ]
+      },
+      "capabilityStatusBehavior": {
+        "onUnavailable": {
+          "lifecycleState": "FAILED",
+          "transactionState": "NOT_REQUESTED",
+          "errorCode": "CAPABILITY_UNAVAILABLE",
+          "financialEffect": "NONE",
+          "retryable": false
+        },
+        "onDemonstration": "prepare-or-explain-only; do not claim live financial success",
+        "onRecorded": "preserve provenance and do not upgrade to LIVE without new evidence",
+        "successClaimRule": "financial success requires exact verified receipt and canonical reconciliation"
+      }
+    },
+    {
+      "operationId": "actor.register",
+      "capability": "actor.register",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterResponse",
+      "introducedIn": "1.2.0",
+      "authorizationClass": "RELAY_SIGNED_ENVELOPE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none",
+        "failureCodes": [
+          "INPUT_INVALID",
+          "AUTHORIZATION_REQUIRED",
+          "SIGNATURE_INVALID",
+          "SIGNATURE_EXPIRED",
+          "NONCE_CONFLICT"
+        ]
+      },
+      "capabilityStatusBehavior": {
+        "onUnavailable": {
+          "lifecycleState": "FAILED",
+          "transactionState": "NOT_REQUESTED",
+          "errorCode": "CAPABILITY_UNAVAILABLE",
+          "financialEffect": "NONE",
+          "retryable": false
+        },
+        "onDemonstration": "prepare-or-explain-only; do not claim live financial success",
+        "onRecorded": "preserve provenance and do not upgrade to LIVE without new evidence",
+        "successClaimRule": "financial success requires exact verified receipt and canonical reconciliation"
+      }
+    },
+    {
+      "operationId": "proposal.submit",
+      "capability": "proposal.submit",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitResponse",
+      "introducedIn": "1.2.0",
+      "authorizationClass": "RELAY_SIGNED_ENVELOPE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none",
+        "failureCodes": [
+          "INPUT_INVALID",
+          "AUTHORIZATION_REQUIRED",
+          "SIGNATURE_INVALID",
+          "SIGNATURE_EXPIRED",
+          "NONCE_CONFLICT",
+          "POLICY_BLOCKED",
+          "TERMS_MISMATCH"
+        ]
+      },
+      "capabilityStatusBehavior": {
+        "onUnavailable": {
+          "lifecycleState": "FAILED",
+          "transactionState": "NOT_REQUESTED",
+          "errorCode": "CAPABILITY_UNAVAILABLE",
+          "financialEffect": "NONE",
+          "retryable": false
+        },
+        "onDemonstration": "prepare-or-explain-only; do not claim live financial success",
+        "onRecorded": "preserve provenance and do not upgrade to LIVE without new evidence",
+        "successClaimRule": "financial success requires exact verified receipt and canonical reconciliation"
+      }
+    },
+    {
+      "operationId": "pact.sign",
+      "capability": "pact.sign",
+      "requestSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
+      "responseSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
+      "requestDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignRequest",
+      "responseDataSchema": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignResponse",
+      "introducedIn": "1.2.0",
+      "authorizationClass": "RELAY_SIGNED_ENVELOPE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none",
+        "failureCodes": [
+          "INPUT_INVALID",
+          "AUTHORIZATION_REQUIRED",
+          "SIGNATURE_INVALID",
+          "SIGNATURE_EXPIRED",
+          "NONCE_CONFLICT",
+          "TERMS_MISMATCH"
+        ]
+      },
+      "capabilityStatusBehavior": {
+        "onUnavailable": {
+          "lifecycleState": "FAILED",
+          "transactionState": "NOT_REQUESTED",
+          "errorCode": "CAPABILITY_UNAVAILABLE",
+          "financialEffect": "NONE",
+          "retryable": false
+        },
+        "onDemonstration": "prepare-or-explain-only; do not claim live financial success",
+        "onRecorded": "preserve provenance and do not upgrade to LIVE without new evidence",
+        "successClaimRule": "financial success requires exact verified receipt and canonical reconciliation"
+      }
     }
   ]
 };
 
 export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
-  "interfaceVersion": "1.1.0",
+  "interfaceVersion": "1.2.0",
   "networkId": "arc-testnet",
   "displayName": "Arc Testnet",
   "chainId": "5042002",
@@ -8721,7 +10831,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
   ],
   "capabilities": [
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "network.list",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -8753,7 +10863,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "network.get",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -8785,7 +10895,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "network.capabilities",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -8817,7 +10927,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "workspace.prepare",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -8849,7 +10959,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "workspace.get",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -8881,7 +10991,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "workspace.list",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -8913,7 +11023,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "actor.prepareRegistration",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -8945,7 +11055,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "actor.list",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -8977,7 +11087,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "path.prepare",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9009,7 +11119,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "path.activate",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9040,7 +11150,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "path.revoke",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9071,7 +11181,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "path.evaluate",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9102,7 +11212,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "intent.prepare",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -9134,7 +11244,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "intent.validate",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -9166,7 +11276,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "proposal.evaluate",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9197,7 +11307,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "pact.prepare",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9229,7 +11339,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "pact.get",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9261,7 +11371,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "pact.activate",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9293,7 +11403,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "proof.submit",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9325,7 +11435,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "proof.verify",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9357,7 +11467,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "proof.get",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9389,7 +11499,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railsflow.create",
       "status": "LIVE",
       "allowedExecutionProfiles": [
@@ -9421,7 +11531,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railsflow.inspect",
       "status": "LIVE",
       "allowedExecutionProfiles": [
@@ -9453,7 +11563,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railsflow.pay",
       "status": "LIVE",
       "allowedExecutionProfiles": [
@@ -9485,7 +11595,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railscard.issue",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9517,7 +11627,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railscard.inspect",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9549,7 +11659,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "railscard.claim",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9581,7 +11691,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "paycard.open",
       "status": "LIVE",
       "allowedExecutionProfiles": [
@@ -9613,7 +11723,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "paycard.get",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9645,7 +11755,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "paycard.list",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9677,7 +11787,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "paycard.settle",
       "status": "LIVE",
       "allowedExecutionProfiles": [
@@ -9709,7 +11819,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "paycard.flushResidual",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9741,7 +11851,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "receipt.get",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9756,7 +11866,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
         "submissionMeansFinancialSuccess": false,
         "financialSuccessRequirement": "none"
       },
-      "statusJustification": "Receipt reading exists in the target SDK and cockpit; shared-interface receipt verification is still a PR1 contract gate.",
+      "statusJustification": "Receipt reading exists in the target SDK and cockpit; fresh shared-interface receipt verification remains pending.",
       "evidence": [
         "EVD-OR-004"
       ],
@@ -9773,7 +11883,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "receipt.list",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9805,7 +11915,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "receipt.verify",
       "status": "RECORDED",
       "allowedExecutionProfiles": [
@@ -9820,7 +11930,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
         "submissionMeansFinancialSuccess": false,
         "financialSuccessRequirement": "none"
       },
-      "statusJustification": "Receipt verification vocabulary and Arc receipt helpers are present, but the shared-interface verifier is not integrated in PR1.",
+      "statusJustification": "Receipt verification vocabulary and Arc receipt helpers are present, but the fresh shared-interface verifier integration remains pending.",
       "evidence": [
         "EVD-OR-004"
       ],
@@ -9837,7 +11947,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "gaia.open",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9868,7 +11978,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "gaia.get",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9899,7 +12009,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "gaia.resolve",
       "status": "UNAVAILABLE",
       "allowedExecutionProfiles": [
@@ -9930,7 +12040,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "wallet.handoff.prepare",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -9961,7 +12071,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "wallet.handoff.get",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -9992,7 +12102,7 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
       }
     },
     {
-      "interfaceVersion": "1.1.0",
+      "interfaceVersion": "1.2.0",
       "capability": "wallet.handoff.verify",
       "status": "VERIFIED",
       "allowedExecutionProfiles": [
@@ -10019,6 +12129,130 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
         "repository": "Jaydearcadian/mcosm-OpenRails",
         "evidenceRefs": [
           "EVD-OR-004"
+        ]
+      }
+    },
+    {
+      "interfaceVersion": "1.2.0",
+      "capability": "workspace.register",
+      "status": "UNAVAILABLE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "authorizationClasses": [
+        "RELAY_SIGNED_ENVELOPE"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none"
+      },
+      "statusJustification": "Shared Interface 1.2 defines the signed control-plane envelope, but no Arc Workspace Runtime deployment is available in this release base.",
+      "evidence": [
+        "EVD-OR-008"
+      ],
+      "provenance": {
+        "source": "repository-evidence",
+        "authority": "Jaydearcadian/mcosm-OpenRails",
+        "evidenceLevel": "configuration-only",
+        "observedAt": "2026-08-08T00:00:00Z",
+        "repository": "Jaydearcadian/mcosm-OpenRails",
+        "commit": "df70344",
+        "evidenceRefs": [
+          "EVD-OR-008"
+        ]
+      }
+    },
+    {
+      "interfaceVersion": "1.2.0",
+      "capability": "actor.register",
+      "status": "UNAVAILABLE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "authorizationClasses": [
+        "RELAY_SIGNED_ENVELOPE"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none"
+      },
+      "statusJustification": "Shared Interface 1.2 defines signed actor registration, but no Arc Workspace Runtime deployment is available in this release base.",
+      "evidence": [
+        "EVD-OR-008"
+      ],
+      "provenance": {
+        "source": "repository-evidence",
+        "authority": "Jaydearcadian/mcosm-OpenRails",
+        "evidenceLevel": "configuration-only",
+        "observedAt": "2026-08-08T00:00:00Z",
+        "repository": "Jaydearcadian/mcosm-OpenRails",
+        "commit": "df70344",
+        "evidenceRefs": [
+          "EVD-OR-008"
+        ]
+      }
+    },
+    {
+      "interfaceVersion": "1.2.0",
+      "capability": "proposal.submit",
+      "status": "UNAVAILABLE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "authorizationClasses": [
+        "RELAY_SIGNED_ENVELOPE"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none"
+      },
+      "statusJustification": "Shared Interface 1.2 defines signed proposal submission, but no Arc delegated Runtime deployment is available in this release base.",
+      "evidence": [
+        "EVD-OR-008"
+      ],
+      "provenance": {
+        "source": "repository-evidence",
+        "authority": "Jaydearcadian/mcosm-OpenRails",
+        "evidenceLevel": "configuration-only",
+        "observedAt": "2026-08-08T00:00:00Z",
+        "repository": "Jaydearcadian/mcosm-OpenRails",
+        "commit": "df70344",
+        "evidenceRefs": [
+          "EVD-OR-008"
+        ]
+      }
+    },
+    {
+      "interfaceVersion": "1.2.0",
+      "capability": "pact.sign",
+      "status": "UNAVAILABLE",
+      "allowedExecutionProfiles": [
+        "delegated-runtime"
+      ],
+      "authorizationClasses": [
+        "RELAY_SIGNED_ENVELOPE"
+      ],
+      "transactionBehavior": {
+        "kind": "relay-signed-envelope",
+        "submissionMeansFinancialSuccess": false,
+        "financialSuccessRequirement": "none"
+      },
+      "statusJustification": "Shared Interface 1.2 defines signed Pact transitions, but no Arc Runtime deployment is available in this release base.",
+      "evidence": [
+        "EVD-OR-008"
+      ],
+      "provenance": {
+        "source": "repository-evidence",
+        "authority": "Jaydearcadian/mcosm-OpenRails",
+        "evidenceLevel": "configuration-only",
+        "observedAt": "2026-08-08T00:00:00Z",
+        "repository": "Jaydearcadian/mcosm-OpenRails",
+        "commit": "df70344",
+        "evidenceRefs": [
+          "EVD-OR-008"
         ]
       }
     }
@@ -10103,7 +12337,15 @@ export const ARC_TESTNET_MANIFEST_ARTIFACT: unknown = {
   ],
   "runtime": {
     "workspaceRuntimeStatus": "NOT_LIVE",
-    "delegatedRuntimeFinancialAuthority": "wallet-boundary"
+    "delegatedRuntimeFinancialAuthority": "wallet-boundary",
+    "signaturePurpose": "offchain-runtime",
+    "signatureDomain": {
+      "name": "OpenRails Runtime",
+      "version": "1.2.0",
+      "chainId": "5042002",
+      "salt": "0x1544b041010f9c62321178d4f9a37adf6a9ada7feaf89238f6c1b5f27ebd0bbf"
+    },
+    "anchorContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b"
   },
   "provenance": {
     "source": "repository-evidence",

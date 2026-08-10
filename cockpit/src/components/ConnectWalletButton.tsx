@@ -1,8 +1,7 @@
 /**
- * Single unified connect entry point — Privy's own modal (email/social -> auto-created embedded
- * wallet, or "wallet" -> bring-your-own external wallet), replacing RainbowKit's ConnectButton.
- * No Circle Smart Account / Circle Gateway option shown yet (neither is verified working) — see
- * docs/superpowers/specs/2026-07-05-webapp-dashboard-ia-design.md's Connect UX decision.
+ * Existing Privy/wagmi connect entry point plus the optional official Circle Modular Wallet
+ * passkey path. The two paths are independent so adding Circle never changes the existing wallet
+ * address or transaction flow.
  *
  * The actual active address for on-chain reads/writes still comes from wagmi's useAccount() —
  * @privy-io/wagmi's WagmiProvider keeps that in sync with whatever Privy wallet is active, so
@@ -13,8 +12,10 @@
  */
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useAccount, useReadContract, useSwitchChain } from "wagmi";
+import { useReadContract, useSwitchChain } from "wagmi";
 import { USDC_ABI } from "../lib/contracts";
+import { useWalletConnection } from "../lib/useWalletConnection";
+import { CirclePasskeyButton } from "./CirclePasskeyButton";
 
 const USDC = "0x3600000000000000000000000000000000000000";
 
@@ -30,8 +31,17 @@ function formatUsdc(raw: bigint | undefined): string {
 }
 
 export function ConnectWalletButton({ style }: { style?: CSSProperties }) {
-  const { ready, authenticated, login, logout } = usePrivy();
-  const { address, chainId } = useAccount();
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <PrivyWalletButton style={style} />
+      <CirclePasskeyButton />
+    </div>
+  );
+}
+
+function PrivyWalletButton({ style }: { style?: CSSProperties }) {
+  const { login, logout } = usePrivy();
+  const { isConnected, address, chainId, ready } = useWalletConnection();
   const { switchChain } = useSwitchChain();
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -82,7 +92,7 @@ export function ConnectWalletButton({ style }: { style?: CSSProperties }) {
     );
   }
 
-  if (authenticated && address) {
+  if (isConnected && address) {
     const isWrongNetwork = chainId !== 5042002;
     return (
       <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.1.0/capability-declaration.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/capability-declaration.schema.json",
   "title": "CapabilityDeclaration",
-  "$ref": "https://schemas.openrails.dev/openrails/1.1.0/models.schema.json#/$defs/CapabilityDeclaration"
+  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/CapabilityDeclaration"
 }

@@ -19,12 +19,12 @@ function validateFile(schemaId, relativePath) {
   return value;
 }
 
-validateFile("https://schemas.openrails.dev/openrails/1.1.0/schema-index.schema.json", "schemas/schemas.json");
-validateFile("https://schemas.openrails.dev/openrails/1.1.0/manifest-index.schema.json", "manifests/index.json");
-const capabilityList = validateFile("https://schemas.openrails.dev/openrails/1.1.0/capability-list.schema.json", "registries/capability-list.json");
-const registry = validateFile("https://schemas.openrails.dev/openrails/1.1.0/operation-registry.schema.json", "registries/operation-registry.json");
-const transitions = validateFile("https://schemas.openrails.dev/openrails/1.1.0/transition-rules.schema.json", "registries/transition-rules.json");
-const manifest = validateFile("https://schemas.openrails.dev/openrails/1.1.0/network-manifest.schema.json", "manifests/arc-testnet.json");
+validateFile("https://schemas.openrails.dev/openrails/1.2.0/schema-index.schema.json", "schemas/schemas.json");
+validateFile("https://schemas.openrails.dev/openrails/1.2.0/manifest-index.schema.json", "manifests/index.json");
+const capabilityList = validateFile("https://schemas.openrails.dev/openrails/1.2.0/capability-list.schema.json", "registries/capability-list.json");
+const registry = validateFile("https://schemas.openrails.dev/openrails/1.2.0/operation-registry.schema.json", "registries/operation-registry.json");
+const transitions = validateFile("https://schemas.openrails.dev/openrails/1.2.0/transition-rules.schema.json", "registries/transition-rules.json");
+const manifest = validateFile("https://schemas.openrails.dev/openrails/1.2.0/network-manifest.schema.json", "manifests/arc-testnet.json");
 
 const capabilities = capabilityList.capabilities;
 const operationCapabilities = registry.operations.map((operation) => operation.capability);

@@ -1,7 +1,7 @@
 {
   "name": "openrails-mcp",
-  "version": "0.2.0-rc.1",
-  "description": "OpenRails MCP safe-only Shared Interface 1.1 prepare, validate, verify, and read tools over stdio.",
+  "version": "0.3.0",
+  "description": "OpenRails MCP safe-only Shared Interface 1.2 prepare, validate, verify, and read tools over stdio.",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",
   "type": "module",
@@ -13,7 +13,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -29,9 +29,9 @@
     "agent-payments"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "ethers": "^6.13.0",
-    "openrails-sdk": "^1.0.0-rc.1",
+    "openrails-sdk": "^1.1.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

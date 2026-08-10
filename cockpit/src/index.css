@@ -2,126 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    color-scheme: dark;
-  }
-  html,
-  body,
-  #root {
-    height: 100%;
-  }
-  body {
-    @apply bg-base-900 text-ink-primary font-sans antialiased;
-    margin: 0;
-  }
-  /* Visible keyboard focus (quality floor) */
-  :focus-visible {
-    outline: 2px solid theme("colors.emerald.core");
-    outline-offset: 2px;
-    border-radius: 6px;
-  }
-  ::selection {
-    background: theme("colors.emerald.glow");
-  }
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
-@layer components {
-  /* Liquid-glass surface: frosted, specular highlight, deep shadow. */
-  .glass {
-    background: theme("colors.glass.bg");
-    border: 1px solid theme("colors.glass.border");
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    backdrop-filter: blur(24px) saturate(160%);
-    box-shadow: theme("boxShadow.glass");
-    border-radius: 1.25rem;
-  }
-  .glass-soft {
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    backdrop-filter: blur(16px) saturate(140%);
-    border-radius: 1rem;
-  }
-  /* Telemetry data text */
-  .telemetry {
-    @apply font-mono tabular-nums tracking-tight;
-  }
-  .eyebrow {
-    @apply font-mono uppercase tracking-widest2 text-ink-secondary;
-    font-size: 11px;
-  }
-  /* Diagonal hazard fill for inactive nonce-lane bars */
-  .hazard {
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.10),
-      rgba(255, 255, 255, 0.10) 6px,
-      rgba(255, 255, 255, 0.02) 6px,
-      rgba(255, 255, 255, 0.02) 12px
-    );
-  }
-  .demo-tag {
-    @apply font-mono uppercase tracking-widest2;
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 999px;
-    padding: 1px 7px;
-  }
+body {
+  margin: 0;
 }
 
-/* New Cockpit (light) design system — keyframes + scrollbar, independent of the dark glass theme
-   above (still used by Landing/LinkLanding). */
-@keyframes ck-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.45; transform: scale(1.35); }
-}
-@keyframes ck-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes ck-shimmer {
-  0% { background-position: -420px 0; }
-  100% { background-position: 420px 0; }
-}
-@keyframes ck-spin {
-  to { transform: rotate(360deg); }
-}
-.ck-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
-.ck-scroll::-webkit-scrollbar-thumb {
-  background: rgba(11,17,32,0.14);
-  border-radius: 999px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
+:focus-visible {
+  outline: 2px solid #d96543;
+  outline-offset: 2px;
 }
 
-/* ── OpenRails landing (light marketing page) — keyframes + scoped hover states.
-   Ported 1:1 from the approved Claude Design prototype (or-* names preserved). */
-@keyframes or-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes or-dash { to { stroke-dashoffset: -1400; } }
-@keyframes or-drift { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(2%,-3%,0) scale(1.06); } }
-@keyframes or-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.35); } }
-@keyframes or-flow { to { background-position: 28px 0; } }
-@keyframes or-shimmer { 0% { transform: translateX(-120%) skewX(-18deg); } 100% { transform: translateX(240%) skewX(-18deg); } }
-
-/* style-hover ports (base styles stay inline; :hover only overrides the authored props) */
-.or-navlink:hover { color: #0B1120 !important; }
-.or-github:hover { color: #0B1120 !important; border-color: rgba(11,17,32,0.3) !important; }
-.or-nav-cta:hover { background: #009E60 !important; box-shadow: 0 6px 22px rgba(0,158,96,0.4) !important; }
-.or-hero-cta:hover { background: #009E60 !important; box-shadow: 0 12px 32px rgba(0,158,96,0.45) !important; }
-.or-outline:hover { border-color: rgba(11,17,32,0.4) !important; }
-.or-docs-cta:hover { background: #00C878 !important; color: #04070D !important; }
-.or-dark-pill:hover { border-color: rgba(0,200,120,0.6) !important; color: #FFFFFF !important; }
-.or-final-cta:hover { background: #009E60 !important; box-shadow: 0 16px 42px rgba(0,158,96,0.45) !important; }
-
-/* Respect reduced-motion: still the ambient + ticker animations. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.1.0",
+  "interfaceVersion": "1.2.0",
   "capabilities": [
     "network.list",
     "network.get",
@@ -41,6 +41,10 @@
     "gaia.resolve",
     "wallet.handoff.prepare",
     "wallet.handoff.get",
-    "wallet.handoff.verify"
+    "wallet.handoff.verify",
+    "workspace.register",
+    "actor.register",
+    "proposal.submit",
+    "pact.sign"
   ]
 }

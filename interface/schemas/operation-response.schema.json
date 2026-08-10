@@ -1,66 +1,197 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-response.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-response.schema.json",
   "title": "OperationResponse",
   "type": "object",
   "additionalProperties": false,
   "required": ["interfaceVersion", "executionProfile", "operationId", "capability", "lifecycleState", "authorizationClass", "subject", "network", "data", "errors", "provenance", "createdAt"],
   "properties": {
-    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion" },
-    "executionProfile": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile" },
+    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion" },
+    "executionProfile": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile" },
     "operationId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$" },
     "capability": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$" },
-    "lifecycleState": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/LifecycleState" },
-    "authorizationClass": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass" },
-    "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject" },
-    "network": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference" },
-    "workspaceRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef" },
-    "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef" },
-    "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef" },
-    "proposalRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef" },
-    "pactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef" },
-    "canonicalRecordRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef" },
-    "proofRefs": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }, "uniqueItems": true },
+    "lifecycleState": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState" },
+    "authorizationClass": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass" },
+    "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject" },
+    "network": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference" },
+    "workspaceRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef" },
+    "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef" },
+    "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef" },
+    "proposalRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef" },
+    "decisionRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef" },
+    "pactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef" },
+    "canonicalRecordRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef" },
+    "proofRefs": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef" }, "uniqueItems": true },
     "data": { "oneOf": [
       { "type": "null" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkListResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorListResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/DecisionResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ValidationResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProposalResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse" }
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkListResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/CapabilitiesResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceListResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorListResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/DecisionResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ValidationResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitResponse" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignResponse" }
     ] },
-    "transaction": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/transaction-state.schema.json" },
-    "receipts": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/receipt.schema.json" } },
-    "errors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/interface-error.schema.json" } },
-    "provenance": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance" },
-    "createdAt": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp" },
-    "updatedAt": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp" }
+    "transaction": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/transaction-state.schema.json" },
+    "receipts": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/receipt.schema.json" } },
+    "errors": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/interface-error.schema.json" } },
+    "provenance": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance" },
+    "createdAt": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp" },
+    "updatedAt": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp" }
   },
   "allOf": [
     {
-      "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
-      "then": { "required": ["workspaceRef", "pathRef"] }
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "enum": ["workspace.register", "actor.register", "path.activate", "path.revoke", "intent.prepare", "proposal.evaluate", "proposal.submit", "pact.sign", "proof.submit", "proof.verify"] } }, "required": ["operationId"] },
+          { "properties": { "capability": { "enum": ["workspace.register", "actor.register", "path.activate", "path.revoke", "intent.prepare", "proposal.evaluate", "proposal.submit", "pact.sign", "proof.submit", "proof.verify"] } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "properties": { "interfaceVersion": { "const": "1.2.0" } } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "workspace.register" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "workspace.register" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["workspaceRef"] }, { "required": ["pathRef"] }, { "required": ["intentRef"] },
+        { "required": ["proposalRef"] }, { "required": ["decisionRef"] }, { "required": ["pactRef"] },
+        { "required": ["canonicalRecordRef"] }, { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "actor.register" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "actor.register" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["pathRef"] }, { "required": ["intentRef"] }, { "required": ["proposalRef"] },
+        { "required": ["decisionRef"] }, { "required": ["pactRef"] }, { "required": ["canonicalRecordRef"] },
+        { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "proposal.submit" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "proposal.submit" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["decisionRef"] }, { "required": ["pactRef"] },
+        { "required": ["canonicalRecordRef"] }, { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "pact.sign" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "pact.sign" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "required": ["proofRefs"] } }
+    },
+    {
+      "if": {
+        "allOf": [
+          { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
+          { "not": { "properties": { "capability": { "const": "workspace.register" } }, "required": ["capability"] } }
+        ]
+      },
+      "then": { "required": ["workspaceRef"] }
+    },
+    {
+      "if": {
+        "allOf": [
+          { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
+          { "not": { "properties": { "capability": { "enum": ["workspace.register", "actor.register"] } }, "required": ["capability"] } }
+        ]
+      },
+      "then": { "required": ["pathRef"] }
     },
     {
       "if": { "required": ["pathRef"] },
       "then": { "required": ["workspaceRef"] }
+    },
+    {
+      "if": { "properties": { "capability": { "enum": ["proposal.submit", "pact.sign"] } }, "required": ["capability"] },
+      "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["intentRef"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "enum": ["proposal.submit", "pact.sign"] } }, "required": ["capability"] },
+      "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["proposalRef"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "pact.sign" } }, "required": ["capability"] },
+      "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["decisionRef", "pactRef"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "intent.prepare" } }, "required": ["capability"] },
+      "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["intentRef"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "enum": ["proof.submit", "proof.verify"] } }, "required": ["capability"] },
+      "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["proofRefs"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "enum": ["workspace.register", "actor.register"] }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "PREPARED" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "proposal.submit" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "EVALUATING" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "pact.sign" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "COMMITTED" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "path.activate" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "COMMITTED" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "path.revoke" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "CANCELLED" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "intent.prepare" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "PREPARED" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "proposal.evaluate" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "enum": ["ALLOWED", "BLOCKED"] } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "proof.submit" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "PROOF_PENDING" } } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "proof.verify" }, "data": { "type": "object" } }, "required": ["capability", "data"] },
+      "then": { "properties": { "lifecycleState": { "const": "PROOF_VERIFIED" } } }
     },
     {
       "if": { "properties": { "data": { "type": "null" } }, "required": ["data"] },

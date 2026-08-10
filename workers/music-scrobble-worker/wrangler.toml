@@ -15,9 +15,9 @@ ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
 
 [[kv_namespaces]]
 binding = "MUSICBRAINZ_REGISTRY"
-id = "replace-with-kv-namespace-id"
+id = "e20d0dcd77364b8dbebdcfe0802e2636"
 
 [[d1_databases]]
 binding = "STREAM_DB"
 database_name = "openrails_stream_db"
-database_id = "replace-with-d1-database-id"
+database_id = "23db51e8-f5d5-4e00-bd60-cc44efc3b2df"

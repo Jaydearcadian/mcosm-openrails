@@ -2,7 +2,7 @@
  * OpenRails Docs content. Restructured onto the approved Documentation
  * Architecture IA (Welcome / SDK & Toolkit / Integration Patterns / Protocol
  * Reference). Chain IDs, addresses, endpoints, and code samples are real project
- * facts — do not paraphrase. Code examples match the real exported SDK/worker
+ * facts. Do not paraphrase them. Code examples match the real exported SDK/worker
  * signatures (sdk/src/adapters/circle.ts, sdk/src/gateway.ts, the workers/).
  */
 
@@ -37,6 +37,8 @@ export const callout = (variant: "note" | "warn", text: string): Block => ({ kin
 // Linear reading order (drives prev/next). Mirrors the nav grouping below.
 export const ORDER = [
   "quickstart",
+  "lifecycle",
+  "payments",
   "concepts",
   "sdk",
   "sdk-wallet",
@@ -58,6 +60,8 @@ export const NAV_GROUPS: { label: string; items: [string, string][] }[] = [
     label: "Welcome",
     items: [
       ["quickstart", "Quickstart"],
+      ["lifecycle", "Verifiable lifecycle"],
+      ["payments", "Payment models"],
       ["concepts", "Core concepts"],
     ],
   },
@@ -96,13 +100,13 @@ export const DOCS: Record<string, DocPage> = {
     eyebrow: "Welcome",
     title: "Quickstart",
     subtitle:
-      "Go from zero to a fully streaming on-chain payment in minutes. Install the unified toolkit, spin up a testnet wallet, initiate a metered payment stream, and watch it settle and auto-refund in real-time, all without writing a single line of smart contract code.",
+      "Install the toolkit, fund an Arc testnet wallet, authorize a bounded payment, and verify the resulting transaction and Vault state.",
     blocks: [
       steps([
         { n: "1", title: "Install the Toolkit", body: "Deploy our unified SDK and CLI package with a single command. Out-of-the-box configurations for the Arc testnet are pre-wired." },
-        { n: "2", title: "Claim Testnet Gas & USDC", body: "Request sandbox capital via our faucet, which drips native-gas USDC to instantly power your micro-transactions." },
-        { n: "3", title: "Launch a Payment Stream", body: "Authorise and sign a cryptographically bounded intent. Your funds lock securely in the vault and start streaming per second." },
-        { n: "4", title: "Stop and Reclaim", body: "Terminate the stream at any moment. The recipient claims precisely what they earned down to the second, and residual funds return to you." },
+        { n: "2", title: "Request Testnet USDC", body: "Use the rate-limited faucet to provision testnet USDC, which is also used for Arc transaction fees." },
+        { n: "3", title: "Launch a Payment Stream", body: "Authorize exact allocation, rate, duration, recipient, and replay-protection terms before submitting to Arc." },
+        { n: "4", title: "Verify Settlement", body: "Check the Arc transaction receipt and live Vault state. Use the indexer only as a discoverable projection." },
       ]),
       h2("1 · Install the SDK & CLI"),
       code("bash", "npm i -g openrails-sdk"),
@@ -113,7 +117,7 @@ export const DOCS: Record<string, DocPage> = {
         'curl -X POST https://openrails-faucet-worker.microcosm.workers.dev/fund \\\n  -H "content-type: application/json" \\\n  -d \'{"address":"0xYourWallet"}\'',
       ),
       h2("3 · Stream Value with a Single Command"),
-      p("All parameters following --recipient are cryptographically bound by your signature. The protocol guarantees that no party, including relayers, can ever move more than this allocation ceiling."),
+      p("All parameters following --recipient are cryptographically bound by the signature. The Hub rejects altered terms and limits the Vault to the signed allocation."),
       code(
         "bash",
         "openrails pay-stream \\\n  --recipient 0x… \\\n  --total-allocation-pool 10000 \\\n  --flow-velocity-per-second 1 \\\n  --lifespan-seconds 3600 \\\n  --execute",
@@ -124,25 +128,72 @@ export const DOCS: Record<string, DocPage> = {
       ),
     ],
   },
+  lifecycle: {
+    eyebrow: "Welcome",
+    title: "Verifiable lifecycle",
+    subtitle: "OpenRails connects operating context, bounded authority, accepted terms, evidence, value movement, and canonical settlement records without treating them as the same kind of state.",
+    blocks: [
+      h2("The lifecycle"),
+      steps([
+        { n: "1", title: "Initialize a Workspace", body: "Record the durable operating context, its owner, participants, applications, and agents. A Workspace does not custody funds." },
+        { n: "2", title: "Delegate a Path", body: "Define who may act, which action is allowed, the asset and counterparty scope, the maximum exposure, and the validity period." },
+        { n: "3", title: "Accept a Pact", body: "Bind the parties, commercial terms, Proof requirements, payment conditions, and exception policy into one inspectable commitment." },
+        { n: "4", title: "Record Proof", body: "Attach delivery, usage, or checkpoint evidence to the commitment. Proof determines whether the configured settlement condition has been met." },
+        { n: "5", title: "Authorize payment", body: "The wallet signs exact payment terms. Direct payments need no Workspace. Workspace-scoped payments include the Workspace reference in signed metadata." },
+        { n: "6", title: "Verify settlement", body: "Arc Vault state and transaction receipts establish what moved. Indexers make records discoverable but remain replaceable projections." },
+      ]),
+      h2("State boundaries"),
+      kv([
+        { k: "Workspace records", v: "Operating context, participants, Paths, Pacts, Proof, and activity" },
+        { k: "Wallet authorization", v: "EIP-712 intent or direct transaction approval" },
+        { k: "Arc canonical state", v: "Vault state, events, transaction status, and settlement finality" },
+        { k: "Indexer projection", v: "Search, discovery, filtering, and historical presentation" },
+      ]),
+      callout("note", "The Shared Interface Runtime is publicly deployed with Neon persistence. The current Cockpit still records Workspace objects in the browser until its signed Runtime operations and authenticated discovery are wired to that service."),
+    ],
+  },
+  payments: {
+    eyebrow: "Welcome",
+    title: "Payment models",
+    subtitle: "The product surface uses plain payment language. Protocol names remain documented so application developers can map the interface to SDK and contract operations.",
+    blocks: [
+      h2("Direct payment"),
+      p("A connected wallet pays a known recipient without creating a Workspace. Choose one-time settlement for immediate allocation or streaming settlement for value released over a duration."),
+      h2("Workspace-scoped payment"),
+      p("A payment whose signed metadata references a Workspace. This creates an explicit connection between operating context and settlement, but it does not by itself prove Path authorization, Pact acceptance, or Proof verification. Those lifecycle records remain separate and inspectable."),
+      h2("Payment request"),
+      p("A shareable request for another party to review and authorize. In the SDK and protocol this maps to the RailsFlow request primitive."),
+      h2("Claim link"),
+      p("Payer-authorized value that may be claimed later. A bearer link may be claimed by the first eligible holder. A recipient-bound link can only be claimed by the signed address. In the SDK and protocol this maps to the RailsCard primitive."),
+      h2("Settlement shapes"),
+      list([
+        "One-time: the complete allocation becomes immediately settleable under the signed terms.",
+        "Streaming: value becomes settleable at the signed rate until the allocation or duration is exhausted.",
+        "Gas sponsored: a relayer or Circle smart account submits the authorized call and pays the execution fee.",
+        "Self-submit: the connected wallet broadcasts the transaction and pays Arc gas directly.",
+      ]),
+      callout("warn", "Recipient-bound claims, permits, and sponsored calls are security-sensitive. Verify recipient, expiry, nonce, Vault event, and final Arc receipt before reporting settlement as complete."),
+    ],
+  },
   concepts: {
     eyebrow: "Welcome",
     title: "Core concepts",
-    subtitle: "Master the building blocks of real-time value. Understand the fixed protocol primitives and EIP-712 trust boundaries that keep OpenRails entirely non-custodial and secure.",
+    subtitle: "Understand the payment primitives, replay protection, settlement records, and EIP-712 trust boundaries used by OpenRails.",
     blocks: [
-      h2("Protocol Primitives"),
+      h2("Protocol primitives and product language"),
       list([
-        'Paycard Stream: The foundational on-chain vault entity (keyed by a unique paycardId) that escrows USDC, manages real-time checkpoints, and acts as a metered payment "tab" to release value.',
-        "RailsFlow: A merchant-centric request primitive. Generate dynamic links to request metered payments for services, digital goods, paywalls, or invoices.",
-        "RailsCard: A payer-centric value primitive. Distribute pre-authorized, claimable value, either bearer-token style or bound to a specific recipient address (for example, gift cards, employee payouts, or agent spending caps).",
-        "Nonce Lane: An advanced 2D replay and concurrency protection mechanism using nonceChannel and nonceValue to allow parallel, independent streams without head-of-line blocking.",
-        "Receipts: Cryptographically verifiable proof artifacts generated for every stream initialization, incremental settlement, and final closure.",
-        "STN-Delta: The over-provision safety buffer designed to prevent premature stream termination. Any remaining balance is automatically swept back to the payer via flushResidualDelta.",
+        'Payment Stream (Paycard Stream in the protocol): the onchain Vault entity keyed by paycardId. It escrows USDC and releases value according to signed terms.',
+        "Payment Request (RailsFlow in the SDK): a shareable request for another party to review and authorize a payment.",
+        "Claim Link (RailsCard in the SDK): payer-authorized value that can be claimed later by a bearer or a signed recipient.",
+        "Nonce tracks: nonceChannel and nonceValue provide replay protection while allowing independent payment authorizations.",
+        "Receipts: Arc transaction receipts and Vault events establish which operations were included and whether execution succeeded.",
+        "Residual settlement: flushResidualDelta returns the remaining Vault balance according to the contract's configured residual recipient.",
       ]),
       h2("Protocol Invariants"),
       list([
-        "Absolute Non-Custodial Security: The vault pulls escrow directly from the signer's account balance based on their cryptographic signature. No intermediary, validator, or relayer ever holds or controls your funds.",
+        "Non-custodial execution: the Vault pulls the authorized allocation from the payer. Relayers submit signed calls but do not receive custody of the allocation.",
         "On-Chain Vault as Source of Truth: The smart contract state is the ultimate arbiter. All read APIs, indexers, or query layers serve only as convenient, non-authoritative projections.",
-        "Signature-Based Authentication: The Hub validates the EIP-712 payload signature rather than msg.sender. Users only need to sign intents, enabling fully sponsored or delegated transaction submission.",
+        "Signature-based authentication: the Hub validates the EIP-712 payload signature rather than msg.sender, allowing an authorized relayer or smart account to submit the exact signed terms.",
         "Composite Keys for Security: A paycardId is not globally or vault-scoped. To avoid collision and enforce safety, always key stream state by the tuple (vaultAddress, paycardId).",
         "Native Gas Coexistence: On Arc, USDC serves double duty as both the transacted asset and the native gas token. Always maintain a gas margin rather than spending your account down to the absolute last unit.",
       ]),
@@ -167,7 +218,7 @@ export const DOCS: Record<string, DocPage> = {
   sdk: {
     eyebrow: "SDK & Toolkit",
     title: "SDK reference",
-    subtitle: "Integrate real-time streaming payments into any frontend, backend, or agentic workflow. The openrails-sdk provides pluggable wallet adapters, gasless execution pathways, and turnkey integrations for modern web3 stacks.",
+    subtitle: "Use typed clients, wallet adapters, relay helpers, receipt checks, and Arc network configuration from openrails-sdk.",
     blocks: [
       h2("Installation"),
       code("bash", "npm i openrails-sdk"),
@@ -180,7 +231,7 @@ export const DOCS: Record<string, DocPage> = {
       list([
         "OpenRailsAccount: A minimal, sign-only interface. Perfectly suited for embedded wallets (Privy, Turnkey) and ERC-4337 smart accounts where transaction submission is handled off-chain.",
         "OpenRailsSubmitter: Extends the sign-only interface with transaction execution capabilities. Ideal for standard web3 wallets (metamask, rabby) or backend scripts utilizing a direct ethers.Signer.",
-        "Gasless Compatibility: Because the core Hub validates signatures rather than message senders, sign-only accounts can seamlessly drive end-to-end gasless payment streams.",
+        "Sponsored compatibility: sign-only accounts can prepare Hub authorizations for a configured relayer or smart-account submission path.",
       ]),
       h2("Privy Embedded Wallet Integration"),
       code(
@@ -286,7 +337,7 @@ export const DOCS: Record<string, DocPage> = {
     eyebrow: "Integration Patterns",
     title: "Payment links",
     subtitle:
-      "Create serverless, instantly shareable payments. Encode payment requests (RailsFlow) or funded budgets (RailsCard) entirely within URL hash fragments, ensuring client-only privacy.",
+      "Create serverless, instantly shareable payments. Encode payment requests (RailsFlow) or authorized value links (RailsCard) entirely within URL hash fragments, keeping the payload out of HTTP request logs.",
     blocks: [
       h2("Programmatic Link Generation"),
       p(
@@ -298,7 +349,7 @@ export const DOCS: Record<string, DocPage> = {
       ),
       h2("Peer-to-Peer Distribution"),
       p(
-        "Distribute these URLs across any communication channel. When opened, the counterparty signs to instantiate the stream: RailsFlow triggers a request-to-pay flow, while RailsCard carries a payer-signed budget authorized for an onchain claim.",
+        "Distribute these URLs across any communication channel. RailsFlow triggers a request-to-pay flow. RailsCard carries a signed payment intent backed by Hub allowance and is checked against the sender's live balance when claimed.",
       ),
       callout("note", "Decentralized State: The link itself acts as the self-contained state database. No backend server or centralized database is needed to store or resolve the request before it lands on-chain."),
     ],
@@ -306,15 +357,15 @@ export const DOCS: Record<string, DocPage> = {
   x402: {
     eyebrow: "Integration Patterns",
     title: "x402 gated APIs",
-    subtitle: "Revive HTTP 402 Payment Required for the agentic web. Build machine-negotiable, pay-per-request API endpoints gated by real-time streaming payments.",
+    subtitle: "An experimental HTTP 402 pattern for machine-readable payment challenges backed by OpenRails authorization and settlement primitives.",
     blocks: [
       p(
-        "The x402 pattern transforms the legacy HTTP 402 status into an automated, machine-to-machine payment negotiation. When an AI agent hits an x402-gated resource, the server issues a structured EIP-712 stream challenge. The agent cryptographically signs it, the stream locks into the vault, and the server serves the resource per-second as the stream settles.",
+        "The current x402 work is an experiment, not a stable middleware product. It combines HTTP 402 challenges, signed payment terms, relay submission, and receipt checks to test machine-to-machine service payment flows.",
       ),
       h2("x402 Protocol Handshake"),
       steps([
         { n: "1", title: "HTTP 402 Challenge", body: "The server rejects the unauthenticated request with a 402 status, returning a Payment-Required header containing a serialized, bounded stream intent." },
-        { n: "2", title: "Client Resolution", body: "The client evaluates the constraints and signs the EIP-712 envelope locally, requiring zero gas and zero native assets." },
+        { n: "2", title: "Client Resolution", body: "The client evaluates the constraints and signs the EIP-712 envelope locally. A configured sponsor may pay the submission fee." },
         { n: "3", title: "Vault Settlement", body: "The client resubmits the request with the Payment-Signature header. The server submits this signed payload to the Hub via the gasless relay to instantiate the vault escrow." },
         { n: "4", title: "Resource Delivery & Streaming", body: "The server returns a 200 OK containing a Payment-Response receipt, unlocks the API stream, and serves content as value drips to the recipient." },
       ]),
@@ -338,20 +389,20 @@ export const DOCS: Record<string, DocPage> = {
   mcp: {
     eyebrow: "Integration Patterns",
     title: "MCP server (agents)",
-    subtitle: "Empower LLM agents to pay for API services, compute, and data. Spin up a Model Context Protocol (MCP) server that grants agents secure, cryptographically capped streaming budgets.",
+    subtitle: "Expose OpenRails discovery, preparation, validation, verification, and read operations to MCP clients without giving the server signing or broadcast authority.",
     blocks: [
       h2("Installing the MCP Server"),
       code("bash", "npm i -g openrails-mcp"),
       p(
-        "Configure your AI assistant (e.g., Claude Desktop, Cursor) to load the openrails-mcp server. With built-in Arc network profiles, your agent will immediately discover tools to authorize, stream, and settle payments in conversation."
+        "Configure an MCP client to load openrails-mcp. The server can discover capabilities, prepare operation envelopes, validate requests, verify records, and read supported state. Wallet authorization and transaction submission remain explicit external steps."
       ),
-      h2("Built for Autonomous Agent safety"),
+      h2("Agent safety boundary"),
       list([
-        "Gasless Delegation: Agents do not need to hold private keys or pay gas fees. The Hub verifies the delegated signature, allowing sponsored execution.",
-        "Hard Escrow Limits: The cryptographic intent defines absolute spending caps. A runaway or compromised agent can never spend a fraction of a cent more than the pre-signed vault allocation.",
-        "Concurrent Nonce Lanes: Parallel tasks can be funded simultaneously. Using independent nonce lanes prevents head-of-line blocking and protects against transaction replay attacks.",
+        "No embedded signer: the MCP server does not create wallets, hold keys, sign payloads, or broadcast transactions.",
+        "Prepared limits: operation envelopes carry explicit asset, recipient, amount, authority, and validity constraints for external review and signing.",
+        "Replay protection: independent nonce tracks let applications coordinate parallel authorizations without sharing one sequential nonce.",
       ]),
-      callout("note", "Agent Budgets: Provision an agent's lifetime allowance via a RailsCard. It facilitates pay-per-second API consumption and guarantees that any unused portion of the budget returns to your control."),
+      callout("note", "An autonomous payment demo still requires an external wallet or smart-account runtime, policy logic, a sponsored or self-submit path, and exact receipt verification. MCP alone does not provide those functions."),
     ],
   },
   sidecar: {
@@ -361,7 +412,7 @@ export const DOCS: Record<string, DocPage> = {
     blocks: [
       h2("Architecture & Flow"),
       steps([
-        { n: "1", title: "Artist Registry", body: "Associate a MusicBrainz ID (MBID) with an artist's receiving wallet. This registry is kept in a decentralized KV store." },
+        { n: "1", title: "Artist Registry", body: "Associate a MusicBrainz ID (MBID) with an artist's receiving wallet in the sidecar's Cloudflare storage." },
         { n: "2", title: "Session Initialization", body: "Open a listener session backed by a signed EIP-712 envelope, establishing a non-custodial streaming vault for the artist." },
         { n: "3", title: "Micro-Royalty Scrobbling", body: "As tracks play, scrobble events log listening increments to Cloudflare D1, tracking exact per-second pending balances." },
         { n: "4", title: "On-Chain Drip Settlement", body: "A background keeper triggers batch drip settlements to release the accumulated earnings on-chain." },
@@ -393,7 +444,7 @@ export const DOCS: Record<string, DocPage> = {
         "State Monitoring: Monitors active Paycard Streams by parsing PaycardProvisioned event logs within a sliding block window.",
         "Automated Settling: For any active stream with accrued value, calculates the streaming delta and calls processDripSettle once it exceeds a minimum gas-efficient dust threshold.",
         "Lifespan Resolution: Immediately unlocks one-time cards (lifespan 0) on the first settlement; standard streams drip gradually based on flowVelocityPerSecond.",
-        "Restricted Execution Scope: Keepers only call settlement methods. They lack the authority to open channels or trigger final sweeps (flushResidualDelta), ensuring total security.",
+        "Restricted execution scope: keepers only call configured settlement methods. They do not receive payer signing authority or custody of the Vault allocation.",
       ]),
       h2("Manual Keeper Execution"),
       p("While the production keeper runs on a recurring cron, developers can trigger an immediate manual reconciliation sweep using an authenticated endpoint."),
@@ -415,14 +466,14 @@ export const DOCS: Record<string, DocPage> = {
   "cross-chain": {
     eyebrow: "Integration Patterns",
     title: "Cross-chain funding",
-    subtitle: "Bridge assets seamlessly to start streaming. Explore how to move USDC into the Arc Network using canonical bridges and high-speed cross-chain gateways.",
+    subtitle: "Review the available and planned paths for moving USDC into Arc before opening an OpenRails payment.",
     blocks: [
       p(
         "OpenRails operates natively on the Arc Network. To back your streams with capital originating on Ethereum, Arbitrum, or other chains, you must first bridge USDC. Two primary Circle-based cross-chain paths exist. Choose based on your latency and canonical requirements.",
       ),
       h2("Circle Gateway (Instant On-Demand Liquidity)"),
       p(
-        "Circle Gateway provides a unified cross-chain balance. You deposit USDC on a source chain and mint it on Arc in under 500ms, which is ideal for programmatically funding new streams in real-time. This flow is natively supported by the SDK.",
+        "Circle Gateway provides a unified cross-chain balance. OpenRails exposes SDK helpers for Gateway deposit and mint workflows, but applications must still verify supported chains, balances, attestations, and destination finality.",
       ),
       kv([
         { k: "GatewayWallet", v: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" },
@@ -432,7 +483,7 @@ export const DOCS: Record<string, DocPage> = {
       ]),
       h2("Circle CCTP (Canonical Cross-Chain Transfer Protocol)"),
       p(
-        "Circle's Cross-Chain Transfer Protocol (CCTP) is the gold standard for secure burn-and-mint token transport. Moving USDC via CCTP involves a source chain burn and a destination chain mint (Domain 26). While it trades speed for trustlessness (longer finality windows), it represents the most secure path for large capital allocations.",
+        "Circle CCTP moves USDC through a source-chain burn and destination-chain mint. Applications must account for the supported source chain, attestation, destination domain, and finality requirements.",
       ),
       kv([
         { k: "CCTP domain", v: "26" },
@@ -444,7 +495,7 @@ export const DOCS: Record<string, DocPage> = {
       ]),
       callout(
         "note",
-        "Current Integration Status: Circle Gateway is fully integrated and ready to use in the SDK. CCTP contracts are deployed and verified on-chain, with automated SDK integration on our immediate product roadmap.",
+        "Current integration status: Gateway deposit and mint helpers are implemented in the SDK. A fresh live cross-chain proof remains required before the product should present Gateway funding as end-to-end verified. CCTP SDK orchestration is not implemented.",
       ),
     ],
   },
@@ -486,6 +537,9 @@ export const DOCS: Record<string, DocPage> = {
     subtitle:
       "Query historical streams and vault events. Leverage our high-performance, factory-aware indexer API to search across all deployed OpenRails vaults.",
     blocks: [
+      h2("Shared Interface Runtime"),
+      code("text", "https://openrails-interface-worker.microcosm.workers.dev"),
+      p("The public Interface 1.2 Worker provides safe REST preparation, validation, verification, reads, and a signed control-plane Runtime backed by Neon Postgres. It does not sign, broadcast, hold keys, or move value."),
       h2("API Base Endpoint"),
       code("text", H),
       h2("REST API Endpoints"),
@@ -505,7 +559,7 @@ export const DOCS: Record<string, DocPage> = {
   relay: {
     eyebrow: "Protocol Reference",
     title: "Faucet & gasless relay",
-    subtitle: "Abstract transaction fees away entirely. Utilize the public faucet for instant sandbox funding and the gasless relay service to sponsor user actions.",
+    subtitle: "Use the rate-limited testnet faucet and configured relay paths for sponsored OpenRails calls, with explicit self-submit recovery when sponsorship is unavailable.",
     blocks: [
       h2("Developer Faucet Service"),
       code(
@@ -526,7 +580,7 @@ export const DOCS: Record<string, DocPage> = {
       ),
       callout(
         "note",
-        "Signature Sovereignty: Since the Hub recovers payer identity directly from the EIP-712 signature rather than inspecting msg.sender, payers require zero native gas. Keepers can freely execute transactions on their behalf.",
+        "Authorization boundary: the Hub recovers payer identity from the EIP-712 signature rather than msg.sender. A relayer can only submit the exact signed terms, and successful submission must still be confirmed against the Arc receipt and Vault state.",
       ),
     ],
   },

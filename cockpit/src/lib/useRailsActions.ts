@@ -96,24 +96,9 @@ export function useRailsActions() {
       const usdc = config.usdcAddress as `0x${string}`;
 
       const [payerBalance, payerAllowance, currentNonce] = (await Promise.all([
-        publicClient!.readContract({
-          address: usdc,
-          abi: USDC_ABI,
-          functionName: "balanceOf",
-          args: [envelope.payerAddress as `0x${string}`],
-        }),
-        publicClient!.readContract({
-          address: usdc,
-          abi: USDC_ABI,
-          functionName: "allowance",
-          args: [envelope.payerAddress as `0x${string}`, hub],
-        }),
-        publicClient!.readContract({
-          address: hub,
-          abi: HUB_ABI,
-          functionName: "accountNonceTracks",
-          args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)],
-        }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [envelope.payerAddress as `0x${string}`] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [envelope.payerAddress as `0x${string}`, hub] }),
+        publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)] }),
       ])) as [bigint, bigint, bigint];
       let funding = evaluateRailsCardFunding({
         expectedNonce: BigInt(i.nonceValue),
@@ -127,7 +112,7 @@ export function useRailsActions() {
       });
       if (!funding.ok) throw new Error(funding.message);
 
-      // Legacy cards may contain a permit. New cards establish allowance at issuance.
+      // Legacy RailsCards may carry a permit. New cards establish allowance at issuance.
       if (funding.needsPermit && envelope.permit) {
         setStatus({ id: "approving" });
         const p = envelope.permit;
@@ -241,24 +226,9 @@ export function useRailsActions() {
       const hub = config.clearinghouseAddress as `0x${string}`;
       const usdc = config.usdcAddress as `0x${string}`;
       const [payerBalance, payerAllowance, currentNonce] = (await Promise.all([
-        publicClient!.readContract({
-          address: usdc,
-          abi: USDC_ABI,
-          functionName: "balanceOf",
-          args: [envelope.payerAddress as `0x${string}`],
-        }),
-        publicClient!.readContract({
-          address: usdc,
-          abi: USDC_ABI,
-          functionName: "allowance",
-          args: [envelope.payerAddress as `0x${string}`, hub],
-        }),
-        publicClient!.readContract({
-          address: hub,
-          abi: HUB_ABI,
-          functionName: "accountNonceTracks",
-          args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)],
-        }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [envelope.payerAddress as `0x${string}`] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [envelope.payerAddress as `0x${string}`, hub] }),
+        publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)] }),
       ])) as [bigint, bigint, bigint];
       const funding = evaluateRailsCardFunding({
         expectedNonce: BigInt(i.nonceValue),
@@ -391,7 +361,7 @@ export function useRailsActions() {
       await publicClient!.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
       setStatus({ id: "success", txHash, paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 
@@ -510,7 +480,7 @@ export function useRailsActions() {
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
       setStatus({ id: "success", txHash: data.txHash, paycardId: data.paycardId ?? paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 

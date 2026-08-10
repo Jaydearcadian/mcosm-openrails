@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
-import { createArcProvider, safeRpcError } from "../../shared/rpc";
+import { authorized } from "../../shared/auth";
+import { createRpcProvider } from "../../shared/rpc";
 
 export interface Env {
   STREAM_DB: D1Database;
   ARC_RPC_URL: string;
-  ARC_CANTEEN_RPC_URL?: string;
   ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;      // V2 canonical hub — always watched
@@ -40,14 +40,6 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
-}
-
-function authorized(request: Request, secret?: string): boolean {
-  if (!secret) return false;
-  const auth = request.headers.get("Authorization") || "";
-  const bearer = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : "";
-  const headerSecret = request.headers.get("X-OpenRails-Admin-Token") || "";
-  return bearer === secret || headerSecret === secret;
 }
 
 function readPositiveInt(value: string | undefined, fallback: number): number {
@@ -134,7 +126,7 @@ async function setCursor(db: D1Database, scanKey: string, block: number): Promis
 // documents for stream-gateway.
 async function runTick(env: Env): Promise<{ vaultsDiscovered: number; eventsIngested: number; chunksUsed: number; head: number }> {
   const db = env.STREAM_DB;
-  const provider = createArcProvider(env);
+  const provider = createRpcProvider(env);
   const windowBlocks = readPositiveInt(env.SCAN_WINDOW_BLOCKS, 9000);
   const maxChunks = readPositiveInt(env.MAX_CHUNKS_PER_TICK, 20);
   const initialBackfill = readPositiveInt(env.INITIAL_BACKFILL_BLOCKS, 50000);
@@ -478,7 +470,7 @@ export default {
       if (url.pathname === "/tick") {
         if (request.method !== "POST") return jsonResponse({ error: "Only POST requests allowed" }, 405);
         if (!env.INDEXER_ADMIN_TOKEN) return jsonResponse({ error: "Indexer admin token is not configured" }, 503);
-        if (!authorized(request, env.INDEXER_ADMIN_TOKEN)) return jsonResponse({ error: "Unauthorized" }, 401);
+        if (!authorized(request, env.INDEXER_ADMIN_TOKEN, "X-OpenRails-Admin-Token")) return jsonResponse({ error: "Unauthorized" }, 401);
         const result = await runTick(env);
         return jsonResponse({ success: true, ...result });
       }

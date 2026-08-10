@@ -1,0 +1,26 @@
+{
+  "name": "openrails-interface-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenRails Shared Interface 1.2 REST and signed Runtime boundary on Cloudflare Workers.",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "bundle:check": "esbuild src/index.ts --bundle --format=esm --platform=browser --target=es2022 --outfile=/tmp/openrails-interface-worker.bundle.js && node test/bundle-smoke.mjs",
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@openrails/runtime": "file:../../packages/openrails-runtime",
+    "@openrails/shared-interface": "file:../../interface",
+    "ethers": "^6.17.0",
+    "openrails-sdk": "file:../../sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.104.0"
+  }
+}

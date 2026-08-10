@@ -19,6 +19,7 @@ import {
   validateOpenRailsAccessRequest,
 } from "./validation";
 import { registerSharedInterfaceRoutes } from "./shared-interface";
+import { createArcProvider } from "../workers/shared/rpc";
 
 const { createGatewayMiddleware } = require("@circle-fin/x402-batching/server") as {
   createGatewayMiddleware: (config: {
@@ -87,7 +88,7 @@ type X402PaidRequest = Request & {
 const GAS_FEE_BUFFER_MULTIPLIER = 1.15;
 
 // Globals to store contract instances and addresses
-let provider: ethers.JsonRpcProvider;
+let provider: ethers.AbstractProvider;
 let relayerWallet: ethers.Signer | undefined;
 let clearinghouseContract: any;
 let usdcContract: any;
@@ -405,8 +406,8 @@ async function initContracts() {
 }
 
 async function initArcTestnetReadOnly() {
-  const rpcUrl = process.env.ARC_RPC_URL || PROVIDER_URL;
-  if (!rpcUrl || isLoopbackProviderUrl(rpcUrl)) {
+  const publicRpcUrl = process.env.ARC_RPC_URL || PROVIDER_URL;
+  if (!publicRpcUrl || isLoopbackProviderUrl(publicRpcUrl)) {
     throw new Error("Arc testnet dashboard mode requires a non-loopback ARC_RPC_URL or PROVIDER_URL");
   }
 
@@ -415,15 +416,16 @@ async function initArcTestnetReadOnly() {
   if (!Number.isInteger(expectedChainId) || expectedChainId <= 0) {
     throw new Error("ARC_CHAIN_ID or registry chainId is required for Arc testnet dashboard mode");
   }
-  provider = new ethers.JsonRpcProvider(rpcUrl, expectedChainId, { staticNetwork: true });
+  provider = createArcProvider({
+    ARC_CANTEEN_RPC_URL: process.env.ARC_CANTEEN_RPC_URL,
+    ARC_RPC_URL: publicRpcUrl,
+    ARC_RPC_FALLBACK_URL: process.env.ARC_RPC_FALLBACK_URL,
+    ARC_CHAIN_ID: String(expectedChainId),
+  });
   const network = await provider.getNetwork();
   chainId = Number(network.chainId);
-  const probedChainId = Number(await provider.send("eth_chainId", []));
   if (chainId !== expectedChainId) {
     throw new Error(`Arc chain ID mismatch: expected ${expectedChainId}, got ${chainId}`);
-  }
-  if (probedChainId !== expectedChainId) {
-    throw new Error(`Arc RPC chain ID mismatch: expected ${expectedChainId}, got ${probedChainId}`);
   }
 
   usdcAddress = requireAddress(

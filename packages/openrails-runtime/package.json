@@ -1,0 +1,40 @@
+{
+  "name": "@openrails/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private headless OpenRails Runtime for Arc Testnet control-plane transitions.",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "SECURITY.md",
+    "NOTICE.md",
+    "migrations",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build && node --test test/runtime.test.mjs",
+    "test:integration": "npm run build && node --test test/postgres.integration.test.mjs",
+    "check": "npm run build && npm run typecheck && node --test test/runtime.test.mjs",
+    "pack:smoke": "node test/pack-smoke.mjs"
+  },
+  "dependencies": {
+    "@openrails/shared-interface": "file:../../interface",
+    "canonicalize": "^3.0.0",
+    "ethers": "^6.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "pg": "^8.16.3",
+    "typescript": "^5.9.3"
+  }
+}

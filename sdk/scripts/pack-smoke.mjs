@@ -17,7 +17,10 @@ const publicSpecifiers = [
   "openrails-sdk",
   "openrails-sdk/shared-interface",
   "openrails-sdk/operations",
+  "openrails-sdk/runtime-signature",
   "openrails-sdk/wallet-handoff",
+  "openrails-sdk/canonical-record",
+  "openrails-sdk/circle-gas-station",
   "openrails-sdk/arc",
   "openrails-sdk/adapters/ethers",
   "openrails-sdk/adapters/privy",
@@ -42,20 +45,31 @@ try {
   const expectedFiles = [
     "CHANGELOG.md",
     "MIGRATION.md",
+    "NOTICE.md",
     "README.md",
+    "THIRD_PARTY_LICENSES.md",
     "dist/adapters/circle.js",
     "dist/adapters/ethers.js",
     "dist/adapters/privy.js",
     "dist/adapters/turnkey.js",
     "dist/arc.d.ts",
     "dist/arc.js",
+    "dist/canonical-record.d.ts",
+    "dist/canonical-record.js",
+    "dist/circle-gas-station.d.ts",
+    "dist/circle-gas-station.js",
     "dist/generated/shared-interface-runtime.js",
+    "dist/generated/shared-interface-operations.js",
+    "dist/generated/shared-interface-runtime-signature.js",
+    "dist/generated/shared-interface-canonicalize.js",
     "dist/generated/shared-interface.d.ts",
     "dist/gateway.js",
     "dist/index.d.ts",
     "dist/index.js",
     "dist/operations.d.ts",
     "dist/operations.js",
+    "dist/runtime-signature.d.ts",
+    "dist/runtime-signature.js",
     "dist/shared-interface.d.ts",
     "dist/shared-interface.js",
     "dist/wallet-handoff.d.ts",
@@ -84,18 +98,28 @@ try {
   }
 
   const packageJson = consumerRequire("openrails-sdk/package.json");
-  assert.equal(packageJson.version, "1.0.0-rc.1");
+  assert.equal(packageJson.version, "1.1.0");
   assert.equal(packageJson.dependencies?.["@openrails/shared-interface"], undefined);
+  const installedPackageRoot = path.dirname(consumerRequire.resolve("openrails-sdk/package.json"));
+  const notice = fs.readFileSync(path.join(installedPackageRoot, "NOTICE.md"), "utf8");
+  const thirdPartyLicenses = fs.readFileSync(path.join(installedPackageRoot, "THIRD_PARTY_LICENSES.md"), "utf8");
+  assert.match(notice, /adapted and modified from `canonicalize` 3\.0\.0/);
+  assert.match(thirdPartyLicenses, /Apache License/);
+  assert.match(thirdPartyLicenses, /TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION/);
+  assert.match(thirdPartyLicenses, /END OF TERMS AND CONDITIONS/);
 
   const root = consumerRequire("openrails-sdk");
   const sharedInterface = consumerRequire("openrails-sdk/shared-interface");
   const operations = consumerRequire("openrails-sdk/operations");
+  const runtimeSignature = consumerRequire("openrails-sdk/runtime-signature");
   const walletHandoff = consumerRequire("openrails-sdk/wallet-handoff");
   const arc = consumerRequire("openrails-sdk/arc");
   assert.equal(typeof root.prepareWalletHandoff, "function");
   assert.equal(root.LeptonOpenRailsClient, undefined);
   assert.equal(typeof sharedInterface.resolveOperation, "function");
   assert.equal(typeof operations.createOperationRequest, "function");
+  assert.equal(typeof runtimeSignature.hashRuntimePayload, "function");
+  assert.equal(sharedInterface.OPENRAILS_SHARED_INTERFACE_VERSION, "1.2.0");
   assert.equal(typeof walletHandoff.verifyWalletHandoff, "function");
   assert.equal(typeof arc.LeptonOpenRailsClient, "function");
 

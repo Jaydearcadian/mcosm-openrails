@@ -1,11 +1,10 @@
 import { openListeningSession } from "./openSession";
-import { safeRpcError } from "../../shared/rpc";
+import { authorized } from "../../shared/auth";
 
 export interface Env {
   MUSICBRAINZ_REGISTRY: KVNamespace;
   STREAM_DB: D1Database;
   ARC_RPC_URL: string;
-  ARC_CANTEEN_RPC_URL?: string;
   ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
@@ -36,14 +35,6 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-function authorized(request: Request, secret?: string): boolean {
-  if (!secret) return false;
-  const auth = request.headers.get("Authorization") || "";
-  const bearer = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : "";
-  const headerSecret = request.headers.get("X-OpenRails-Webhook-Secret") || "";
-  return bearer === secret || headerSecret === secret;
-}
-
 function isBytes32Hex(value: string): boolean {
   return /^0x[a-fA-F0-9]{64}$/.test(value);
 }
@@ -70,7 +61,7 @@ export default {
 
       // PUT /artist/:mbid
       if (url.pathname.startsWith("/artist/") && request.method === "PUT") {
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         const mbid = url.pathname.slice("/artist/".length);
@@ -87,7 +78,7 @@ export default {
 
       // POST /session/open
       if (url.pathname === "/session/open" && request.method === "POST") {
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         const body = (await request.json().catch(() => null)) as {
@@ -119,8 +110,7 @@ export default {
           const result = await openListeningSession({
             hubAddress: env.OPENRAILS_HUB_ADDRESS,
             rpcUrl: env.ARC_RPC_URL,
-            canteenRpcUrl: env.ARC_CANTEEN_RPC_URL,
-            fallbackRpcUrl: env.ARC_RPC_FALLBACK_URL,
+            rpcFallbackUrl: env.ARC_RPC_FALLBACK_URL,
             chainId: Number(env.ARC_CHAIN_ID),
             relayerPrivateKey: env.MUSIC_SIDECAR_RELAYER_KEY,
             listenerAddress: body.listenerAddress,
@@ -141,7 +131,7 @@ export default {
         if (!env.WEBHOOK_SECRET) {
           return jsonResponse({ error: "Webhook secret is not configured" }, 503);
         }
-        if (!authorized(request, env.WEBHOOK_SECRET)) {
+        if (!authorized(request, env.WEBHOOK_SECRET, "X-OpenRails-Webhook-Secret")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
 

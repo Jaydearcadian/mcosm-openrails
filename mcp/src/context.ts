@@ -7,7 +7,6 @@ export interface OpenRailsMcpConfig {
   rpcUrl: string;
   hubAddress: string;
   usdcAddress: string;
-  relayUrl: string;
   appBaseUrl: string;
   explorerBaseUrl: string;
 }
@@ -30,7 +29,6 @@ export function buildContext(): OpenRailsContext {
     rpcUrl: env("OPENRAILS_RPC_URL", "https://rpc.testnet.arc.io"),
     hubAddress: env("OPENRAILS_HUB_ADDRESS", "0x941C8029F0f912df3fAb7423890ab2359b996D0b"),
     usdcAddress: env("OPENRAILS_USDC_ADDRESS", "0x3600000000000000000000000000000000000000"),
-    relayUrl: env("OPENRAILS_RELAY_URL", "https://openrails-reconciliation-worker.microcosm.workers.dev"),
     appBaseUrl: env("OPENRAILS_APP_BASE_URL", "https://openrails.pages.dev"),
     explorerBaseUrl: env("OPENRAILS_EXPLORER_BASE_URL", "https://testnet.arcscan.app"),
   };

@@ -14,14 +14,7 @@ export function rpcUrlsFromEnv(env: ArcRpcEnv): string[] {
   return [...new Set(urls)];
 }
 
-export function safeRpcError(error: unknown, fallback = "Arc RPC request failed"): string {
-  const message = error instanceof Error ? error.message : String(error || fallback);
-  return (message || fallback)
-    .replace(/https?:\/\/[^\s"']+/gi, "[RPC endpoint]")
-    .slice(0, 300);
-}
-
-export function createArcProvider(env: ArcRpcEnv): ethers.AbstractProvider {
+export function createRpcProvider(env: ArcRpcEnv): ethers.AbstractProvider {
   const urls = rpcUrlsFromEnv(env);
   if (urls.length === 0) throw new Error("No Arc RPC provider is configured");
 
@@ -31,7 +24,6 @@ export function createArcProvider(env: ArcRpcEnv): ethers.AbstractProvider {
     (url) => new ethers.JsonRpcProvider(url, network, { staticNetwork: network !== undefined }),
   );
   if (providers.length === 1) return providers[0];
-
   return new ethers.FallbackProvider(
     providers.map((provider, index) => ({
       provider,
@@ -42,4 +34,13 @@ export function createArcProvider(env: ArcRpcEnv): ethers.AbstractProvider {
     network,
     { quorum: 1 },
   );
+}
+
+export const createArcProvider = createRpcProvider;
+
+export function safeRpcError(error: unknown, fallback = "Arc RPC request failed"): string {
+  const message = error instanceof Error ? error.message : String(error || fallback);
+  return (message || fallback)
+    .replace(/https?:\/\/[^\s"']+/gi, "[RPC endpoint]")
+    .slice(0, 300);
 }

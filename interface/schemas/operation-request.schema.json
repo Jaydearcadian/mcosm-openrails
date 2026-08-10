@@ -1,83 +1,170 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.1.0/operation-request.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/operation-request.schema.json",
   "title": "OperationRequest",
   "type": "object",
   "additionalProperties": false,
   "required": ["interfaceVersion", "executionProfile", "operationId", "capability", "authorizationClass", "subject", "network", "data", "provenance", "createdAt"],
   "properties": {
-    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/InterfaceVersion" },
-    "executionProfile": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ExecutionProfile" },
+    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion" },
+    "executionProfile": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile" },
     "operationId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$" },
     "capability": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][A-Za-z0-9]+)*$" },
-    "authorizationClass": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/AuthorizationClass" },
-    "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Subject" },
-    "network": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/NetworkReference" },
-    "workspaceRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/WorkspaceRef" },
-    "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PathRef" },
-    "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/IntentRef" },
-    "proposalRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProposalRef" },
-    "pactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/PactRef" },
-    "canonicalRecordRef": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/CanonicalRecordRef" },
-    "proofRefs": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/ProofRef" }, "uniqueItems": true },
+    "authorizationClass": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/AuthorizationClass" },
+    "subject": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Subject" },
+    "network": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/NetworkReference" },
+    "workspaceRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/WorkspaceRef" },
+    "pathRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PathRef" },
+    "intentRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/IntentRef" },
+    "proposalRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProposalRef" },
+    "decisionRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/BaphometDecisionRef" },
+    "pactRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/PactRef" },
+    "canonicalRecordRef": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/CanonicalRecordRef" },
+    "proofRefs": { "type": "array", "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ProofRef" }, "uniqueItems": true },
     "data": { "anyOf": [
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/EmptyRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/NetworkIdRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WorkspaceRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ActorRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/IntentRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProposalRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PactRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ProofRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardActionRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/PaycardListRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptListRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest" },
-      { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest" }
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/EmptyRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/NetworkIdRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PathEvaluateRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/IntentRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProofRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowInspectRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsFlowPayRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardInspectRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/RailsCardClaimRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardOpenRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardActionRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PaycardListRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptListRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ReceiptVerifyRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffRefRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WalletHandoffVerifyRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaCaseRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/GaiaResolveRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/WorkspaceRegisterRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ActorRegisterRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/ProposalSubmitRequest" },
+      { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/operation-payloads.schema.json#/$defs/PactSignRequest" }
     ] },
-    "provenance": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Provenance" },
-    "createdAt": { "$ref": "https://schemas.openrails.dev/openrails/1.1.0/common.schema.json#/$defs/Timestamp" }
+    "provenance": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Provenance" },
+    "createdAt": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/Timestamp" }
   },
   "allOf": [
     {
-      "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
-      "then": { "required": ["workspaceRef", "pathRef"] }
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "enum": ["workspace.register", "actor.register", "path.activate", "path.revoke", "intent.prepare", "proposal.evaluate", "proposal.submit", "pact.sign", "proof.submit", "proof.verify"] } }, "required": ["operationId"] },
+          { "properties": { "capability": { "enum": ["workspace.register", "actor.register", "path.activate", "path.revoke", "intent.prepare", "proposal.evaluate", "proposal.submit", "pact.sign", "proof.submit", "proof.verify"] } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "properties": { "interfaceVersion": { "const": "1.2.0" } } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "workspace.register" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "workspace.register" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["workspaceRef"] }, { "required": ["pathRef"] }, { "required": ["intentRef"] },
+        { "required": ["proposalRef"] }, { "required": ["decisionRef"] }, { "required": ["pactRef"] },
+        { "required": ["canonicalRecordRef"] }, { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "actor.register" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "actor.register" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["pathRef"] }, { "required": ["intentRef"] }, { "required": ["proposalRef"] },
+        { "required": ["decisionRef"] }, { "required": ["pactRef"] }, { "required": ["canonicalRecordRef"] },
+        { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "proposal.submit" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "proposal.submit" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "anyOf": [
+        { "required": ["decisionRef"] }, { "required": ["pactRef"] },
+        { "required": ["canonicalRecordRef"] }, { "required": ["proofRefs"] }
+      ] } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "properties": { "operationId": { "const": "pact.sign" } }, "required": ["operationId"] },
+          { "properties": { "capability": { "const": "pact.sign" } }, "required": ["capability"] }
+        ]
+      },
+      "then": { "not": { "required": ["proofRefs"] } }
+    },
+    {
+      "if": {
+        "allOf": [
+          { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
+          { "not": { "properties": { "capability": { "const": "workspace.register" } }, "required": ["capability"] } }
+        ]
+      },
+      "then": { "required": ["workspaceRef"] }
+    },
+    {
+      "if": {
+        "allOf": [
+          { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] },
+          { "not": { "properties": { "capability": { "enum": ["workspace.register", "actor.register"] } }, "required": ["capability"] } }
+        ]
+      },
+      "then": { "required": ["pathRef"] }
     },
     {
       "if": { "required": ["pathRef"] },
       "then": { "required": ["workspaceRef"] }
     },
     {
-      "if": { "properties": { "capability": { "enum": ["path.evaluate", "proposal.evaluate", "pact.prepare", "pact.activate", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
+      "if": { "properties": { "capability": { "enum": ["path.evaluate", "proposal.evaluate", "proposal.submit", "pact.prepare", "pact.activate", "pact.sign", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
       "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["intentRef"] } }
     },
     {
-      "if": { "properties": { "capability": { "enum": ["proposal.evaluate", "pact.prepare", "pact.activate", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
+      "if": { "properties": { "capability": { "enum": ["proposal.evaluate", "proposal.submit", "pact.prepare", "pact.activate", "pact.sign", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
       "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["proposalRef"] } }
     },
     {
-      "if": { "properties": { "capability": { "enum": ["pact.activate", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
+      "if": { "properties": { "capability": { "enum": ["pact.activate", "pact.sign", "proof.submit", "proof.verify", "proof.get", "railsflow.pay", "railscard.claim", "paycard.open", "paycard.get", "paycard.list", "paycard.settle", "paycard.flushResidual", "receipt.get", "receipt.list", "receipt.verify", "wallet.handoff.prepare", "wallet.handoff.get", "wallet.handoff.verify", "gaia.open", "gaia.get", "gaia.resolve"] } }, "required": ["capability"] },
       "then": { "if": { "properties": { "executionProfile": { "const": "delegated-runtime" } }, "required": ["executionProfile"] }, "then": { "required": ["pactRef"] } }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "pact.sign" } }, "required": ["capability"] },
+      "then": { "required": ["decisionRef"] }
+    },
+    {
+      "if": { "properties": { "capability": { "const": "intent.prepare" } }, "required": ["capability"] },
+      "then": { "required": ["intentRef"] }
+    },
+    {
+      "if": { "properties": { "capability": { "enum": ["proof.submit", "proof.verify"] } }, "required": ["capability"] },
+      "then": { "required": ["proofRefs"] }
     }
   ]
 }

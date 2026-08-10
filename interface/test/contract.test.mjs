@@ -13,8 +13,13 @@ import {
 } from "../scripts/validation-lib.mjs";
 import {
   assertValidOperation,
+  hashRuntimePayload,
+  hashRuntimeTransition,
+  recoverRuntimeTransitionSigner,
   resolveOperation,
-  validateOperation
+  validateOperation,
+  isSignedRuntimeTransitionOperation,
+  SIGNED_RUNTIME_TRANSITION_OPERATIONS
 } from "../dist/index.js";
 import {
   hasValidProfileReferences,
@@ -24,7 +29,7 @@ import {
 } from "../scripts/contract-rules.mjs";
 
 const ajv = createAjv();
-const schema = (name) => `https://schemas.openrails.dev/openrails/1.1.0/${name}.schema.json`;
+const schema = (name) => `https://schemas.openrails.dev/openrails/1.2.0/${name}.schema.json`;
 const timestamp = "2026-08-02T00:00:00Z";
 const provenance = {
   source: "runtime-evaluation",
@@ -84,7 +89,8 @@ function operationEnvelope(operationId, data, direction = "request", overrides =
     ...overrides
   };
   if (direction === "response") {
-    Object.assign(envelope, { lifecycleState: "PREPARED", errors: [] });
+    if (!("lifecycleState" in envelope)) envelope.lifecycleState = "PREPARED";
+    if (!("errors" in envelope)) envelope.errors = [];
   }
   return envelope;
 }
@@ -517,7 +523,7 @@ test("Proof gate placement is immediately before the mapped transition", () => {
 test("operation registry is complete, typed, and never equates submission with success", () => {
   const registry = readJson("registries/operation-registry.json");
   const capabilities = readJson("registries/capability-list.json").capabilities;
-  assert.equal(registry.operations.length, 41);
+  assert.equal(registry.operations.length, 45);
   assert.deepEqual(registry.operations.map((operation) => operation.capability), capabilities);
   for (const operation of registry.operations) {
     assert.equal(operation.requestSchema, schema("operation-request"));
@@ -528,6 +534,152 @@ test("operation registry is complete, typed, and never equates submission with s
     assert.equal(operation.transactionBehavior.submissionMeansFinancialSuccess, false);
     assert.ok(operation.capabilityStatusBehavior.onUnavailable);
   }
+});
+
+test("Shared Interface 1.2 signed runtime transitions bind operation, payload, and signature without custody", () => {
+  const manifest = readJson("manifests/arc-testnet.json");
+  const cases = [
+    ["workspace.register", "workspace-register", "delegated-runtime", "PREPARED", {}],
+    ["actor.register", "actor-register", "delegated-runtime", "PREPARED", {
+      workspaceRef: ref("Workspace", "workspace:runtime:1")
+    }],
+    ["proposal.submit", "proposal-submit", "delegated-runtime", "EVALUATING", {
+      workspaceRef: ref("Workspace", "workspace:runtime:1"),
+      pathRef: ref("Path", "path:runtime:1"),
+      intentRef: ref("Intent", "intent:runtime:1"),
+      proposalRef: ref("Proposal", "proposal:runtime:1")
+    }],
+    ["pact.sign", "pact-sign", "delegated-runtime", "COMMITTED", {
+      workspaceRef: ref("Workspace", "workspace:runtime:1"),
+      pathRef: ref("Path", "path:runtime:1"),
+      intentRef: ref("Intent", "intent:runtime:1"),
+      proposalRef: ref("Proposal", "proposal:runtime:1"),
+      decisionRef: ref("BaphometDecision", "decision:runtime:1"),
+      pactRef: ref("Pact", "pact:runtime:1")
+    }]
+  ];
+
+  assert.deepEqual([...SIGNED_RUNTIME_TRANSITION_OPERATIONS], [
+    "workspace.register",
+    "actor.register",
+    "path.activate",
+    "path.revoke",
+    "intent.prepare",
+    "proposal.evaluate",
+    "proposal.submit",
+    "pact.sign",
+    "proof.submit",
+    "proof.verify"
+  ]);
+  for (const [operationId, fixtureName, executionProfile, lifecycleState, references] of cases) {
+    const operation = resolveOperation(operationId);
+    const payload = fixture(fixtureName);
+    assertValid(ajv, operation.requestDataSchema, payload, `${operationId} request payload`);
+    assertValid(ajv, operation.responseDataSchema, payload, `${operationId} response payload`);
+    assert.equal(isSignedRuntimeTransitionOperation(operationId), true);
+    assert.equal(operation.authorizationClass, "RELAY_SIGNED_ENVELOPE");
+    assert.equal(operation.introducedIn, "1.2.0");
+    assert.equal(operation.transactionBehavior.kind, "relay-signed-envelope");
+    assert.equal(operation.transactionBehavior.submissionMeansFinancialSuccess, false);
+
+    const subject = { walletAddress: payload.signatureBinding.signer, role: "delegate" };
+    const request = operationEnvelope(operationId, payload, "request", { interfaceVersion: "1.2.0", executionProfile, subject, ...references });
+    assert.equal(validateOperation(operationId, request, "request").valid, true);
+    const response = operationEnvelope(operationId, payload, "response", { interfaceVersion: "1.2.0", executionProfile, lifecycleState, subject, ...references });
+    assert.equal(validateOperation(operationId, response, "response").valid, true);
+    assertValid(ajv, schema("operation-envelope"), response, `${operationId} generic operation envelope`);
+
+    const legacyVersion = structuredClone(request);
+    legacyVersion.interfaceVersion = "1.1.0";
+    assert.equal(validateOperation(operationId, legacyVersion, "request").valid, false);
+    assertInvalid(ajv, schema("operation-request"), legacyVersion, `${operationId} raw 1.1 request`);
+    const legacyResponse = structuredClone(response);
+    legacyResponse.interfaceVersion = "1.1.0";
+    assertInvalid(ajv, schema("operation-response"), legacyResponse, `${operationId} raw 1.1 response`);
+    assertInvalid(ajv, schema("operation-envelope"), legacyResponse, `${operationId} raw 1.1 generic envelope`);
+
+    assert.equal(payload.signatureBinding.signatureStandard, "eip-712");
+    assert.equal(payload.signatureBinding.primaryType, "OpenRailsRuntimeTransition");
+    assert.equal(payload.signatureBinding.chainId, payload.signatureBinding.domain.chainId);
+    assert.deepEqual(payload.signatureBinding.domain, manifest.runtime.signatureDomain);
+    assert.equal(payload.signatureBinding.anchorContract, manifest.runtime.anchorContract);
+    assert.equal(payload.signatureBinding.signaturePurpose, "offchain-runtime");
+    assert.equal("purpose" in payload.signatureBinding.domain, false);
+    assert.equal("verifyingContract" in payload.signatureBinding.domain, false);
+    assert.ok(Date.parse(payload.signatureBinding.issuedAt) < Date.parse(payload.signatureBinding.expiresAt));
+    assert.equal(payload.signatureBinding.payloadHash, hashRuntimePayload(payload));
+    assert.match(hashRuntimeTransition(payload.signatureBinding), /^0x[0-9a-f]{64}$/);
+    assert.equal(recoverRuntimeTransitionSigner(payload.signatureBinding), payload.signatureBinding.signer);
+
+    const wrongOperationBinding = structuredClone(payload);
+    wrongOperationBinding.signatureBinding.operationId = operationId === "workspace.register"
+      ? "actor.register"
+      : "workspace.register";
+    assertInvalid(ajv, operation.requestDataSchema, wrongOperationBinding, `${operationId} wrong signature operation binding`);
+
+    const wrongPayloadHash = structuredClone(request);
+    const artifact = wrongPayloadHash.data.workspace ?? wrongPayloadHash.data.actor ?? wrongPayloadHash.data.proposal ?? wrongPayloadHash.data.pact;
+    artifact.id = `${artifact.id}:tampered`;
+    const wrongPayloadHashResult = validateOperation(operationId, wrongPayloadHash, "request");
+    assert.equal(wrongPayloadHashResult.valid, false);
+    assert.ok(wrongPayloadHashResult.issues.some((issue) => issue.message.includes("payloadHash")));
+
+    const nonCanonicalPayload = structuredClone(request);
+    const nonCanonicalArtifact = nonCanonicalPayload.data.workspace ?? nonCanonicalPayload.data.actor ?? nonCanonicalPayload.data.proposal ?? nonCanonicalPayload.data.pact;
+    nonCanonicalArtifact.id = 1n;
+    assert.doesNotThrow(() => validateOperation(operationId, nonCanonicalPayload, "request"));
+    assert.equal(validateOperation(operationId, nonCanonicalPayload, "request").valid, false);
+
+    if (operationId !== "workspace.register") {
+      const wrongReference = structuredClone(request);
+      wrongReference.workspaceRef.id = "workspace:other";
+      const wrongReferenceResult = validateOperation(operationId, wrongReference, "request");
+      assert.equal(wrongReferenceResult.valid, false);
+      assert.ok(wrongReferenceResult.issues.some((issue) => issue.message.includes("workspaceRef")));
+    }
+
+    const wrongLifecycle = structuredClone(response);
+    wrongLifecycle.lifecycleState = lifecycleState === "PREPARED" ? "EVALUATING" : "PREPARED";
+    assert.equal(validateOperation(operationId, wrongLifecycle, "response").valid, false);
+
+    const unexpectedReference = operationId === "workspace.register"
+      ? { workspaceRef: ref("Workspace", "workspace:other") }
+      : operationId === "actor.register"
+        ? { pathRef: ref("Path", "path:other") }
+        : operationId === "proposal.submit"
+          ? { pactRef: ref("Pact", "pact:other") }
+          : { proofRefs: [ref("Proof", "proof:other")] };
+    const requestWithUnexpectedReference = Object.assign(structuredClone(request), unexpectedReference);
+    assertInvalid(ajv, schema("operation-request"), requestWithUnexpectedReference, `${operationId} unexpected request reference`);
+    assert.equal(validateOperation(operationId, requestWithUnexpectedReference, "request").valid, false);
+    const responseWithUnexpectedReference = Object.assign(structuredClone(response), unexpectedReference);
+    assertInvalid(ajv, schema("operation-response"), responseWithUnexpectedReference, `${operationId} unexpected response reference`);
+    assertInvalid(ajv, schema("operation-envelope"), responseWithUnexpectedReference, `${operationId} unexpected generic reference`);
+
+    const custodyField = structuredClone(payload);
+    custodyField.privateKey = "0xnot-a-secret";
+    assertInvalid(ajv, operation.requestDataSchema, custodyField, `${operationId} custody field`);
+  }
+  assert.equal(isSignedRuntimeTransitionOperation("network.get"), false);
+});
+
+test("signed runtime transition lifecycle rules require a runtime signature and no financial effect", () => {
+  assert.equal(isAllowedTransition({ from: "DRAFT", to: "PREPARED", trigger: "REGISTER_WORKSPACE", executionProfile: "delegated-runtime" }), true);
+  assert.equal(isAllowedTransition({ from: "DRAFT", to: "PREPARED", trigger: "REGISTER_ACTOR", executionProfile: "delegated-runtime" }), true);
+  assert.equal(isAllowedTransition({ from: "DRAFT", to: "EVALUATING", trigger: "SUBMIT_PROPOSAL", executionProfile: "delegated-runtime" }), true);
+  assert.equal(isAllowedTransition({ from: "ALLOWED", to: "COMMITTED", trigger: "SIGN_PACT", executionProfile: "delegated-runtime" }), true);
+  assert.equal(isAllowedTransition({ from: "DRAFT", to: "COMMITTED", trigger: "SIGN_PACT", executionProfile: "delegated-runtime" }), false);
+  assert.equal(isAllowedTransition({ from: "DRAFT", to: "EVALUATING", trigger: "SUBMIT_PROPOSAL", executionProfile: "direct-wallet-authorized" }), false);
+
+  const transitions = readJson("registries/transition-rules.json").allowedTransitions;
+  for (const trigger of ["REGISTER_WORKSPACE", "REGISTER_ACTOR", "SUBMIT_PROPOSAL"]) {
+    const transition = transitions.find((candidate) => candidate.trigger === trigger);
+    assert.deepEqual(transition.requires, ["RUNTIME_SIGNATURE"]);
+    assert.equal(transition.financialEffect, "NONE");
+  }
+  const pactTransition = transitions.find((candidate) => candidate.trigger === "SIGN_PACT");
+  assert.deepEqual(pactTransition.requires, ["ALLOW_DECISION", "PACT", "RUNTIME_SIGNATURE"]);
+  assert.equal(pactTransition.financialEffect, "NONE");
 });
 
 test("the exported operation validator binds wrapper metadata and exact payload schemas", () => {
@@ -714,7 +866,20 @@ test("Arc Testnet manifest is typed and keeps delegated Runtime explicitly not l
   assert.equal(manifest.chainId, "5042002");
   assert.equal(manifest.runtime.workspaceRuntimeStatus, "NOT_LIVE");
   assert.equal(manifest.runtime.delegatedRuntimeFinancialAuthority, "wallet-boundary");
+  assert.equal(manifest.runtime.signatureDomain.name, "OpenRails Runtime");
+  assert.equal(manifest.runtime.signatureDomain.version, "1.2.0");
+  assert.equal(manifest.runtime.signatureDomain.chainId, manifest.chainId);
+  assert.equal(manifest.runtime.signaturePurpose, "offchain-runtime");
+  assert.equal("purpose" in manifest.runtime.signatureDomain, false);
+  assert.equal("verifyingContract" in manifest.runtime.signatureDomain, false);
+  assert.equal(manifest.runtime.anchorContract, manifest.contracts.find((contract) => contract.id === "arcOpenRailsHubV2").address);
   assert.deepEqual(manifest.capabilities.map((capability) => capability.capability), readJson("registries/capability-list.json").capabilities);
+  for (const capability of ["workspace.register", "actor.register", "proposal.submit", "pact.sign"]) {
+    const declaration = manifest.capabilities.find((item) => item.capability === capability);
+    assert.equal(declaration.status, "UNAVAILABLE");
+    assert.notEqual(declaration.status, "LIVE");
+    assert.deepEqual(declaration.authorizationClasses, ["RELAY_SIGNED_ENVELOPE"]);
+  }
 });
 
 test("public operation boundaries reject unknown payload properties", () => {

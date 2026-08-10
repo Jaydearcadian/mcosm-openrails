@@ -30,6 +30,20 @@ const PERMIT_TYPES = {
   ],
 } as const;
 
+/** Retry with exponential backoff — absorbs transient Arc RPC timeouts/429s. */
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3, baseMs = 500): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (i < maxAttempts - 1) await new Promise((r) => setTimeout(r, baseMs * 2 ** i));
+    }
+  }
+  throw lastErr;
+}
+
 /** Sign an EIP-2612 permit for USDC using the connected wallet. Reads name/version/nonce on-chain. */
 export async function signFlowPermit(params: {
   publicClient: PublicClient;
@@ -50,9 +64,9 @@ export async function signFlowPermit(params: {
   const deadline = params.deadlineSeconds ?? Math.floor(Date.now() / 1000) + 3600;
 
   const [name, nonce, version] = await Promise.all([
-    publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "name" }) as Promise<string>,
-    publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "nonces", args: [owner] }) as Promise<bigint>,
-    (publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "version" }) as Promise<string>).catch(() => "1"),
+    withRetry(() => publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "name" }) as Promise<string>),
+    withRetry(() => publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "nonces", args: [owner] }) as Promise<bigint>),
+    withRetry(() => (publicClient.readContract({ address: token, abi: USDC_ABI, functionName: "version" }) as Promise<string>).catch(() => "1")),
   ]);
 
   const domain = { name, version, chainId, verifyingContract: token };

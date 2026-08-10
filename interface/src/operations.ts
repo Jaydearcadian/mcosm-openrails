@@ -1,17 +1,34 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { Ajv2020, type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
+import type { ErrorObject, ValidateFunction } from "ajv";
 
-const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SCHEMA_ROOT = path.join(PACKAGE_ROOT, "schemas");
-const REGISTRY_PATH = path.join(PACKAGE_ROOT, "registries", "operation-registry.json");
+import { OPERATION_REGISTRY_ARTIFACT } from "./artifacts.js";
+import { schemaNames, validators } from "./generated/validators.js";
+import { hashRuntimePayload } from "./runtime-signature.js";
 
 export type OperationDirection = "request" | "response";
+
+export const SIGNED_RUNTIME_TRANSITION_OPERATIONS = [
+  "workspace.register",
+  "actor.register",
+  "path.activate",
+  "path.revoke",
+  "intent.prepare",
+  "proposal.evaluate",
+  "proposal.submit",
+  "pact.sign",
+  "proof.submit",
+  "proof.verify"
+] as const;
+
+export type SignedRuntimeTransitionOperation = typeof SIGNED_RUNTIME_TRANSITION_OPERATIONS[number];
+
+export function isSignedRuntimeTransitionOperation(value: string): value is SignedRuntimeTransitionOperation {
+  return SIGNED_RUNTIME_TRANSITION_OPERATIONS.includes(value as SignedRuntimeTransitionOperation);
+}
 
 export interface OperationRegistryEntry {
   operationId: string;
   capability: string;
+  introducedIn?: string;
   requestSchema: string;
   responseSchema: string;
   requestDataSchema: string;
@@ -42,16 +59,23 @@ interface OperationRegistryFile {
 }
 
 interface EnvelopeRecord {
+  interfaceVersion?: unknown;
   operationId?: unknown;
   capability?: unknown;
   authorizationClass?: unknown;
   executionProfile?: unknown;
   lifecycleState?: unknown;
+  workspaceRef?: unknown;
+  pathRef?: unknown;
+  intentRef?: unknown;
+  proposalRef?: unknown;
+  decisionRef?: unknown;
+  pactRef?: unknown;
+  canonicalRecordRef?: unknown;
+  proofRefs?: unknown;
+  subject?: unknown;
+  network?: unknown;
   data?: unknown;
-}
-
-function readJson<T>(filePath: string): T {
-  return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -68,20 +92,7 @@ function addAjvError(issues: OperationValidationIssue[], stage: "wrapper" | "pay
   });
 }
 
-function buildValidator(): Ajv2020 {
-  const ajv = new Ajv2020({ allErrors: true, strict: false, validateFormats: true });
-  ajv.addFormat("date-time", {
-    type: "string",
-    validate: (value: string) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$/.test(value) && !Number.isNaN(Date.parse(value))
-  });
-  for (const file of fs.readdirSync(SCHEMA_ROOT).filter((entry) => entry.endsWith(".schema.json")).sort()) {
-    ajv.addSchema(readJson(path.join(SCHEMA_ROOT, file)));
-  }
-  return ajv;
-}
-
-const ajv = buildValidator();
-const registry = readJson<OperationRegistryFile>(REGISTRY_PATH);
+const registry = OPERATION_REGISTRY_ARTIFACT as OperationRegistryFile;
 
 export function resolveOperation(operationIdOrCapability: string): OperationRegistryEntry {
   const operation = registry.operations.find((entry) => entry.operationId === operationIdOrCapability || entry.capability === operationIdOrCapability);
@@ -90,7 +101,10 @@ export function resolveOperation(operationIdOrCapability: string): OperationRegi
 }
 
 function validatorFor(schemaRef: string): ValidateFunction {
-  const validator = ajv.getSchema(schemaRef);
+  const validatorName = (schemaNames as Record<string, string>)[schemaRef];
+  const validator = validatorName
+    ? (validators as unknown as Record<string, ValidateFunction>)[validatorName]
+    : undefined;
   if (!validator) throw new Error(`No validator registered for ${schemaRef}`);
   return validator;
 }
@@ -99,10 +113,151 @@ function addMetadataIssue(issues: OperationValidationIssue[], message: string): 
   issues.push({ stage: "metadata", message });
 }
 
+function compareInterfaceVersions(left: string, right: string): number {
+  const leftParts = left.split(".").map(Number);
+  const rightParts = right.split(".").map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return 0;
+}
+
 function isTerminalNullResponse(value: EnvelopeRecord, direction: OperationDirection): boolean {
   return direction === "response"
     && value.data === null
     && ["FAILED", "BLOCKED", "CANCELLED"].includes(String(value.lifecycleState));
+}
+
+function sameReference(left: unknown, right: unknown): boolean {
+  if (!isRecord(left) || !isRecord(right)) return false;
+  return left.type === right.type && left.id === right.id;
+}
+
+function artifactReference(type: string, artifact: unknown): Record<string, unknown> | undefined {
+  return isRecord(artifact) && typeof artifact.id === "string" ? { type, id: artifact.id } : undefined;
+}
+
+function validateRuntimeTransitionBindings(operationId: string, value: EnvelopeRecord, direction: OperationDirection, issues: OperationValidationIssue[]): void {
+  if (!isSignedRuntimeTransitionOperation(operationId) || !isRecord(value.data)) return;
+
+  const payload = value.data;
+  const references: Array<[keyof EnvelopeRecord, unknown]> = [];
+  if (operationId === "path.activate" && isRecord(payload.path)) {
+    references.push(
+      ["workspaceRef", payload.path.workspaceRef],
+      ["pathRef", artifactReference("Path", payload.path)]
+    );
+  } else if (operationId === "path.revoke") {
+    references.push(["pathRef", direction === "request" ? payload.objectRef : artifactReference("Path", payload.path)]);
+  } else if (operationId === "intent.prepare" && isRecord(payload.intent)) {
+    references.push(
+      ["workspaceRef", payload.intent.workspaceRef],
+      ["pathRef", payload.intent.pathRef],
+      ["intentRef", artifactReference("Intent", payload.intent)]
+    );
+  } else if (operationId === "actor.register") {
+    references.push(["workspaceRef", payload.workspaceRef]);
+  } else if (operationId === "proposal.evaluate" && isRecord(payload.proposal)) {
+    references.push(
+      ["workspaceRef", payload.proposal.workspaceRef],
+      ["pathRef", payload.proposal.pathRef],
+      ["intentRef", payload.proposal.intentRef],
+      ["proposalRef", artifactReference("Proposal", payload.proposal)]
+    );
+  } else if (operationId === "proposal.submit" && isRecord(payload.proposal)) {
+    references.push(
+      ["workspaceRef", payload.proposal.workspaceRef],
+      ["pathRef", payload.proposal.pathRef],
+      ["intentRef", payload.proposal.intentRef],
+      ["proposalRef", artifactReference("Proposal", payload.proposal)]
+    );
+  } else if (operationId === "pact.sign" && isRecord(payload.pact)) {
+    references.push(
+      ["workspaceRef", payload.pact.workspaceRef],
+      ["pathRef", payload.pact.pathRef],
+      ["intentRef", payload.intentRef],
+      ["proposalRef", payload.pact.proposalRef],
+      ["decisionRef", payload.pact.decisionRef],
+      ["pactRef", artifactReference("Pact", payload.pact)]
+    );
+    if (isRecord(payload.canonicalRecord)) references.push(["canonicalRecordRef", artifactReference("CanonicalRecord", payload.canonicalRecord)]);
+  } else if (operationId === "proof.submit" && isRecord(payload.proof)) {
+    references.push(
+      ["workspaceRef", payload.proof.workspaceRef],
+      ["pathRef", payload.proof.pathRef],
+      ["intentRef", payload.proof.intentRef],
+      ["proposalRef", payload.proof.proposalRef],
+      ["pactRef", payload.proof.pactRef],
+      ["proofRefs", artifactReference("Proof", payload.proof)]
+    );
+  } else if (operationId === "proof.verify") {
+    references.push([
+      "proofRefs",
+      direction === "request" ? payload.objectRef : artifactReference("Proof", payload.proof)
+    ]);
+  }
+
+  for (const [key, expected] of references) {
+    if (key === "proofRefs") {
+      const refs = Array.isArray(value.proofRefs) ? value.proofRefs : [];
+      if (!refs.some((candidate) => sameReference(candidate, expected))) addMetadataIssue(issues, "proofRefs must include the signed payload reference.");
+    } else if (!sameReference(value[key], expected)) {
+      addMetadataIssue(issues, `${String(key)} must equal the signed payload reference.`);
+    }
+  }
+
+  const binding = isRecord(payload.signatureBinding) ? payload.signatureBinding : undefined;
+  const domain = binding && isRecord(binding.domain) ? binding.domain : undefined;
+  const network = isRecord(value.network) ? value.network : undefined;
+  if (binding && binding.operationId !== operationId) {
+    addMetadataIssue(issues, "signature binding operationId must equal the envelope operationId.");
+  }
+  if (binding && domain && binding.chainId !== domain.chainId) {
+    addMetadataIssue(issues, "signature binding chainId must equal the EIP-712 domain chainId.");
+  }
+  if (binding && network && binding.chainId !== network.chainId) {
+    addMetadataIssue(issues, "signature binding chainId must equal the envelope network chainId.");
+  }
+  if (binding && direction === "request") {
+    try {
+      if (binding.payloadHash !== hashRuntimePayload(payload)) {
+        addMetadataIssue(issues, "signature binding payloadHash must equal the canonical request payload hash.");
+      }
+    } catch {
+      addMetadataIssue(issues, "runtime transition data must be JSON-canonicalizable.");
+    }
+  }
+  const subject = isRecord(value.subject) ? value.subject : undefined;
+  if (binding && subject && typeof subject.walletAddress === "string" && String(subject.walletAddress).toLowerCase() !== String(binding.signer).toLowerCase()) {
+    addMetadataIssue(issues, "subject walletAddress must equal the runtime signature signer.");
+  }
+}
+
+function validateRuntimeTransitionLifecycle(
+  operationId: string,
+  value: EnvelopeRecord,
+  direction: OperationDirection,
+  issues: OperationValidationIssue[]
+): void {
+  if (direction !== "response" || value.data === null || !isSignedRuntimeTransitionOperation(operationId)) return;
+  const expectedState: Record<SignedRuntimeTransitionOperation, string | string[]> = {
+    "workspace.register": "PREPARED",
+    "actor.register": "PREPARED",
+    "path.activate": "COMMITTED",
+    "path.revoke": "CANCELLED",
+    "intent.prepare": "PREPARED",
+    "proposal.evaluate": ["ALLOWED", "BLOCKED"],
+    "proposal.submit": "EVALUATING",
+    "pact.sign": "COMMITTED",
+    "proof.submit": "PROOF_PENDING",
+    "proof.verify": "PROOF_VERIFIED"
+  };
+  const expected = expectedState[operationId];
+  const expectedValues = Array.isArray(expected) ? expected : [expected];
+  if (!expectedValues.includes(String(value.lifecycleState))) {
+    addMetadataIssue(issues, `${operationId} successful response lifecycleState must equal one of ${expectedValues.join(", ")}.`);
+  }
 }
 
 export function validateOperation(
@@ -126,12 +281,17 @@ export function validateOperation(
   if (value.operationId !== value.capability) {
     addMetadataIssue(issues, "operationId must equal capability.");
   }
+  if (operation.introducedIn && compareInterfaceVersions(String(value.interfaceVersion ?? "0.0.0"), operation.introducedIn) < 0) {
+    addMetadataIssue(issues, `${operation.operationId} requires Shared Interface ${operation.introducedIn} or later.`);
+  }
   if (value.authorizationClass !== operation.authorizationClass) {
     addMetadataIssue(issues, `authorizationClass must equal ${operation.authorizationClass}.`);
   }
   if (!operation.allowedExecutionProfiles.includes(String(value.executionProfile))) {
     addMetadataIssue(issues, `executionProfile is not allowed for ${operation.operationId}.`);
   }
+  validateRuntimeTransitionBindings(operation.operationId, value, direction, issues);
+  validateRuntimeTransitionLifecycle(operation.operationId, value, direction, issues);
 
   const wrapperSchema = direction === "request" ? operation.requestSchema : operation.responseSchema;
   const dataSchema = direction === "request" ? operation.requestDataSchema : operation.responseDataSchema;

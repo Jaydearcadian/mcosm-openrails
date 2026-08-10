@@ -1,0 +1,40 @@
+{
+  "workspaceRef": { "type": "Workspace", "id": "workspace:runtime:1" },
+  "actor": {
+    "interfaceVersion": "1.2.0",
+    "id": "actor:service",
+    "kind": "service",
+    "displayName": "Settlement Service",
+    "authorityStatus": "UNVERIFIED",
+    "createdAt": "2026-08-08T00:00:00Z",
+    "provenance": {
+      "source": "wallet-signed",
+      "authority": "OpenRails interface tests",
+      "evidenceLevel": "runtime-observed",
+      "observedAt": "2026-08-08T00:00:00Z",
+      "repository": "Jaydearcadian/mcosm-OpenRails",
+      "commit": "df70344",
+      "evidenceRefs": ["TEST-OR-PR2"]
+    }
+  },
+  "signatureBinding": {
+    "signatureStandard": "eip-712",
+    "primaryType": "OpenRailsRuntimeTransition",
+    "signaturePurpose": "offchain-runtime",
+    "operationId": "actor.register",
+    "payloadHash": "0xc9d374a51da1178af6add55f2ce6951807270812c894bc7ad8ad61ecbeea56f6",
+    "signer": "0x28ef60aA0537471e5FFf5c84769237C5C1B93853",
+    "signature": "0xa61f0c7220e1e2f9e2382b36271a78d14e2e4c627161a91d8bd6c0fca0f856b4634d638203f7362f693ead7adcd6582d03ad6cc09f1c290c554850b443d567a21b",
+    "nonce": "1",
+    "issuedAt": "2026-08-08T00:00:00Z",
+    "expiresAt": "2026-08-09T00:00:00Z",
+    "chainId": "5042002",
+    "anchorContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+    "domain": {
+      "name": "OpenRails Runtime",
+      "version": "1.2.0",
+      "chainId": "5042002",
+      "salt": "0x1544b041010f9c62321178d4f9a37adf6a9ada7feaf89238f6c1b5f27ebd0bbf"
+    }
+  }
+}

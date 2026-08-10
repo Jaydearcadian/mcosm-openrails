@@ -12,12 +12,14 @@ is performed → recover residual. Usable by humans or agents.
 npm i openrails-sdk        # library + the `openrails` CLI
 ```
 
-## 1.0 release candidate
+## 1.1 stable release
 
-`1.0.0-rc.1` makes the package root the Shared Interface 1.1 safe surface. It exports canonical
+`1.1.0` makes the package root the Shared Interface 1.2 safe surface. It exports canonical
 types, the Arc capability manifest, operation envelopes, receipts, errors, and external-wallet
-`WalletHandoff` helpers. The root prepares, reads, records, and verifies. It does not accept
-private keys, create signers, or broadcast transactions.
+`WalletHandoff` helpers. It also supports the four signed runtime operation shapes: workspace
+registration, actor registration, proposal submission, and Pact signing. The root prepares,
+reads, records, validates, and verifies. It does not accept private keys, create signers, or
+broadcast transactions.
 
 ```ts
 import { prepareWalletHandoff, verifyWalletHandoff } from "openrails-sdk";
@@ -25,8 +27,18 @@ import { prepareWalletHandoff, verifyWalletHandoff } from "openrails-sdk";
 
 Canonical Records are optional per Pact policy. The SDK can create and structurally verify
 encrypted or public record envelopes, bind them to Pact parties and settlement references, and
-leave cryptographic actor verification to an application-provided verifier. See
-[`../docs/shared-interface-1.1.md`](../docs/shared-interface-1.1.md).
+leave cryptographic actor verification to an application-provided verifier. The canonical
+schemas and operation registry are generated from the repository `interface/` contract.
+
+Runtime signatures use the canonical `OpenRailsRuntimeTransition` EIP-712 primary type, RFC 8785
+payload hashing, the 1.2 domain, and explicit `decisionRef` binding where required. The SDK can
+prepare and validate these shapes and recover an external signature. An external wallet remains
+responsible for signing.
+
+For signed runtime operations, `createOperationRequest` derives the signer subject, Arc network,
+signed references, fixed configuration-only provenance, and wrapper timestamp. The wrapper states
+that the external signature is present but unverified. Caller context cannot replace these fields;
+exact duplicates are accepted only for compatibility.
 
 The Circle Gas Station subpath prepares a credential-gated Arc Testnet SCA handoff without
 custody of keys or direct transaction broadcast. It reports configuration or runtime evidence
@@ -38,7 +50,7 @@ import { createCanonicalRecord, verifyCanonicalRecord } from "openrails-sdk/cano
 ```
 
 Existing 0.1.3 Arc APIs remain available from `openrails-sdk/arc`. The Arc examples below use that
-compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary and RC status.
+compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary.
 
 ## Library
 ```ts
@@ -65,8 +77,9 @@ await submitSettleWithSigner(signer, hubAddress, paycardId);   // processDripSet
 await submitFlushWithSigner(signer, hubAddress, paycardId);    // flushResidualDelta
 ```
 
-The public surface is re-exported from the package root (`client`, `wallet`, `metadata`,
-`links`, `receipts`, `nonce`, `proof`, `policy`, `access`, …).
+These Arc transaction modules are exported from `openrails-sdk/arc`, not from the safe package
+root. The compatibility surface includes `client`, `wallet`, `metadata`, `links`, `receipts`,
+`nonce`, `proof`, `policy`, and `access`.
 
 ## Signer abstraction & gasless
 

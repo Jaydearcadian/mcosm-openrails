@@ -1,5 +1,4 @@
 export const UINT256_MAX = (1n << 256n) - 1n;
-
 const MAX_SAFE_NONCE_CHANNEL = BigInt(Number.MAX_SAFE_INTEGER);
 
 export function railsCardNonceChannelFromWords(high: number, low: number): bigint {
@@ -10,9 +9,7 @@ export function railsCardNonceChannelFromWords(high: number, low: number): bigin
 export function randomRailsCardNonceChannel(): bigint {
   const words = globalThis.crypto.getRandomValues(new Uint32Array(2));
   const channel = railsCardNonceChannelFromWords(words[0], words[1]);
-  if (channel > MAX_SAFE_NONCE_CHANNEL) {
-    throw new Error("RailsCard nonce channel is not safely serializable.");
-  }
+  if (channel > MAX_SAFE_NONCE_CHANNEL) throw new Error("RailsCard nonce channel is not safely serializable.");
   return channel;
 }
 
@@ -35,11 +32,7 @@ export interface RailsCardFundingState {
 
 export type RailsCardFundingDecision =
   | { ok: true; needsPermit: boolean }
-  | {
-      ok: false;
-      code: "stale" | "balance" | "expired" | "authorization";
-      message: string;
-    };
+  | { ok: false; code: "stale" | "balance" | "expired" | "authorization"; message: string };
 
 export function nextRailsCardAllowance(currentAllowance: bigint, allocation: bigint): bigint {
   if (allocation <= 0n) throw new Error("RailsCard allocation must be positive.");
@@ -47,9 +40,7 @@ export function nextRailsCardAllowance(currentAllowance: bigint, allocation: big
   return currentAllowance + allocation;
 }
 
-export function evaluateRailsCardFunding(
-  state: RailsCardFundingState,
-): RailsCardFundingDecision {
+export function evaluateRailsCardFunding(state: RailsCardFundingState): RailsCardFundingDecision {
   if (state.currentNonce !== state.expectedNonce) {
     return {
       ok: false,
@@ -75,20 +66,10 @@ export function evaluateRailsCardFunding(
     };
   }
 
-  let permitValue: bigint;
-  try {
-    permitValue = BigInt(permit.value);
-  } catch {
-    return {
-      ok: false,
-      code: "authorization",
-      message: "The sender's RailsCard authorization is invalid. Ask the sender to reissue it.",
-    };
-  }
-
   const ownerMatches = permit.owner.toLowerCase() === state.payer.toLowerCase();
   const spenderMatches = permit.spender.toLowerCase() === state.hub.toLowerCase();
-  if (!ownerMatches || !spenderMatches || permitValue < state.allocation) {
+  const valueCoversCard = BigInt(permit.value) >= state.allocation;
+  if (!ownerMatches || !spenderMatches || !valueCoversCard) {
     return {
       ok: false,
       code: "authorization",

@@ -1,9 +1,11 @@
-/** Safe-only MCP handlers for the OpenRails Shared Interface 1.1 surface. */
+/** Safe-only MCP handlers for the OpenRails Shared Interface 1.2 surface. */
 import {
   assertCanonicalRecordPolicy,
   canonicalRecordCapabilityDeclaration,
   createOperationRequest,
   getArcTestnetManifest,
+  isSignedRuntimeTransitionOperation,
+  SIGNED_RUNTIME_TRANSITION_OPERATIONS,
   validateOperationRequest,
   validateOperationResponse,
   verifyCanonicalRecord,
@@ -69,8 +71,9 @@ function defaultContext(ctx: OpenRailsContext): OperationContext {
 
 function operationContext(ctx: OpenRailsContext, supplied: unknown): OperationContext {
   rejectCustodyFields(supplied);
-  if (!supplied || typeof supplied !== "object" || Array.isArray(supplied)) return defaultContext(ctx);
-  const context = { ...defaultContext(ctx), ...(supplied as Partial<OperationContext>) } as OperationContext;
+  const base = defaultContext(ctx);
+  if (!supplied || typeof supplied !== "object" || Array.isArray(supplied)) return base;
+  const context = { ...base, ...(supplied as Partial<OperationContext>) } as OperationContext;
   if (context.network.networkId !== ctx.manifest.networkId || context.network.chainId !== String(ctx.config.chainId)) {
     throw new Error("Operation context network must match the configured Arc Testnet network");
   }
@@ -82,6 +85,14 @@ export async function openrailsCapabilities(ctx: OpenRailsContext) {
     interfaceVersion: ctx.manifest.interfaceVersion,
     network: ctx.manifest,
     capabilities: ctx.manifest.capabilities,
+    runtimeOperations: SIGNED_RUNTIME_TRANSITION_OPERATIONS,
+    runtimeSignature: {
+      standard: "eip-712",
+      canPrepare: true,
+      canValidate: true,
+      canRecover: false,
+      canSign: false,
+    },
     safeSurface: {
       canRead: true,
       canPrepare: true,
@@ -111,7 +122,9 @@ export async function prepareOperation(
   const request = createOperationRequest(
     args.operationId,
     args.data as OperationRequest["data"],
-    operationContext(ctx, args.context),
+    isSignedRuntimeTransitionOperation(args.operationId)
+      ? args.context as Partial<OperationContext> | undefined
+      : operationContext(ctx, args.context),
   );
   return {
     valid: true,

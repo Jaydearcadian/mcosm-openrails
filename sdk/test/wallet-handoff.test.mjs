@@ -119,7 +119,7 @@ function receipt(status, transactionHash = TX_HASH) {
 
 test("prepares a canonical external-wallet handoff without custody fields", () => {
   const handoff = prepared({ privateKey: "must-not-survive" });
-  assert.equal(handoff.interfaceVersion, "1.1.0");
+  assert.equal(handoff.interfaceVersion, "1.2.0");
   assert.equal(handoff.operationId, "paycard.open");
   assert.equal(handoff.correlationId, "correlation:test:1");
   assert.equal(handoff.preparedRequest.chainId, NETWORK.chainId);
@@ -254,7 +254,7 @@ test("keeps private-key, signer creation, and broadcast APIs out of the safe roo
   ];
   for (const name of prohibitedExports) assert.equal(api[name], undefined, `${name} leaked into the safe root`);
 
-  const autonomousKeys = Object.keys(api).filter((name) => /private.?key|^(?:sign|submit|broadcast|sendTransaction|createSigner)/i.test(name));
+  const autonomousKeys = Object.keys(api).filter((name) => /private.?key|^(?:signPermission|signTypedData|submit|broadcast|sendTransaction|createSigner)/i.test(name));
   assert.deepEqual(autonomousKeys, []);
   assert.equal(typeof api.prepareWalletHandoff, "function");
   assert.equal(typeof api.recordWalletSubmission, "function");

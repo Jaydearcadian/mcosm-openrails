@@ -1,9 +1,9 @@
 import { ethers } from "ethers";
-import { createArcProvider, safeRpcError } from "../../shared/rpc";
+import { authorized } from "../../shared/auth";
+import { createRpcProvider } from "../../shared/rpc";
 
 export interface Env {
   ARC_RPC_URL: string;
-  ARC_CANTEEN_RPC_URL?: string;
   ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   ARC_USDC_ADDRESS: string;
@@ -37,14 +37,6 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
-}
-
-function authorized(request: Request, secret?: string): boolean {
-  if (!secret) return false;
-  const auth = request.headers.get("Authorization") || "";
-  const bearer = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : "";
-  const headerSecret = request.headers.get("X-OpenRails-Admin-Token") || "";
-  return bearer === secret || headerSecret === secret;
 }
 
 function isEvmAddress(value: string): boolean {
@@ -108,7 +100,7 @@ async function handleFund(request: Request, env: Env): Promise<Response> {
     return jsonResponse({ error: "Daily faucet cap reached, try again tomorrow" }, 429);
   }
 
-  const provider = createArcProvider(env);
+  const provider = createRpcProvider(env);
   const signer = new ethers.Wallet(env.FAUCET_SIGNER_KEY, provider);
   const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, ERC20_ABI, signer);
 
@@ -155,10 +147,10 @@ async function handleFund(request: Request, env: Env): Promise<Response> {
 
 async function handleStatus(request: Request, env: Env): Promise<Response> {
   if (!env.FAUCET_ADMIN_TOKEN) return jsonResponse({ error: "Faucet admin token is not configured" }, 503);
-  if (!authorized(request, env.FAUCET_ADMIN_TOKEN)) return jsonResponse({ error: "Unauthorized" }, 401);
+  if (!authorized(request, env.FAUCET_ADMIN_TOKEN, "X-OpenRails-Admin-Token")) return jsonResponse({ error: "Unauthorized" }, 401);
   if (!env.FAUCET_SIGNER_KEY) return jsonResponse({ error: "Faucet signer is not configured" }, 503);
 
-  const provider = createArcProvider(env);
+  const provider = createRpcProvider(env);
   const signer = new ethers.Wallet(env.FAUCET_SIGNER_KEY, provider);
   const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, ERC20_ABI, provider);
   const balance: bigint = await usdc.balanceOf(signer.address);

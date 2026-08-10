@@ -5,6 +5,7 @@ import {
   canonicalRecordCapabilityDeclaration,
   CircleGasStationAdapter,
   createOperationRequest,
+  isSignedRuntimeTransitionOperation,
   validateOperationRequest,
   validateOperationResponse,
   verifyCanonicalRecord,
@@ -12,9 +13,17 @@ import {
   type CanonicalRecordPolicy,
   type Pact,
 } from "../sdk/src/index";
+import { createRateLimiter } from "./rate-limiter";
 
 const ARC_NETWORK = { networkId: "arc-testnet", chainId: "5042002" } as const;
+const INTERFACE_ROUTE_BASES = [
+  "/api/v1/interface",
+  "/api/interface",
+  `/api/interface/${ARC_TESTNET_MANIFEST.interfaceVersion}`,
+] as const;
+const MAX_INTERFACE_BODY_BYTES = 64 * 1024;
 const circleGasStation = new CircleGasStationAdapter({ credentialsPresent: false });
+const interfaceLimiter = createRateLimiter({ maxTokens: 20, refillRate: 5 });
 
 function rejectCustodyFields(value: unknown, path = "body"): void {
   if (!value || typeof value !== "object") return;
@@ -33,6 +42,9 @@ function rejectCustodyFields(value: unknown, path = "body"): void {
 function bodyRecord(req: Request): Record<string, unknown> {
   if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
     throw new Error("JSON object body required");
+  }
+  if (Buffer.byteLength(JSON.stringify(req.body), "utf8") > MAX_INTERFACE_BODY_BYTES) {
+    throw new Error(`JSON body exceeds the ${MAX_INTERFACE_BODY_BYTES} byte interface limit`);
   }
   return req.body as Record<string, unknown>;
 }
@@ -66,9 +78,8 @@ function readInterfaceObject(req: Request, res: Response): void {
   });
 }
 
-/** Register the Shared Interface safe REST boundary. It never signs or broadcasts. */
-export function registerSharedInterfaceRoutes(app: Express): void {
-  app.get("/api/interface/capabilities", (_req, res) => {
+function registerRouteSet(app: Express, base: string): void {
+  app.get(`${base}/capabilities`, (_req, res) => {
     res.json({
       interfaceVersion: ARC_TESTNET_MANIFEST.interfaceVersion,
       network: ARC_NETWORK,
@@ -91,14 +102,17 @@ export function registerSharedInterfaceRoutes(app: Express): void {
     });
   });
 
-  app.post("/api/interface/prepare", (req, res) => {
+  app.post(`${base}/prepare`, interfaceLimiter, (req, res) => {
     try {
       const body = bodyRecord(req);
       rejectCustodyFields(body);
       const operationId = String(body.operationId ?? "");
       if (!operationId) throw new Error("operationId is required");
       const context = body.context;
-      if (!context || typeof context !== "object" || Array.isArray(context)) throw new Error("context is required");
+      if (!isSignedRuntimeTransitionOperation(operationId)
+        && (!context || typeof context !== "object" || Array.isArray(context))) {
+        throw new Error("context is required");
+      }
       const data = body.data;
       const request = createOperationRequest(operationId, data as never, context as never);
       res.status(200).json({ valid: true, broadcasted: false, request });
@@ -107,7 +121,7 @@ export function registerSharedInterfaceRoutes(app: Express): void {
     }
   });
 
-  app.post("/api/interface/validate", (req, res) => {
+  app.post(`${base}/validate`, interfaceLimiter, (req, res) => {
     try {
       const body = bodyRecord(req);
       rejectCustodyFields(body);
@@ -123,7 +137,7 @@ export function registerSharedInterfaceRoutes(app: Express): void {
     }
   });
 
-  app.post("/api/interface/verify", (req, res) => {
+  app.post(`${base}/verify`, interfaceLimiter, (req, res) => {
     try {
       const body = bodyRecord(req);
       rejectCustodyFields(body);
@@ -158,8 +172,13 @@ export function registerSharedInterfaceRoutes(app: Express): void {
     }
   });
 
-  app.get("/api/interface/read", readInterfaceObject);
-  app.get("/api/interface/read/:type/:id", readInterfaceObject);
+  app.get(`${base}/read`, readInterfaceObject);
+  app.get(`${base}/read/:type/:id`, readInterfaceObject);
+}
+
+/** Register the versioned Shared Interface safe REST boundary and its compatibility aliases. */
+export function registerSharedInterfaceRoutes(app: Express): void {
+  for (const base of INTERFACE_ROUTE_BASES) registerRouteSet(app, base);
 }
 
 export function validatePactCanonicalRecordPolicy(pact: Pact, record?: CanonicalRecord): CanonicalRecord | undefined {

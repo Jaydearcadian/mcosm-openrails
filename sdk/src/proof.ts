@@ -9,6 +9,7 @@ import {
   type OpenRailsIntentV1,
 } from './client';
 import type { OpenRailsEnvelopeMode } from './metadata';
+import type { OpenRailsReceipt } from './receipts';
 
 export type ProofOfPayableStage =
   | 'signed_intent'
@@ -92,5 +93,35 @@ export function buildTransactionProof(params: {
     version: 'openrails-proof-v1',
     createdAt: Math.floor(Date.now() / 1000),
     ...params,
+  };
+}
+
+export function proofFromReceipt(receipt: OpenRailsReceipt): ProofOfPayableV1 {
+  const stage: Exclude<ProofOfPayableStage, 'signed_intent' | 'submitted_transaction'> =
+    receipt.type === 'payment_opened'
+      ? 'opened_escrow'
+      : receipt.type === 'settlement_processed'
+        ? 'settlement'
+        : 'residual_reclaim';
+  const amount =
+    receipt.type === 'payment_opened'
+      ? receipt.totalAllocationPool
+      : receipt.type === 'settlement_processed'
+        ? receipt.settledAmount
+        : receipt.recoveredAmount;
+
+  return {
+    version: 'openrails-proof-v1',
+    stage,
+    paycardId: receipt.paycardId,
+    payer: receipt.payer,
+    recipient: receipt.recipient,
+    metadataHash: receipt.metadataHash,
+    workflowId: receipt.metadata?.workflowId,
+    mode: receipt.metadata?.mode,
+    txHash: receipt.txHash,
+    blockNumber: receipt.blockNumber,
+    amount,
+    createdAt: receipt.issuedAt,
   };
 }

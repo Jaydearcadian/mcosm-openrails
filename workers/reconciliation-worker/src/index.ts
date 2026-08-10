@@ -1,11 +1,10 @@
 import { ethers } from "ethers";
-import { createArcProvider, safeRpcError } from "../../shared/rpc";
-import { type RelayPermit, validateRelayPermit } from "../../shared/relay";
+import { authorized } from "../../shared/auth";
+import { createRpcProvider } from "../../shared/rpc";
 
 export interface Env {
   STREAM_DB?: D1Database; // only used in the legacy "d1" settler mode
   ARC_RPC_URL: string;
-  ARC_CANTEEN_RPC_URL?: string;
   ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
@@ -14,13 +13,14 @@ export interface Env {
   RECONCILIATION_ADMIN_TOKEN?: string;
   RECONCILIATION_BATCH_LIMIT?: string;
   MAX_SETTLEMENT_ATTEMPTS?: string;
-  SETTLER_MODE?: string; // "chain" (default) — settle all active rails; or "d1" — legacy plays table
+  SETTLER_MODE?: string; // "chain" (default) - settle all active rails; or "d1" - legacy plays table
   SETTLER_WINDOW_BLOCKS?: string; // getLogs lookback (default 9000; public RPC caps ~10k)
   MIN_ACCRUED_USDC?: string; // skip streaming settles below this accrued amount (default 0.0005)
   RELAY_CLAIMS_ENABLED?: string; // "true" (default) exposes the public gasless RailsCard claim relay
 }
 
 const HUB_ABI = [
+  "function accountNonceTracks(address account, uint256 channel) external view returns (uint256)",
   "function processDripSettle(bytes32 paycardId) external",
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
   "function claimWildcardPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address claimRecipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
@@ -79,6 +79,10 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-OpenRails-Admin-Token",
 };
 
+const RELAY_RATE_LIMIT_WINDOW_MS = 60_000;
+const RELAY_RATE_LIMIT_MAX = 30;
+const relayRateLimits = new Map<string, { count: number; resetAt: number }>();
+
 function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -86,12 +90,28 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-function authorized(request: Request, secret?: string): boolean {
-  if (!secret) return false;
-  const auth = request.headers.get("Authorization") || "";
-  const bearer = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : "";
-  const headerSecret = request.headers.get("X-OpenRails-Admin-Token") || "";
-  return bearer === secret || headerSecret === secret;
+function checkRelayRateLimit(request: Request, route: string): Response | null {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const key = `${route}:${ip}`;
+  const now = Date.now();
+  if (relayRateLimits.size > 5000) {
+    for (const [entryKey, entry] of relayRateLimits.entries()) {
+      if (entry.resetAt <= now) relayRateLimits.delete(entryKey);
+    }
+  }
+  const current = relayRateLimits.get(key);
+  if (!current || current.resetAt <= now) {
+    relayRateLimits.set(key, { count: 1, resetAt: now + RELAY_RATE_LIMIT_WINDOW_MS });
+    return null;
+  }
+
+  if (current.count >= RELAY_RATE_LIMIT_MAX) {
+    const retryAfterSeconds = Math.ceil((current.resetAt - now) / 1000);
+    return jsonResponse({ error: "Relay rate limit exceeded", retryAfterSeconds }, 429);
+  }
+
+  current.count += 1;
+  return null;
 }
 
 function readPositiveInt(value: string | undefined, fallback: number): number {
@@ -112,11 +132,13 @@ export default {
       }
 
       // Public, gasless RailsCard claim relay: the keeper submits the claim on behalf of the
-      // holder so a recipient with zero gas can still claim. Non-custodial — escrow is pulled
+      // holder so a recipient with zero gas can still claim. Non-custodial - escrow is pulled
       // from the payer (who already signed); the keeper only pays gas and cannot redirect funds
       // beyond what the signed intent + claimant address allow.
       if (url.pathname === "/relay-claim") {
         if (request.method !== "POST") return jsonResponse({ error: "Only POST requests allowed" }, 405);
+        const limited = checkRelayRateLimit(request, url.pathname);
+        if (limited) return limited;
         return this.relayClaim(request, env);
       }
 
@@ -124,6 +146,8 @@ export default {
       // EIP-2612 permit so they never send an approval tx); the keeper submits both and pays gas.
       if (url.pathname === "/relay-open") {
         if (request.method !== "POST") return jsonResponse({ error: "Only POST requests allowed" }, 405);
+        const limited = checkRelayRateLimit(request, url.pathname);
+        if (limited) return limited;
         return this.relayOpen(request, env);
       }
 
@@ -135,7 +159,7 @@ export default {
         if (!env.RECONCILIATION_ADMIN_TOKEN) {
           return jsonResponse({ error: "Reconciliation admin token is not configured" }, 503);
         }
-        if (!authorized(request, env.RECONCILIATION_ADMIN_TOKEN)) {
+        if (!authorized(request, env.RECONCILIATION_ADMIN_TOKEN, "X-OpenRails-Admin-Token")) {
           return jsonResponse({ error: "Unauthorized" }, 401);
         }
         await this.reconcileStreams(env);
@@ -193,77 +217,49 @@ export default {
     }
     claimRecipient = ethers.getAddress(claimRecipient as string);
 
-    let payer: string;
-    let allocation: bigint;
-    let nonceChannel: bigint;
-    let nonceValue: bigint;
-    try {
-      payer = ethers.getAddress(env0.payerAddress);
-      allocation = BigInt(i.totalAllocationPool);
-      nonceChannel = BigInt(i.nonceChannel);
-      nonceValue = BigInt(i.nonceValue);
-      if (allocation <= 0n) throw new Error("allocation must be positive");
-    } catch {
-      return jsonResponse({ error: "Envelope contains invalid payer or funding values" }, 400);
-    }
-
-    const provider = createArcProvider(env);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
+    if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured" }, 503);
     const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+    const allocation = BigInt(i.totalAllocationPool);
+    const payer = ethers.getAddress(env0.payerAddress);
 
-    let balance: bigint;
-    let allowance: bigint;
-    let currentNonce: bigint;
-    try {
-      [balance, allowance, currentNonce] = await Promise.all([
-        usdc.balanceOf(payer),
-        usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS),
-        hub.accountNonceTracks(payer, nonceChannel),
-      ]);
-    } catch (error) {
-      return jsonResponse({ error: safeRpcError(error, "Could not check RailsCard funding") }, 503);
+    const [payerBalance, currentNonce] = await Promise.all([
+      usdc.balanceOf(payer) as Promise<bigint>,
+      hub.accountNonceTracks(payer, BigInt(i.nonceChannel)) as Promise<bigint>,
+    ]);
+    if (currentNonce !== BigInt(i.nonceValue)) {
+      return jsonResponse({ error: "This RailsCard is stale or already claimed. Ask the sender to reissue it." }, 409);
     }
-    if (currentNonce !== nonceValue) {
-      return jsonResponse({ error: "RailsCard is stale or already claimed" }, 409);
-    }
-    if (balance < allocation) {
-      return jsonResponse({ error: "RailsCard sender has insufficient USDC" }, 409);
+    if (payerBalance < allocation) {
+      return jsonResponse({ error: "The sender no longer has enough USDC for this RailsCard. Ask the sender to reissue it." }, 409);
     }
 
-    // New cards reserve Hub allowance at issuance. A legacy permit is only needed when the
-    // current allowance does not cover this claim.
+    let allowance = (await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS)) as bigint;
+
+    // Legacy cards may contain a deferred permit. New cards establish allowance at issuance.
     if (allowance < allocation && env0.permit) {
       const p = env0.permit;
-      let permitValue: bigint;
-      try {
-        permitValue = BigInt(p.value);
-        const owner = ethers.getAddress(p.owner);
-        const spender = ethers.getAddress(p.spender);
-        if (owner !== payer || spender !== ethers.getAddress(env.OPENRAILS_HUB_ADDRESS)) {
-          throw new Error("permit parties do not match the signed intent");
-        }
-        if (permitValue < allocation) throw new Error("permit value is below the card allocation");
-        if (BigInt(p.deadline) <= BigInt(Math.floor(Date.now() / 1000))) {
-          throw new Error("permit is expired");
-        }
-      } catch {
-        return jsonResponse({ error: "RailsCard sender authorization is invalid or expired" }, 409);
+      const permitMatchesCard =
+        p.owner.toLowerCase() === payer.toLowerCase() &&
+        p.spender.toLowerCase() === env.OPENRAILS_HUB_ADDRESS.toLowerCase() &&
+        BigInt(p.value) >= allocation;
+      if (!permitMatchesCard || p.deadline <= Math.floor(Date.now() / 1000)) {
+        return jsonResponse({ error: "The sender's RailsCard authorization expired or is invalid. Ask the sender to reissue it." }, 409);
       }
-
       try {
-        await usdc.permit.staticCall(p.owner, p.spender, permitValue, BigInt(p.deadline), p.v, p.r, p.s);
-        const ptx = await usdc.permit(p.owner, p.spender, permitValue, BigInt(p.deadline), p.v, p.r, p.s);
+        await usdc.permit.staticCall(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
+        const ptx = await usdc.permit(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
         await ptx.wait();
-        console.log(`[relay] legacy claim permit landed for ${payer} (${ptx.hash})`);
+        console.log(`[relay] claim permit landed for ${p.owner} (${ptx.hash})`);
       } catch (error) {
-        console.warn(`[relay] legacy permit failed for ${payer}: ${safeRpcError(error, "permit failed")}`);
+        console.warn(`[relay] legacy claim permit failed for ${p.owner}: ${(error as Error).message?.slice(0, 180)}`);
       }
-
-      allowance = await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS);
+      allowance = (await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS)) as bigint;
     }
     if (allowance < allocation) {
-      return jsonResponse({ error: "RailsCard sender allowance is insufficient; ask the sender to reissue it" }, 409);
+      return jsonResponse({ error: "The sender's RailsCard authorization is unavailable. Ask the sender to reissue it." }, 409);
     }
 
     const fn = bearer ? "claimWildcardPaycardChannel" : "openPaycardChannel";
@@ -302,7 +298,7 @@ export default {
 
   // Sponsor a RailsFlow/stream open: the payer-signed envelope opens the channel; an optional
   // EIP-2612 permit lands the USDC approval first, so the payer sends no tx at all. Escrow is
-  // pulled from the recovered payer per the signed intent — non-custodial; the keeper pays gas.
+  // pulled from the recovered payer per the signed intent - non-custodial; the keeper pays gas.
   async relayOpen(request: Request, env: Env): Promise<Response> {
     if ((env.RELAY_CLAIMS_ENABLED ?? "true").toLowerCase() === "false") {
       return jsonResponse({ error: "Claim relay is disabled" }, 503);
@@ -333,18 +329,7 @@ export default {
       return jsonResponse({ error: "relay-open needs a fixed recipient; use /relay-claim for bearer cards" }, 400);
     }
 
-    let payer: string;
-    let allocation: bigint;
-    try {
-      payer = ethers.getAddress(env0.payerAddress);
-      ethers.getAddress(i.recipient);
-      allocation = BigInt(i.totalAllocationPool);
-      if (allocation <= 0n) throw new Error("allocation must be positive");
-    } catch {
-      return jsonResponse({ error: "Envelope contains invalid payer, recipient, or allocation" }, 400);
-    }
-
-    const provider = createArcProvider(env);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -412,7 +397,7 @@ export default {
   },
 
   // Generic rails settler: enumerate active Paycard Streams from chain and drip-settle them.
-  // The keeper ONLY settles (processDripSettle) — it never opens (openPaycardChannel) or closes
+  // The keeper ONLY settles (processDripSettle) - it never opens (openPaycardChannel) or closes
   // (flushResidualDelta); opening and closure stay with payer/merchant/creator. Permissionless +
   // non-custodial: funds always flow payer -> recipient per on-chain state; the keeper pays gas.
   async settleActiveRails(env: Env): Promise<void> {
@@ -420,7 +405,7 @@ export default {
     const windowBlocks = readPositiveInt(env.SETTLER_WINDOW_BLOCKS, 9000);
     const minAccruedBase = BigInt(Math.round(Number(env.MIN_ACCRUED_USDC ?? "0.0005") * 1_000_000));
 
-    const provider = createArcProvider(env);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY!, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -443,7 +428,7 @@ export default {
         const lifespan = BigInt(s.lifespanSeconds);
         if (lifespan === 0n) {
           // One-time (instant): the full amount unlocks on the first settle. available > 0 means
-          // it hasn't been settled yet — settle it once. Afterwards available is 0 and it's skipped.
+          // it hasn't been settled yet - settle it once. Afterwards available is 0 and it's skipped.
         } else {
           // Streaming: only settle when accrued-since-checkpoint clears the dust threshold, so the
           // cron doesn't burn gas on negligible drips.
@@ -467,7 +452,7 @@ export default {
         console.error(`[settler] settle failed ${paycardId}:`, safeRpcError(error, "settlement failed"));
       }
     }
-    console.log(`[settler] done: settled ${settled}, skipped ${skipped}, errors ${errors}`);
+    console.log(`[settler] done - settled ${settled}, skipped ${skipped}, errors ${errors}`);
   },
 
   // Legacy mode: settle only paycards referenced by unsettled rows in the music "plays" D1 table.
@@ -492,7 +477,7 @@ export default {
     }
 
     // 2. Initialize provider and wallet signer
-    const provider = createArcProvider(env);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 

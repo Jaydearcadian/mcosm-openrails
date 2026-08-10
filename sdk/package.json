@@ -1,7 +1,7 @@
 {
   "name": "openrails-sdk",
-  "version": "1.0.0-rc.1",
-  "description": "OpenRails Shared Interface 1.1 SDK with canonical operation envelopes, receipts, and external-wallet handoffs.",
+  "version": "1.1.0",
+  "description": "OpenRails Shared Interface 1.2 SDK with canonical operation envelopes, runtime transitions, receipts, and external-wallet handoffs.",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",
   "type": "commonjs",
@@ -20,6 +20,10 @@
       "types": "./dist/operations.d.ts",
       "default": "./dist/operations.js"
     },
+    "./runtime-signature": {
+      "types": "./dist/runtime-signature.d.ts",
+      "default": "./dist/runtime-signature.js"
+    },
     "./wallet-handoff": {
       "types": "./dist/wallet-handoff.d.ts",
       "default": "./dist/wallet-handoff.js"
@@ -31,6 +35,14 @@
     "./canonical-record": {
       "types": "./dist/canonical-record.d.ts",
       "default": "./dist/canonical-record.js"
+    },
+    "./runtime-client": {
+      "types": "./dist/runtime-client.d.ts",
+      "default": "./dist/runtime-client.js"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "default": "./dist/agent/index.js"
     },
     "./arc": {
       "types": "./dist/arc.d.ts",
@@ -65,7 +77,9 @@
     "dist",
     "README.md",
     "CHANGELOG.md",
-    "MIGRATION.md"
+    "MIGRATION.md",
+    "NOTICE.md",
+    "THIRD_PARTY_LICENSES.md"
   ],
   "engines": {
     "node": ">=18"
@@ -109,6 +123,7 @@
   },
   "devDependencies": {
     "typescript": "^5.4.5",
-    "@types/node": "^20.12.12"
+    "@types/node": "^20.12.12",
+    "canonicalize": "^3.0.0"
   }
 }

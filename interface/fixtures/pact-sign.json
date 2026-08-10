@@ -1,0 +1,78 @@
+{
+  "pact": {
+    "interfaceVersion": "1.2.0",
+    "id": "pact:runtime:1",
+    "executionProfile": "delegated-runtime",
+    "workspaceRef": { "type": "Workspace", "id": "workspace:runtime:1" },
+    "pathRef": { "type": "Path", "id": "path:runtime:1" },
+    "proposalRef": { "type": "Proposal", "id": "proposal:runtime:1" },
+    "decisionRef": { "type": "BaphometDecision", "id": "decision:runtime:1" },
+    "parties": [
+      { "type": "Actor", "id": "actor:owner" },
+      { "type": "Actor", "id": "actor:service" }
+    ],
+    "paymentTerms": {
+      "asset": { "symbol": "USDC", "decimals": 6, "address": "0x3600000000000000000000000000000000000000", "kind": "erc20" },
+      "amount": "1000000",
+      "settlementShape": "one-time"
+    },
+    "proofPolicy": {
+      "interfaceVersion": "1.2.0",
+      "id": "proof-policy:runtime:1",
+      "executionProfile": "delegated-runtime",
+      "requiredGate": "NONE",
+      "beforeTransition": "NONE",
+      "placement": "immediately-before",
+      "required": false,
+      "policyVersion": "policy:runtime:1",
+      "termsHash": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    "status": "DRAFT",
+    "createdAt": "2026-08-08T00:00:00Z",
+    "signatureBinding": {
+      "signer": "0x1111111111111111111111111111111111111111",
+      "signature": "0x4444",
+      "nonce": "3",
+      "issuedAt": "2026-08-08T00:00:00Z",
+      "expiresAt": "2026-08-09T00:00:00Z",
+      "chainId": "5042002",
+      "verifyingContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+      "domain": {
+        "name": "OpenRails Network",
+        "version": "2.0.0",
+        "chainId": "5042002",
+        "verifyingContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b"
+      }
+    },
+    "provenance": {
+      "source": "wallet-signed",
+      "authority": "OpenRails interface tests",
+      "evidenceLevel": "runtime-observed",
+      "observedAt": "2026-08-08T00:00:00Z",
+      "repository": "Jaydearcadian/mcosm-OpenRails",
+      "commit": "df70344",
+      "evidenceRefs": ["TEST-OR-PR2"]
+    }
+  },
+  "intentRef": { "type": "Intent", "id": "intent:runtime:1" },
+  "signatureBinding": {
+    "signatureStandard": "eip-712",
+    "primaryType": "OpenRailsRuntimeTransition",
+    "signaturePurpose": "offchain-runtime",
+    "operationId": "pact.sign",
+    "payloadHash": "0x5d4971a7b1de69ae246009a364fb90138c46c396950d8cf4d61be3ea0acdaf71",
+    "signer": "0x28ef60aA0537471e5FFf5c84769237C5C1B93853",
+    "signature": "0x7892d9d907900ea84981081a44a4bff7558374295c653137280970dc1de9876d0f2b99c60b571f887240368ee6e8aed4849be6c039e9a32900f4cef5a105a6d01b",
+    "nonce": "4",
+    "issuedAt": "2026-08-08T00:00:00Z",
+    "expiresAt": "2026-08-09T00:00:00Z",
+    "chainId": "5042002",
+    "anchorContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+    "domain": {
+      "name": "OpenRails Runtime",
+      "version": "1.2.0",
+      "chainId": "5042002",
+      "salt": "0x1544b041010f9c62321178d4f9a37adf6a9ada7feaf89238f6c1b5f27ebd0bbf"
+    }
+  }
+}
