@@ -1,6 +1,6 @@
-# Migrating to `openrails-sdk@1.1.0-rc.2`
+# Migrating to `openrails-sdk@1.1.0`
 
-`1.1.0-rc.2` is a release candidate for the OpenRails Shared Interface 1.2 SDK. It is intended for review and integration testing and is not a final stable release. Existing `openrails-sdk@0.1.3` installations remain valid Arc-line releases until the reviewed migration release is published.
+`1.1.0` is the reviewed OpenRails Shared Interface 1.2 SDK release. Existing `openrails-sdk@0.1.3` installations remain valid Arc-line releases, while new Shared Interface integrations should use the safe package root.
 
 ## Safe root surface
 
@@ -50,4 +50,4 @@ The compatibility subpath preserves the existing 0.x signer, relay, and transact
 
 ## Release status
 
-This release candidate must pass package build, tests, packed clean-consumer loading, and dependency audit before publication. It must not be treated as published or stable until that review is complete.
+This release passed package build, tests, packed clean-consumer loading, and dependency review before publication.

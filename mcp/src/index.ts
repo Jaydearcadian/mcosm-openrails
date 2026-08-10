@@ -19,7 +19,7 @@ import {
 } from "./tools.js";
 
 const ctx = buildContext();
-const server = new McpServer({ name: "openrails-mcp", version: "0.3.0-rc.1" });
+const server = new McpServer({ name: "openrails-mcp", version: "0.3.0" });
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
 

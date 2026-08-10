@@ -1,5 +1,11 @@
 # Changelog — `openrails-mcp`
 
+## [0.3.0] — 2026-08-10
+
+- Promoted the reviewed safe-only Shared Interface 1.2 surface from `0.3.0-rc.1` to the stable
+  MCP release.
+- Depend on `openrails-sdk@^1.1.0`.
+
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Backfilled from
 git history for the versions already published to npm; entries going forward should be added in
 the same commit that bumps `package.json`.

@@ -1,6 +1,6 @@
 {
   "name": "openrails-sdk",
-  "version": "1.1.0-rc.2",
+  "version": "1.1.0",
   "description": "OpenRails Shared Interface 1.2 SDK with canonical operation envelopes, runtime transitions, receipts, and external-wallet handoffs.",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",

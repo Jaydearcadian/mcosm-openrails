@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2026-08-10
+
+- Promoted the reviewed Shared Interface 1.2 surface from the `1.1.0-rc.2` release candidate to
+  the stable SDK release.
+
 ## [1.1.0-rc.2] - 2026-08-08
 
 - Centralized signed runtime request derivation and enforcement in `createOperationRequest` so all

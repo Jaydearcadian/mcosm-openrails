@@ -98,7 +98,7 @@ try {
   }
 
   const packageJson = consumerRequire("openrails-sdk/package.json");
-  assert.equal(packageJson.version, "1.1.0-rc.2");
+  assert.equal(packageJson.version, "1.1.0");
   assert.equal(packageJson.dependencies?.["@openrails/shared-interface"], undefined);
   const installedPackageRoot = path.dirname(consumerRequire.resolve("openrails-sdk/package.json"));
   const notice = fs.readFileSync(path.join(installedPackageRoot, "NOTICE.md"), "utf8");

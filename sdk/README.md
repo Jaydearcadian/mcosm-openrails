@@ -12,9 +12,9 @@ is performed → recover residual. Usable by humans or agents.
 npm i openrails-sdk        # library + the `openrails` CLI
 ```
 
-## 1.1 release candidate
+## 1.1 stable release
 
-`1.1.0-rc.2` makes the package root the Shared Interface 1.2 safe surface. It exports canonical
+`1.1.0` makes the package root the Shared Interface 1.2 safe surface. It exports canonical
 types, the Arc capability manifest, operation envelopes, receipts, errors, and external-wallet
 `WalletHandoff` helpers. It also supports the four signed runtime operation shapes: workspace
 registration, actor registration, proposal submission, and Pact signing. The root prepares,
@@ -50,7 +50,7 @@ import { createCanonicalRecord, verifyCanonicalRecord } from "openrails-sdk/cano
 ```
 
 Existing 0.1.3 Arc APIs remain available from `openrails-sdk/arc`. The Arc examples below use that
-compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary and RC status.
+compatibility subpath. See [`MIGRATION.md`](MIGRATION.md) for the migration boundary.
 
 ## Library
 ```ts
