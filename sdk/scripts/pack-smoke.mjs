@@ -7,6 +7,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const packageVersion = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")).version;
 const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "openrails-sdk-pack-"));
 const npmCache = path.join(temporaryRoot, "npm-cache");
 const packDestination = path.join(temporaryRoot, "archive");
@@ -21,6 +22,7 @@ const publicSpecifiers = [
   "openrails-sdk/wallet-handoff",
   "openrails-sdk/canonical-record",
   "openrails-sdk/circle-gas-station",
+  "openrails-sdk/agent",
   "openrails-sdk/arc",
   "openrails-sdk/adapters/ethers",
   "openrails-sdk/adapters/privy",
@@ -54,6 +56,8 @@ try {
     "dist/adapters/turnkey.js",
     "dist/arc.d.ts",
     "dist/arc.js",
+    "dist/agent/index.d.ts",
+    "dist/agent/index.js",
     "dist/canonical-record.d.ts",
     "dist/canonical-record.js",
     "dist/circle-gas-station.d.ts",
@@ -98,7 +102,7 @@ try {
   }
 
   const packageJson = consumerRequire("openrails-sdk/package.json");
-  assert.equal(packageJson.version, "1.1.0");
+  assert.equal(packageJson.version, packageVersion);
   assert.equal(packageJson.dependencies?.["@openrails/shared-interface"], undefined);
   const installedPackageRoot = path.dirname(consumerRequire.resolve("openrails-sdk/package.json"));
   const notice = fs.readFileSync(path.join(installedPackageRoot, "NOTICE.md"), "utf8");
@@ -114,6 +118,7 @@ try {
   const runtimeSignature = consumerRequire("openrails-sdk/runtime-signature");
   const walletHandoff = consumerRequire("openrails-sdk/wallet-handoff");
   const arc = consumerRequire("openrails-sdk/arc");
+  const agent = consumerRequire("openrails-sdk/agent");
   assert.equal(typeof root.prepareWalletHandoff, "function");
   assert.equal(root.LeptonOpenRailsClient, undefined);
   assert.equal(typeof sharedInterface.resolveOperation, "function");
@@ -122,6 +127,7 @@ try {
   assert.equal(sharedInterface.OPENRAILS_SHARED_INTERFACE_VERSION, "1.2.0");
   assert.equal(typeof walletHandoff.verifyWalletHandoff, "function");
   assert.equal(typeof arc.LeptonOpenRailsClient, "function");
+  assert.equal(typeof agent.assertOpenRailsSurfaceManifest, "function");
 
   console.log(`Packed SDK clean-consumer smoke passed for ${publicSpecifiers.length + 1} public exports.`);
 } finally {

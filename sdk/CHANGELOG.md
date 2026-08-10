@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1] - 2026-08-10
+
+- Published the `openrails-sdk/agent` export for agent discovery and provider policy helpers.
+- Added `proofFromReceipt` for converting settlement receipts into verifiable proof objects.
+- Added optional Gateway wallet and minter address overrides for local and test deployments; live
+  Arc defaults remain unchanged.
+- Improved command-specific CLI help for `close` and `pay-stream`.
+
 ## [1.1.0] - 2026-08-10
 
 - Promoted the reviewed Shared Interface 1.2 surface from the `1.1.0-rc.2` release candidate to
