@@ -18,7 +18,7 @@ The live V2 contracts (already the default in every tool below):
 |---|---|
 | Canonical hub | `0x941C8029F0f912df3fAb7423890ab2359b996D0b` |
 | USDC (native) | `0x3600000000000000000000000000000000000000` |
-| RPC | `https://rpc.testnet.arc.network` · chainId `5042002` |
+| RPC | `https://rpc.testnet.arc.io` · chainId `5042002` |
 
 **Get testnet funds.** No wallet yet, or need a top-up? Hit the public faucet — it drips testnet
 USDC (which is also your gas) directly to any address, no signup:
@@ -35,9 +35,9 @@ click a button, the cockpit's connect flow (Path A below) surfaces the same fauc
 ## Path A — The cockpit (no install, easiest)
 
 Open **https://openrails.pages.dev**, connect your wallet, switch to Arc testnet, and use:
-- **Request** a payment → generates a **RailsFlow** link/QR to share.
+- **Create a Payment Request** → generates a shareable request link or QR.
 - **Pay** a link → opens the stream; escrow leaves your wallet, streams to the recipient.
-- **Issue / claim a RailsCard** → pre-signed claimable value.
+- **Create or claim a Claimable Payment** → pre-authorized value. Issuance establishes Hub allowance; escrow moves at claim time.
 
 The cockpit computes the cryptographic bits (metadata commitment, nonce, paycard id) for you. This is
 the fastest way to see a real payment end-to-end.
@@ -58,11 +58,11 @@ import {
   submitOpenPaycardWithSigner,
   readNonce,
   hashOpenRailsMetadata,
-} from "openrails-sdk"; // all re-exported from the package entry
+} from "openrails-sdk/arc";
 
 const HUB = "0x941C8029F0f912df3fAb7423890ab2359b996D0b";
 const USDC = "0x3600000000000000000000000000000000000000";
-const provider = new ethers.JsonRpcProvider("https://rpc.testnet.arc.network");
+const provider = new ethers.JsonRpcProvider("https://rpc.testnet.arc.io");
 const signer = new ethers.Wallet(process.env.MY_KEY!, provider);
 const chainId = 5042002;
 
@@ -149,24 +149,25 @@ Other commands: `stream-status --paycard-id 0x...` (read), `settle --paycard-id 
 
 ---
 
-## Agents — the MCP server
+## Agents: MCP server
 
-To let an AI agent transact on the rail, register `openrails-mcp` with your MCP client (e.g. Claude
-Desktop). It defaults to the same V2 hub; give it a signer key to transact, omit it for read-only.
+Register the safe-only `openrails-mcp` Shared Interface surface with your MCP client, for example
+Claude Desktop. It reads the Arc Testnet manifest, prepares operation envelopes, validates and
+verifies objects, and leaves authorization and submission to an external wallet.
 
 ```json
 {
   "mcpServers": {
     "openrails": {
       "command": "npx",
-      "args": ["openrails-mcp"],
-      "env": { "OPENRAILS_MCP_SIGNER_KEY": "0x<funded-arc-testnet-key>" }
+      "args": ["openrails-mcp"]
     }
   }
 }
 ```
 
-Tools: `pay_link`, `create_request_link`, `issue_railscard`, `paycard_status`, `openrails_config`.
+Tools: `openrails_capabilities`, `openrails_prepare`, `openrails_validate`, `openrails_verify`,
+and `openrails_read`. The server does not create or custody signers, sign, relay, or broadcast.
 
 ---
 

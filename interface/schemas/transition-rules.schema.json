@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/transition-rules.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/transition-rules.schema.json",
   "title": "TransitionRules",
   "type": "object",
   "additionalProperties": false,
   "required": ["interfaceVersion", "lifecycleStates", "transactionStates", "allowedTransitions", "outcomeRules"],
   "properties": {
-    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/InterfaceVersion" },
-    "lifecycleStates": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/LifecycleState" }, "uniqueItems": true },
-    "transactionStates": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/TransactionStateName" }, "uniqueItems": true },
+    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion" },
+    "lifecycleStates": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState" }, "uniqueItems": true },
+    "transactionStates": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName" }, "uniqueItems": true },
     "allowedTransitions": {
       "type": "array",
       "minItems": 1,
@@ -17,12 +17,12 @@
         "additionalProperties": false,
         "required": ["from", "to", "trigger", "allowedProfiles", "financialEffect"],
         "properties": {
-          "from": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/LifecycleState" },
-          "to": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/LifecycleState" },
+          "from": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState" },
+          "to": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState" },
           "trigger": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
-          "allowedProfiles": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ExecutionProfile" }, "uniqueItems": true },
+          "allowedProfiles": { "type": "array", "minItems": 1, "items": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ExecutionProfile" }, "uniqueItems": true },
           "financialEffect": { "type": "string", "enum": ["NONE", "PENDING", "COMMITTED", "RECONCILED", "UNKNOWN"] },
-          "requires": { "type": "array", "items": { "type": "string", "enum": ["WALLET_AUTHORIZATION", "CONFIRMED_TRANSACTION", "VERIFIED_PROOF", "EXACT_RECEIPT", "CANONICAL_VAULT_RECONCILIATION", "ALLOW_DECISION", "PACT"] }, "uniqueItems": true }
+          "requires": { "type": "array", "items": { "type": "string", "enum": ["WALLET_AUTHORIZATION", "CONFIRMED_TRANSACTION", "VERIFIED_PROOF", "EXACT_RECEIPT", "CANONICAL_VAULT_RECONCILIATION", "ALLOW_DECISION", "PACT", "RUNTIME_SIGNATURE"] }, "uniqueItems": true }
         }
       }
     },
@@ -35,12 +35,12 @@
         "required": ["outcome", "lifecycleState", "transactionState", "financialEffect", "valueMovementAllowed", "receiptRequirement", "errorCode"],
         "properties": {
           "outcome": { "type": "string", "enum": ["success", "blocked", "failed", "cancelled", "signature-expired", "transaction-reverted", "wrong-network", "rpc-unavailable"] },
-          "lifecycleState": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/LifecycleState" },
-          "transactionState": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/TransactionStateName" },
+          "lifecycleState": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/LifecycleState" },
+          "transactionState": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/TransactionStateName" },
           "financialEffect": { "type": "string", "enum": ["NONE", "PENDING", "COMMITTED", "RECONCILED", "UNKNOWN"] },
           "valueMovementAllowed": { "type": "boolean" },
           "receiptRequirement": { "type": "string", "enum": ["none", "exact-verified-receipt-and-reconciliation", "unverified-receipt-only"] },
-          "errorCode": { "anyOf": [{ "type": "null" }, { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/ErrorCode" }] },
+          "errorCode": { "anyOf": [{ "type": "null" }, { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/ErrorCode" }] },
           "retryable": { "type": "boolean" },
           "notes": { "type": "string", "maxLength": 1000 }
         }

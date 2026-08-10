@@ -1,12 +1,12 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "id": "receipt:unverified:1",
   "executionProfile": "direct-wallet-authorized",
   "receiptType": "SETTLEMENT",
   "operationId": "paycard.settle",
   "network": { "networkId": "arc-testnet", "chainId": "5042002" },
   "transaction": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "status": "CONFIRMED",
     "network": { "networkId": "arc-testnet", "chainId": "5042002" },
     "txHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

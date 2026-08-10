@@ -1,56 +1,39 @@
-# Changelog — `openrails-sdk`
+# Changelog
 
-Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Backfilled from
-git history for the versions already published to npm; entries going forward should be added in
-the same commit that bumps `package.json`.
+## [1.1.0-rc.2] - 2026-08-08
 
-## [Unreleased]
+- Centralized signed runtime request derivation and enforcement in `createOperationRequest` so all
+  SDK consumers receive the same signer, Arc network, signed references, provenance, and timestamp.
+- Fixed runtime wrapper provenance as configuration-only and explicitly unverified, with
+  `createdAt` derived from the signed `signatureBinding.issuedAt` value.
+- Rejected caller overrides for runtime authority, references, provenance, timestamps, and unsigned
+  wrapper fields while accepting exact duplicate context for compatibility.
+- Added clean packed-consumer loading for the Canonical Record and Circle Gas Station subpaths.
+- Included the complete Apache License, Version 2.0 text and prominent modification attribution
+  for the adapted `canonicalize` 3.0.0 implementation.
 
-Not yet published to npm — tracked here as work lands on `main`.
+## [1.1.0-rc.1] - 2026-08-08
 
-- CLI `--help` is now genuinely per-command (real flags for each of the 6 commands, not a generic
-  suffix).
-- `buildOpenRailsDomain` now warns (does not block) if the EIP-712 domain `version` looks
-  mismatched against a known deployed hub address — an earlier, friendlier signal than waiting for
-  the on-chain signature check to reject it.
-- `account.ts`'s docblock corrected: EIP-1271 smart-account signatures are supported by the V2 Hub
-  today (previously said "deferred to V2").
+- Updated the safe root and generated artifacts to OpenRails Shared Interface 1.2.
+- Added generated canonical schemas, types, operation registry, Arc Testnet manifest, runtime
+  validator, and runtime signature helpers with no private interface package dependency.
+- Added signed runtime operation support for workspace registration, actor registration, proposal
+  submission, and Pact signing, including `decisionRef` context binding.
+- Preserved the existing `openrails-sdk/arc` signer, relay, CLI, adapter, gateway, and financial
+  APIs under their existing compatibility paths.
+- Added packed-consumer coverage for the self-contained CommonJS SDK and exact runtime EIP-712
+  behavior.
+## [1.0.0-rc.1] - 2026-08-03
 
-## [0.1.2] — 2026-07-04
-
-- CLI network config now defaults to Arc-testnet-V2 (chain id, RPC, hub, USDC address) — previously
-  required explicit flags/env for every value; now only a signer key is required.
-- Added `GETTING_STARTED.md` with a real runnable quickstart per integration path.
-
-## [0.1.1] — 2026-07-04
-
-- V2 republish: default EIP-712 domain version bumped to `2.0.0` to match the V2 Hub's
-  cross-version replay guard (`SignatureChecker.isValidSignatureNow`, EOA + EIP-1271). The frozen
-  V1 Hub still verifies under domain version `1.0.0` — pass it explicitly if targeting V1 (not
-  recommended; V1 no longer accepts new opens).
-
-## [0.1.0] — 2026-06-30
-
-- First npm publish. Packaged the SDK (`LeptonOpenRailsClient`, gasless helpers, pluggable
-  `adapters/*`) as `openrails-sdk`, plus the `openrails` CLI bin.
-
-## Versioning & backward-compatibility policy
-
-`openrails-sdk` follows semver in spirit, pre-1.0 (breaking changes may still land on a minor
-version bump per semver's own pre-1.0 carve-out — read every entry above, not just the version
-number, before upgrading). Two patterns already in the code are the intentional policy, not
-accidents of two examples:
-
-- **Deprecated aliases are kept, not deleted.** `OpenRailsArcClient` (`sdk/src/client.ts`) is a
-  type + value alias for `LeptonOpenRailsClient`, kept so code written against the earlier name
-  keeps compiling. New code should use `LeptonOpenRailsClient`.
-- **Env var fallbacks are kept, not deleted.** The CLI's `readPrivateKeyFromEnv` falls back from
-  `OPENRAILS_PAYER_PRIVATE_KEY` (current) to `OPENRAILS_PRIVATE_KEY` (legacy) so an existing
-  deployment's env doesn't silently break on upgrade.
-- **A default value change (e.g. the domain version bump in 0.1.1) is a minor bump, not a patch** —
-  it changes what a caller gets with no explicit override, even though no function signature
-  changed.
-
-When in doubt: prefer adding a new default-off parameter over changing an existing default: prefer
-keeping an old name as an alias over removing it; and record the reasoning here, not just the
-version number.
+- Added the OpenRails Shared Interface 1.1 safe root with canonical types, schemas, Arc capability
+  manifest, operation envelopes, receipts, errors, and external-wallet `WalletHandoff` helpers.
+- Moved every existing 0.1.3 root export to the explicit `openrails-sdk/arc` compatibility
+  subpath without renaming those APIs. Existing adapter and gateway subpaths are unchanged.
+- Kept signing and transaction submission outside the safe root. External wallets remain
+  responsible for authorization and broadcast, while the SDK prepares, records, and verifies.
+- Added optional Pact-declared Canonical Record envelopes with commitment, exposure, counterparty,
+  settlement-reference, and structural signature checks.
+- Added a credential-gated Circle Gas Station SCA handoff boundary for Arc Testnet. This release
+  candidate does not claim live Circle sponsorship.
+- Made the SDK package self-contained with generated interface artifacts and registry-only
+  dependencies. This version remains a release candidate pending publication review.

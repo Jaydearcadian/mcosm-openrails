@@ -31,7 +31,7 @@ compatibility_date = "2026-06-24"
 # Environment Variables passed into the Worker (e.g. env.ARC_RPC_URL)
 [vars]
 ARC_CHAIN_ID = "5042002"
-ARC_RPC_URL = "https://rpc.testnet.arc.network"
+ARC_RPC_URL = "https://rpc.testnet.arc.io"
 OPENRAILS_HUB_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 ARC_USDC_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 

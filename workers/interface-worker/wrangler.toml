@@ -1,0 +1,19 @@
+name = "openrails-interface-worker"
+main = "src/index.ts"
+compatibility_date = "2026-08-09"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ARC_CHAIN_ID = "5042002"
+# Canonical Arc RPC is primary. The Canteen endpoint remains an operator-side diagnostic fallback,
+# but this public Worker does not depend on its intermittently unavailable DNS name.
+ARC_RPC_URL = "https://rpc.testnet.arc.io"
+ARC_RPC_FALLBACK_URL = "https://rpc.drpc.testnet.arc.io"
+OPENRAILS_CORS_ORIGIN = "https://openrails.pages.dev"
+# Runtime execution is enabled for the Neon-backed Arc testnet MVP. It only mutates the
+# OpenRails runtime record and replay-nonce tables; it does not custody funds or broadcast.
+OPENRAILS_RUNTIME_ENABLED = "true"
+
+# Secrets, never committed here:
+#   npx wrangler secret put DATABASE_URL
+#   npx wrangler secret put OPENRAILS_RUNTIME_ADMIN_TOKEN

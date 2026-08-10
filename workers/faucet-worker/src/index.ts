@@ -1,8 +1,10 @@
 import { ethers } from "ethers";
 import { authorized } from "../../shared/auth";
+import { createRpcProvider } from "../../shared/rpc";
 
 export interface Env {
   ARC_RPC_URL: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   ARC_USDC_ADDRESS: string;
   FAUCET_SIGNER_KEY?: string;
@@ -98,7 +100,7 @@ async function handleFund(request: Request, env: Env): Promise<Response> {
     return jsonResponse({ error: "Daily faucet cap reached, try again tomorrow" }, 429);
   }
 
-  const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+  const provider = createRpcProvider(env);
   const signer = new ethers.Wallet(env.FAUCET_SIGNER_KEY, provider);
   const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, ERC20_ABI, signer);
 
@@ -148,7 +150,7 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
   if (!authorized(request, env.FAUCET_ADMIN_TOKEN, "X-OpenRails-Admin-Token")) return jsonResponse({ error: "Unauthorized" }, 401);
   if (!env.FAUCET_SIGNER_KEY) return jsonResponse({ error: "Faucet signer is not configured" }, 503);
 
-  const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+  const provider = createRpcProvider(env);
   const signer = new ethers.Wallet(env.FAUCET_SIGNER_KEY, provider);
   const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, ERC20_ABI, provider);
   const balance: bigint = await usdc.balanceOf(signer.address);

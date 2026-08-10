@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/manifest-index.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/manifest-index.schema.json",
   "title": "ManifestIndex",
   "type": "object",
   "additionalProperties": false,
   "required": ["interfaceVersion", "manifests"],
   "properties": {
-    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json#/$defs/InterfaceVersion" },
+    "interfaceVersion": { "$ref": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json#/$defs/InterfaceVersion" },
     "manifests": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9-]+\\.json$" }, "uniqueItems": true }
   }
 }

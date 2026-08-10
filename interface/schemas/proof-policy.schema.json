@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/proof-policy.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/proof-policy.schema.json",
   "title": "ProofPolicy",
-  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/models.schema.json#/$defs/ProofPolicy"
+  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/ProofPolicy"
 }

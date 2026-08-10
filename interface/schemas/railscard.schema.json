@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/railscard.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/railscard.schema.json",
   "title": "RailsCard",
-  "$ref": "https://schemas.openrails.dev/openrails/1.0.1/models.schema.json#/$defs/RailsCard"
+  "$ref": "https://schemas.openrails.dev/openrails/1.2.0/models.schema.json#/$defs/RailsCard"
 }

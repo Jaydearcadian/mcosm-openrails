@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.2.0",
   "executionProfile": "delegated-runtime",
   "operationId": "proposal.evaluate",
   "capability": "proposal.evaluate",
@@ -13,14 +13,14 @@
   "proposalRef": { "type": "Proposal", "id": "proposal:1" },
   "data": null,
   "transaction": {
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.2.0",
     "status": "NOT_REQUESTED",
     "network": { "networkId": "arc-testnet", "chainId": "5042002" },
     "financialEffect": "NONE",
     "observedAt": "2026-08-02T00:00:00Z"
   },
   "errors": [{
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.2.0",
     "code": "POLICY_BLOCKED",
     "message": "Baphomet blocked the proposal before Pact creation.",
     "retryable": false,

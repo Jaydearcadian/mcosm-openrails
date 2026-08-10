@@ -6,14 +6,14 @@
  * actions are offered, matching the design's footer:
  *   - generateLink(): produces a shareable link. For RailsFlow this is the classic unsigned
  *     request link (nobody signs anything yet — whoever opens it becomes payer and signs).
- *     For RailsCard (bearer or recipient-bound) this signs the envelope now and shares it —
- *     funds move when it's later claimed/relayed, not at generation time.
+ *     For RailsCard (bearer or recipient-bound) this authorizes Hub allowance, signs the
+ *     envelope, and shares it. Funds move when it's later claimed or relayed.
  *   - submit(): the connected wallet signs AND funds the stream right now, gasless by default
  *     (EIP-2612 permit + POST /relay-open, no approval tx, no open tx) with an explicit
  *     self-submit fallback (approve + openPaycardChannel directly). Uses direct on-chain reads
  *     (nonce, allowance) via wagmi's publicClient — no dependency on any Express server.
  */
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAccount, useSignTypedData, useWriteContract, usePublicClient, useSwitchChain, useReadContract } from "wagmi";
 import { USDC_ABI, HUB_ABI } from "./contracts";
 import { arcTestnet } from "./chain";
@@ -29,6 +29,7 @@ import {
 } from "./intents";
 import { signFlowPermit } from "./permit";
 import { createRailsFlowRequestLink, createRailsCardClaimLink, appBaseUrl } from "./links";
+import { nextRailsCardAllowance, randomRailsCardNonceChannel } from "./railsCardFunding";
 
 const RELAY_URL =
   (import.meta.env.VITE_OPENRAILS_RELAY_URL as string | undefined) ??
@@ -137,9 +138,9 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
   }) as { data: bigint | undefined; isLoading: boolean };
 
   const busy = status.id === "approving" || status.id === "signing" || status.id === "submitting";
-  function reset() {
+  const reset = useCallback(() => {
     setStatus({ id: "idle" });
-  }
+  }, []);
 
   /** Sign-only: produces a shareable link. RailsFlow = classic unsigned request link. */
   async function generateLink(p: NewPaymentParams): Promise<string> {
@@ -186,19 +187,25 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
     const { envelopeMode, signedRecipient, totalAllocationPool, flowVelocityPerSecond, lifespanSeconds, metadataHash } =
       buildIntentParts(p, payer, usdcAddress as `0x${string}`);
 
-    const nonceChannel = 0n;
-    const nonceValue = (await publicClient!.readContract({
-      address: hubAddress as `0x${string}`,
-      abi: HUB_ABI,
-      functionName: "accountNonceTracks",
-      args: [payer, nonceChannel],
-    })) as bigint;
+    const hub = hubAddress as `0x${string}`;
+    const usdc = usdcAddress as `0x${string}`;
+    // Give deferred claims independent Hub nonce tracks so one claimed card cannot stale
+    // another outstanding card from the same payer.
+    const nonceChannel = randomRailsCardNonceChannel();
+    const [nonceValue, currentBalance, currentAllowance] = (await Promise.all([
+      publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [payer, nonceChannel] }),
+      publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [payer] }),
+      publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [payer, hub] }),
+    ])) as [bigint, bigint, bigint];
+    if (currentBalance < totalAllocationPool) {
+      throw new Error("Amount exceeds your wallet's current USDC balance.");
+    }
     const paycardId = envelopeMode === "railscard_bearer"
       ? randomPaycardId()
       : buildMetadataBoundPaycardId({ payer, nonceChannel, nonceValue, metadataHash });
     const genesisTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
-    const domain = buildOpenRailsDomain(arcTestnet.id, hubAddress as `0x${string}`);
+    const domain = buildOpenRailsDomain(arcTestnet.id, hub);
     const message = {
       paycardId,
       metadataHash,
@@ -212,19 +219,22 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
       nonceValue,
     } as const;
     
+    // Deferred EIP-2612 permits expire and share the payer's token nonce. Establish cumulative
+    // Hub allowance now so independently issued RailsCards do not invalidate one another.
+    const requiredAllowance = nextRailsCardAllowance(currentAllowance, totalAllocationPool);
+    if (requiredAllowance !== currentAllowance) {
+      setStatus({ id: "approving" });
+      const approvalHash = await writeContractAsync({
+        address: usdc,
+        abi: USDC_ABI,
+        functionName: "approve",
+        args: [hub, requiredAllowance],
+      });
+      await publicClient!.waitForTransactionReceipt({ hash: approvalHash, timeout: 120_000 });
+    }
+
     setStatus({ id: "signing" });
     const sig = await signTypedDataAsync({ domain, types: OPENRAILS_EIP712_TYPES, primaryType: "SettlementIntent", message });
-
-    // Generate EIP-2612 permit so the card can be cleared gaslessly or self-claimed later
-    const permit = await signFlowPermit({
-      publicClient: publicClient!,
-      signTypedDataAsync,
-      owner: payer,
-      token: usdcAddress as `0x${string}`,
-      spender: hubAddress as `0x${string}`,
-      value: totalAllocationPool,
-      chainId: arcTestnet.id,
-    });
 
     const envelopeToken = serializeEnvelope({
       payerAddress: payer,
@@ -238,11 +248,10 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
         genesisTimestamp: Number(genesisTimestamp),
         lifespanSeconds: Number(lifespanSeconds),
         residualDeltaRecipient: payer,
-        nonceChannel: 0,
+        nonceChannel: Number(nonceChannel),
         nonceValue: Number(nonceValue),
       },
       mode: envelopeMode,
-      permit,
     });
     
     setStatus({ id: "idle" });

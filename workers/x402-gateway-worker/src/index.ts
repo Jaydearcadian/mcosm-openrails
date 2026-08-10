@@ -16,6 +16,7 @@ import { ethers } from "ethers";
 export interface Env {
   ARC_CHAIN_ID: string;
   ARC_RPC_URL: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_USDC_ADDRESS: string;
   ARC_OPENRAILS_HUB_ADDRESS: string;
   X402_PRICE: string;

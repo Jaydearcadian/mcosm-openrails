@@ -23,7 +23,7 @@ Running `circle blockchain list` returns the following EVM chain configurations,
 
 * **Target Network:** `ARC-TESTNET` (Arc Testnet)
 * **EVM Chain ID:** `5042002`
-* **Public RPC Endpoint:** `https://rpc.testnet.arc.network`
+* **Public RPC Endpoint:** `https://rpc.testnet.arc.io`
 
 Other supported networks include Ethereum, Polygon (Amoy), Arbitrum (Sepolia), Avalanche (Fuji), Optimism (Sepolia), Base (Sepolia), Unichain (Sepolia), and Monad Testnet.
 

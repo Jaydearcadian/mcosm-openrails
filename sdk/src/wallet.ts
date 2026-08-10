@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import type { OpenRailsSubmitter } from './account';
 
 import {
   type CryptographicEnvelopeV1,
@@ -338,6 +339,55 @@ export async function approveOpenRailsSpend(
   amount: bigint | string,
 ): Promise<ethers.TransactionResponse> {
   return getOpenRailsToken(signer, tokenAddress).approve(spender, amount);
+}
+
+export const UINT256_MAX = (1n << 256n) - 1n;
+
+export function nextRailsCardAllowance(currentAllowance: bigint, allocation: bigint): bigint {
+  if (allocation <= 0n) throw new Error('RailsCard allocation must be positive');
+  if (currentAllowance >= UINT256_MAX - allocation) return UINT256_MAX;
+  return currentAllowance + allocation;
+}
+
+export interface RailsCardAllowanceReservation {
+  previousAllowance: bigint;
+  reservedAllowance: bigint;
+  transactionHash?: string;
+}
+
+/**
+ * Reserve cumulative Hub allowance before issuing a deferred RailsCard.
+ *
+ * This intentionally uses an approval transaction at issuance. EIP-2612 permits are short-lived
+ * and share one token nonce, so embedding one in a card that may be claimed later is unreliable.
+ */
+export async function reserveRailsCardAllowance(
+  submitter: OpenRailsSubmitter,
+  provider: ethers.Provider,
+  tokenAddress: string,
+  hubAddress: string,
+  allocation: bigint | string,
+): Promise<RailsCardAllowanceReservation> {
+  const owner = ethers.getAddress(await submitter.getAddress());
+  const token = ethers.getAddress(tokenAddress);
+  const hub = ethers.getAddress(hubAddress);
+  const amount = BigInt(allocation);
+  const [balance, previousAllowance] = await Promise.all([
+    readTokenBalance(provider, token, owner),
+    readTokenAllowance(provider, token, owner, hub),
+  ]);
+  if (balance < amount) throw new Error('RailsCard amount exceeds the payer USDC balance');
+
+  const reservedAllowance = nextRailsCardAllowance(previousAllowance, amount);
+  if (reservedAllowance === previousAllowance) return { previousAllowance, reservedAllowance };
+
+  const data = new ethers.Interface(OPENRAILS_ERC20_ABI).encodeFunctionData('approve', [
+    hub,
+    reservedAllowance,
+  ]);
+  const tx = await submitter.sendTransaction({ to: token, data });
+  await tx.wait();
+  return { previousAllowance, reservedAllowance, transactionHash: tx.hash };
 }
 
 export async function signPermissionEnvelopeWithSigner(

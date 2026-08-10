@@ -14,7 +14,7 @@ receipt, and recovery layer on top.
 > payments can be relayed and gas-sponsored), and escrow is **bounded by construction** (a bug, a bad
 > actor, or a runaway agent can never move more than was signed for).
 
-**Core primitives** *(vocabulary is fixed — do not rename):*
+**Core protocol primitives:**
 
 | Primitive | Meaning |
 | :--- | :--- |
@@ -23,6 +23,9 @@ receipt, and recovery layer on top.
 | **Paycard Stream** | The on-chain Vault row that escrows funds and meters settlement. |
 | **Nonce Lane** | Replay/concurrency protection for parallel agent payments (`nonceChannel` / `nonceValue`). |
 | **Receipts** | Verifiable proof of every open, settlement, and residual return. |
+
+The product UI uses **Payment Request** for RailsFlow and **Claimable Payment** for RailsCard.
+The protocol names remain unchanged in the SDK, REST, MCP, schemas, and contract-facing code.
 
 The agent economy and the creator economy are the flagship verticals; the rail itself is
 vertical-agnostic.
@@ -43,18 +46,20 @@ to new opens and left to drain.
 | SDK + CLI | [`openrails-sdk`](https://www.npmjs.com/package/openrails-sdk) (npm) |
 | Agent server | [`openrails-mcp`](https://www.npmjs.com/package/openrails-mcp) (npm) |
 
-**What's shipped:** EIP-1271 **smart accounts** *and* EOAs (humans via embedded wallets, agents via
-server wallets) — including a real, live proof of a Circle-Smart-Account-style EIP-1271 open +
-settle against the deployed V2 Hub on Arc testnet, not just a local mock (real tx hashes:
+**What's shipped:** EIP-1271-compatible **smart accounts** *and* EOAs (humans via embedded wallets,
+agents via server wallets), including a local and test proof of the Hub's EIP-1271 verification
+path against the deployed V2 Hub on Arc testnet (real tx hashes:
 [`experiments/circle-sa-live-proof/results.md`](experiments/circle-sa-live-proof/results.md));
 **gasless** relaying via the keeper worker; streaming + instant settlement; automatic
 residual return; on-chain receipts; a published SDK/CLI and MCP server; a deployed cockpit at
 [openrails.pages.dev](https://openrails.pages.dev). Test baseline: **90 Hardhat + 9 Foundry** passing.
 
-**Not yet:** mainnet, a security audit, session keys, USDC paymaster, and Circle's own Smart
-Account factory/session-key/paymaster infrastructure specifically (the Hub's EIP-1271 verification
-is proven live; Circle's own deployed infra hasn't been wired in yet). See [`HANDOFF.md`](HANDOFF.md)
-for the full roadmap.
+**Not yet:** mainnet, a security audit, session keys, USDC paymaster, and a proven live Circle
+Modular Wallet Gas Station transaction. The Cockpit now has an optional credential-gated Circle
+passkey path, but this checkout has no live Console credentials or proven Circle Wallet transaction.
+See
+[`docs/circle-gas-station-boundary.md`](docs/circle-gas-station-boundary.md) and
+[`HANDOFF.md`](HANDOFF.md) for the limits and roadmap.
 
 ---
 
@@ -67,7 +72,8 @@ for the full roadmap.
 The fastest paths need no repo checkout — the packages default to Arc-testnet-V2. No testnet USDC
 yet? See "Get testnet funds" in [`GETTING_STARTED.md`](GETTING_STARTED.md#0-what-you-need) — the
 faucet drips both escrow funds and gas (USDC is Arc's native gas token) to any address in one call.
-Full walkthrough in [`GETTING_STARTED.md`](GETTING_STARTED.md).
+Full walkthrough in [`GETTING_STARTED.md`](GETTING_STARTED.md). The safe MCP prepares and verifies
+the same shared objects but leaves authorization and submission to an external wallet.
 
 **CLI (one command to a first payment):**
 ```bash
@@ -84,18 +90,17 @@ auto-derived. Mutating commands are dry-run until `--execute`; keys come from en
 npm install openrails-sdk
 ```
 ```ts
-import { LeptonOpenRailsClient, payGasless } from "openrails-sdk";
-// pluggable signers: openrails-sdk/adapters/{ethers,privy,turnkey}
+import { LeptonOpenRailsClient, payGasless } from "openrails-sdk/arc";
+// Shared Interface preparation and verification use the safe package root.
 ```
 
-**Agent (MCP):** register with an MCP client (e.g. Claude Desktop):
+**Agent (MCP):** register the safe-only MCP surface with an MCP client (e.g. Claude Desktop):
 ```json
 { "mcpServers": { "openrails": {
-  "command": "npx", "args": ["openrails-mcp"],
-  "env": { "OPENRAILS_MCP_SIGNER_KEY": "0x<funded-key>" } } } }
+  "command": "npx", "args": ["openrails-mcp"] } } }
 ```
-Tools: `pay_link`, `create_request_link`, `issue_railscard`, `paycard_status`, `openrails_config`.
-Omit the signer key for read-only.
+Tools: `openrails_capabilities`, `openrails_prepare`, `openrails_validate`, `openrails_verify`,
+and `openrails_read`. The MCP does not create signers, custody keys, sign, or broadcast.
 
 **Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev) — connect a wallet,
 create/pay a link, issue/claim a RailsCard.

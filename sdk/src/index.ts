@@ -1,27 +1,26 @@
 /**
  * @module index
- * @description Public barrel export for the OpenRails SDK.
+ * @description Shared Interface 1.2 safe public surface for OpenRails.
  *
- * All arc-policy-envelope layer modules are re-exported here so consumers
- * can import from the package root:
- *
- * ```ts
- * import { LeptonOpenRailsClient, NonceEngine, ... } from 'openrails-sdk';
- * ```
+ * The root surface prepares, reads, and verifies canonical objects. Signing
+ * and transaction submission remain responsibilities of an external wallet.
+ * The pre-1.0 Arc-specific surface is available from `openrails-sdk/arc`.
  */
 
-export * from './client';
-export * from './account';
-export * from './permit';
-export * from './relay';
-export * from './errors';
-export * from './serialization';
-export * from './nonce';
-export * from './factory';
-export * from './policy';
-export * from './proof';
-export * from './metadata';
-export * from './links';
-export * from './access';
-export * from './wallet';
-export * from './receipts';
+export * from "./shared-interface";
+export {
+  assertValidOperationRequest,
+  assertValidOperationResponse,
+  createOperationRequest,
+  createOperationResponse,
+  isSignedRuntimeTransitionOperation,
+  SIGNED_RUNTIME_TRANSITION_OPERATIONS,
+  validateOperationRequest,
+  validateOperationResponse,
+} from "./operations";
+export type { OperationContext, OperationResponseContext, SignedRuntimeTransitionOperation } from "./operations";
+export * from "./wallet-handoff";
+export * from "./canonical-record";
+export * from "./circle-gas-station";
+export * from "./interface-client";
+export * from "./runtime-client";

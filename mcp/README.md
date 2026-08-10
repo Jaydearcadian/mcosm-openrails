@@ -1,81 +1,68 @@
 # openrails-mcp
 
-MCP server that lets an agent transact on the OpenRails USDC rail (Arc) over stdio. Opens and
-claims are **gasless by default** - routed through the keeper relay - and the server is
-**non-custodial**: it signs with its own configured account and never holds anyone else's keys.
+Safe-only MCP server for the OpenRails Shared Interface 1.2 surface over stdio. The server can
+read the bundled Arc Testnet manifest, prepare operation envelopes, validate envelopes, and verify
+Pact-declared Canonical Record bindings. It supports the four signed runtime operation shapes:
+`workspace.register`, `actor.register`, `proposal.submit`, and `pact.sign`.
+
+The MCP process does not create signers, accept keys, custody assets, sign wallet requests, submit
+transactions, relay requests, or autonomously execute financial actions. Runtime operation
+preparation accepts caller-supplied external signature evidence and derives only the required
+1.2 references. The external wallet or application remains responsible for authorization and
+submission.
 
 ## Tools
 
 | Tool | Purpose |
 |---|---|
-| `openrails_config` | Network config, the server signer address, and its USDC balance. Read-only. |
-| `pay_link` | Pay an OpenRails link - a RailsFlow request (the signer becomes the payer, gasless open) or a RailsCard (claimed to the signer). Returns the tx hash. |
-| `create_request_link` | Create a RailsFlow request link to **receive** payment. Defaults to one-time. Streaming requires positive velocity and lifespan. No signing/tx. |
-| `issue_railscard` | Issue a claimable RailsCard link (the server pre-signs as payer). Returns a claim link + paycardId. |
-| `paycard_status` | Read a paycard/stream state from chain by id. |
+| `openrails_capabilities` | Report Shared Interface capabilities and safe-only execution limits. |
+| `openrails_prepare` | Prepare a request envelope for an external wallet or runtime. |
+| `openrails_validate` | Validate a request or response envelope against the registry. |
+| `openrails_verify` | Verify an envelope and optional Canonical Record binding without claiming financial success. |
+| `openrails_read` | Read the bundled network manifest or capability declarations. Other objects need an indexer adapter. |
 
-## Write-tool guardrails
+`openrails_prepare` can prepare a signed runtime operation shape when the payload already contains
+an externally produced `signatureBinding`. It never creates or invokes a signer. The prepared
+request uses `delegated-runtime` and preserves `workspaceRef`, `pathRef`, `intentRef`,
+`proposalRef`, `decisionRef`, and `pactRef` bindings from the payload.
 
-`pay_link` (RailsFlow-open branch only - claiming a RailsCard spends the *original payer's*
-pre-authorized funds, not the caller's) and `issue_railscard` commit the server signer's own funds
-or a standing pull-authorization, so both are guarded:
+For signed runtime operations, the SDK derives and enforces the subject, execution profile, Arc
+network, bound references, configuration-only unverified provenance, and timestamp. MCP does not
+duplicate that authority logic. Caller context cannot replace any wrapper truth, including
+`provenance` or `createdAt`. Exact duplicate context remains accepted for compatibility.
 
-- **Spend ceiling.** Every amount is checked against `MCP_MAX_AMOUNT_USDC` (default `5` USDC)
-  *before* any signing happens. Exceeding it fails fast with no wallet interaction.
-- **Idempotent retries.** An identical tool call (same tool, same arguments) within 5 minutes
-  replays the cached result instead of signing a second, independent authorization - safe for an
-  agent to retry blindly after a timeout or dropped connection.
-- **Bearer-mode acknowledgment.** `issue_railscard`'s default `mode: "bearer"` creates a standing,
-  anyone-with-the-link pull-authorization (first claimant wins, no recipient check). It requires an
-  explicit `acknowledgeBearerRisk: true` argument; omit bearer entirely and use
-  `mode: "recipient_bound"` when the claimant is known.
+Canonical Records are optional. A Pact may omit them, allow them, or require them. When present,
+the SDK validates the bilateral typed actor signature commitment, Pact party and encrypted key
+coverage, exposure policy, and settlement references. Cryptographic actor verification requires an
+application verifier. Vault state remains the canonical financial state.
 
-The smoke test covers the negative paths for over-cap amounts, missing bearer acknowledgment, and
-missing streaming terms:
-
-```bash
-npm run build && node smoke.mjs
-```
-
-## Configuration (env)
+## Configuration
 
 | Var | Default | Notes |
 |---|---|---|
-| `OPENRAILS_MCP_SIGNER_KEY` | - | Dev signer (raw key). Omit for read-only. For prod, wire a Turnkey/Privy account via `openrails-sdk/adapters` (see below). |
-| `OPENRAILS_RPC_URL` | `https://rpc.testnet.arc.network` | Public Arc RPC. |
-| `OPENRAILS_CHAIN_ID` | `5042002` | |
-| `OPENRAILS_HUB_ADDRESS` | `0x941C...6D0b` | ArcOpenRailsHubV2Initializable (canonical). |
-| `OPENRAILS_USDC_ADDRESS` | `0x3600...0000` | |
-| `OPENRAILS_RELAY_URL` | deployed keeper | Sponsors gas for opens/claims. |
-| `OPENRAILS_APP_BASE_URL` | `https://openrails.pages.dev` | Base for generated links. |
-| `OPENRAILS_EXPLORER_BASE_URL` | `https://testnet.arcscan.app` | |
-| `MCP_MAX_AMOUNT_USDC` | `5` | Per-call spend ceiling for `pay_link` (RailsFlow-open) and `issue_railscard`. |
+| `OPENRAILS_NETWORK_MODE` | `arc-testnet` | Network manifest selected by the safe context. |
+| `OPENRAILS_RPC_URL` | `https://rpc.testnet.arc.io` | Displayed configuration only. The MCP does not create an RPC signer or broadcast. |
+| `OPENRAILS_CHAIN_ID` | `5042002` | Arc Testnet chain id. |
+| `OPENRAILS_HUB_ADDRESS` | `0x941C...6D0b` | Canonical OpenRails Hub configuration. |
+| `OPENRAILS_USDC_ADDRESS` | `0x3600...0000` | Arc USDC configuration. |
+| `OPENRAILS_APP_BASE_URL` | `https://openrails.pages.dev` | Application reference. |
+| `OPENRAILS_EXPLORER_BASE_URL` | `https://testnet.arcscan.app` | Explorer reference. |
+
+No signer, key, relay, or transaction-submission environment variable is accepted by this package.
 
 ## Run
 
 ```bash
-npm install && npm run build
-OPENRAILS_MCP_SIGNER_KEY=0x... node dist/index.js   # stdio server
+npm install
+npm run build
+node dist/index.js
 ```
 
-Register with an MCP client (e.g. Claude Desktop `mcpServers`):
+The MCP server communicates over stdio. A wallet or application integration must authorize and
+submit any prepared wallet transaction through its own custody boundary.
 
-```json
-{
-  "openrails": {
-    "command": "npx",
-    "args": ["openrails-mcp"],
-    "env": { "OPENRAILS_MCP_SIGNER_KEY": "0x..." }
-  }
-}
+## Smoke test
+
+```bash
+npm run build && node smoke.mjs
 ```
-
-Smoke test: `OPENRAILS_MCP_SIGNER_KEY=0x... node smoke.mjs [paycardId]`.
-
-## Signer is pluggable
-
-The server builds its signer via the SDK account abstraction (`openrails-sdk`). Dev uses a raw key
-(`ethersToSubmitter`); for production swap in `turnkeyToAccount` (server wallets / agents) or
-`privyToAccount` (humans) from `openrails-sdk/adapters/*` in `src/context.ts`. Because the OpenRails
-Hub authenticates the signature (not `msg.sender`), any EOA-backed account works with no contract
-change.

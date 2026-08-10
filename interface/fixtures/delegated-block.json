@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "id": "decision:block:1",
   "executionProfile": "delegated-runtime",
   "proposalRef": { "type": "Proposal", "id": "proposal:blocked" },

@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.2.0",
   "lifecycleStates": ["DRAFT", "PREPARED", "AWAITING_AUTHORIZATION", "EVALUATING", "BLOCKED", "ALLOWED", "COMMITTED", "EXECUTING", "PROOF_PENDING", "PROOF_VERIFIED", "CLEARING_READY", "SUBMITTED", "CONFIRMED", "SETTLING", "SETTLED", "RESOLVING", "RESOLVED", "FAILED", "CANCELLED"],
   "transactionStates": ["NOT_REQUESTED", "WALLET_REQUIRED", "WALLET_REJECTED", "SUBMITTED", "PENDING_CONFIRMATION", "CONFIRMED", "REVERTED", "REPLACED", "DROPPED", "UNKNOWN"],
   "allowedTransitions": [
@@ -25,7 +25,11 @@
     { "from": "AWAITING_AUTHORIZATION", "to": "CANCELLED", "trigger": "CANCEL", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "NONE", "requires": [] },
     { "from": "EVALUATING", "to": "FAILED", "trigger": "EVALUATION_FAILURE", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": [] },
     { "from": "SUBMITTED", "to": "FAILED", "trigger": "TRANSACTION_FAILURE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "UNKNOWN", "requires": [] },
-    { "from": "EXECUTING", "to": "FAILED", "trigger": "EXECUTION_FAILURE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "UNKNOWN", "requires": [] }
+    { "from": "EXECUTING", "to": "FAILED", "trigger": "EXECUTION_FAILURE", "allowedProfiles": ["direct-wallet-authorized", "delegated-runtime"], "financialEffect": "UNKNOWN", "requires": [] },
+    { "from": "DRAFT", "to": "PREPARED", "trigger": "REGISTER_WORKSPACE", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": ["RUNTIME_SIGNATURE"] },
+    { "from": "DRAFT", "to": "PREPARED", "trigger": "REGISTER_ACTOR", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": ["RUNTIME_SIGNATURE"] },
+    { "from": "DRAFT", "to": "EVALUATING", "trigger": "SUBMIT_PROPOSAL", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": ["RUNTIME_SIGNATURE"] },
+    { "from": "ALLOWED", "to": "COMMITTED", "trigger": "SIGN_PACT", "allowedProfiles": ["delegated-runtime"], "financialEffect": "NONE", "requires": ["ALLOW_DECISION", "PACT", "RUNTIME_SIGNATURE"] }
   ],
   "outcomeRules": [
     { "outcome": "success", "lifecycleState": "SETTLED", "transactionState": "CONFIRMED", "financialEffect": "RECONCILED", "valueMovementAllowed": true, "receiptRequirement": "exact-verified-receipt-and-reconciliation", "errorCode": null, "retryable": false, "notes": "Submission and confirmation are intermediate states. Financial success requires exact event verification and Vault reconciliation." },

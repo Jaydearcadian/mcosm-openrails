@@ -1,6 +1,6 @@
 # OpenRails API Reference
 
-Every HTTP route across the repo in one place: the legacy Express server and all 5 Cloudflare
+Every HTTP route across the repo in one place: the legacy Express server and all 6 Cloudflare
 Workers. Cross-checked directly against a `grep` of every `app.get`/`app.post`/Worker
 `url.pathname ===` route definition (see the verification note at the bottom); if this doc and the
 code ever disagree, the code wins - please file that as a bug.
@@ -41,6 +41,26 @@ Run with `npm run server` (`OPENRAILS_DASHBOARD_MODE=local` or `arc-testnet`). C
 | `GET /api/demo/protected-resource` | Local-sandbox-only demo route gated by a custom access credential. | **Pattern 3 (custom "OpenRails" bearer credential)** - `Authorization: OpenRails <credential>` plus `X-OpenRails-Credential-Type` / `X-OpenRails-Paycard-Id` / `X-OpenRails-Metadata-Hash` / `X-OpenRails-Mode` headers, validated against chain id, vault, scope, and the paycard's real payer/recipient. |
 | `GET /api/x402/openrails-artifact` | Circle x402-gated OpenRails metadata artifact (HTTP payment proof; does **not** claim Vault escrow itself - pair with a bridge script to turn it into a real stream). | **Pattern 4 (Circle x402 middleware)**, requires `OPENRAILS_DASHBOARD_MODE=arc-testnet` and the real Arc chain id. |
 
+### Shared Interface safe boundary
+
+These routes are registered by `server/shared-interface.ts`. They prepare, validate, verify, and
+read Shared Interface 1.2 objects without creating signers, accepting custody fields, signing, or
+broadcasting. Canonical Records remain optional by Pact policy, and the Circle Gas Station status
+is credential-gated.
+
+The routes are available under `/api/v1/interface/...`, `/api/interface/...`, and
+`/api/interface/1.2.0/...`. The unversioned paths remain supported for compatibility and still
+return the canonical `interfaceVersion` field.
+
+| Method & Path | Purpose | Auth |
+|---|---|---|
+| `GET /api/interface/capabilities` | Shared Interface, safe-surface, Canonical Record, and Circle capability declarations. | none |
+| `POST /api/interface/prepare` | Prepare a registry-selected operation request. | none; custody fields rejected |
+| `POST /api/interface/validate` | Validate a request or response envelope against the registry. | none; custody fields rejected |
+| `POST /api/interface/verify` | Verify an envelope and optional Canonical Record policy binding. | none; custody fields rejected |
+| `GET /api/interface/read` | Read the shipped network or capability manifest; other objects require a replaceable indexer adapter. | none |
+| `GET /api/interface/read/:type/:id` | Typed form of the safe read route. | none |
+
 **Five auth patterns, by design non-unified in this pass** (a full merge is a breaking change for
 existing integrators - tracked, not attempted here): (1) no-auth + capability flags keyed off
 `OPENRAILS_DASHBOARD_MODE`/env toggles, (2) EIP-712 envelope-signature verification, (3) a
@@ -48,9 +68,42 @@ one-off `Authorization: OpenRails <credential>` scheme with custom `X-OpenRails-
 Circle x402 middleware, (5) ad-hoc `ethers.verifyMessage` against a fixed message string. Routes
 above cite which pattern(s) gate them.
 
+## 2. Shared Interface Worker (`workers/interface-worker/`)
+
+Cloudflare Worker boundary for Shared Interface 1.2. It is safe by default and does not sign,
+broadcast, relay, or move value. Runtime persistence uses a Neon PostgreSQL connection through the
+private `DATABASE_URL` secret. The current public deployment has `OPENRAILS_RUNTIME_ENABLED` set to
+`true` after the migration, secret provisioning, and internal security gate.
+
+The safe REST and signed Runtime deployment are live at
+`https://openrails-interface-worker.microcosm.workers.dev`. It reports Runtime `CONFIGURED` with
+Neon persistence. The public deployment does not sign, broadcast, relay, hold keys, or move value.
+
+| Method & Path | Purpose | Auth |
+|---|---|---|
+| `GET /healthz` | Worker health and Runtime configuration status. | none |
+| `GET /api/interface/1.2.0/capabilities` | Shared Interface, Canonical Record, Circle boundary, and Runtime declarations. | none |
+| `POST /api/interface/1.2.0/prepare` | Prepare a registry-selected operation request. | none; custody fields rejected |
+| `POST /api/interface/1.2.0/validate` | Validate a request or response envelope against the registry. | none; custody fields rejected |
+| `POST /api/interface/1.2.0/verify` | Verify an envelope and optional Canonical Record policy binding. | none; custody fields rejected |
+| `GET /api/interface/1.2.0/read` | Read the shipped network or capability manifest. | none |
+| `GET /api/interface/1.2.0/read/:type/:id` | Typed form of the safe read route. | none |
+| `POST /api/interface/1.2.0/runtime/path` | Persist a Path after application-operator attestation. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
+| `POST /api/interface/1.2.0/runtime/execute` | Execute one signed Runtime control-plane transition. | EIP-712 envelope signature |
+| `GET /api/interface/1.2.0/runtime/state` | Inspect the persisted Runtime state. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
+
+The safe routes also support `/api/interface/...` and `/api/v1/interface/...`. Runtime execution
+accepts the signed Workspace, Actor, Path, Intent, Proposal, Pact, and Proof control-plane
+transitions registered in Shared Interface 1.2. It does not submit Arc transactions or claim
+financial success. A live proof has exercised `workspace.register`
+with a fresh EIP-712 signature, Neon persistence, and nonce replay rejection. A Neon migration is provided at
+[`packages/openrails-runtime/migrations/001_runtime.sql`](../packages/openrails-runtime/migrations/001_runtime.sql).
+The Cockpit can target this safe surface through `VITE_OPENRAILS_INTERFACE_BASE` while retaining
+`VITE_OPENRAILS_API_BASE` for legacy gateway routes.
+
 ---
 
-## 2. Music Scrobble Webhook Worker (`workers/music-scrobble-worker/`)
+## 3. Music Scrobble Webhook Worker (`workers/music-scrobble-worker/`)
 
 CORS open. Auth: shared `authorized()` helper (see §5) - `Authorization: Bearer <WEBHOOK_SECRET>`
 or `X-OpenRails-Webhook-Secret: <WEBHOOK_SECRET>`.
@@ -63,7 +116,7 @@ or `X-OpenRails-Webhook-Secret: <WEBHOOK_SECRET>`.
 
 ---
 
-## 3. Reconciliation (Keeper) Worker (`workers/reconciliation-worker/`)
+## 4. Reconciliation (Keeper) Worker (`workers/reconciliation-worker/`)
 
 CORS open. Cron: `* * * * *` (every minute - Cloudflare's floor). See
 [`workers/README.md`](../workers/README.md) for the full settlement-model writeup.
@@ -76,7 +129,7 @@ CORS open. Cron: `* * * * *` (every minute - Cloudflare's floor). See
 
 ---
 
-## 4. Indexer Worker (`workers/indexer-worker/`)
+## 5. Indexer Worker (`workers/indexer-worker/`)
 
 CORS open, GET-only except `/tick`. Cron: every 5 minutes. Every read response includes
 `authoritative: false` - the Vault is always the source of truth. Does not index V1 or attempt
@@ -94,7 +147,7 @@ reorg rollback (last-write-wins/append-only, same as `stream-gateway` - see
 
 ---
 
-## 5. Faucet Worker (`workers/faucet-worker/`)
+## 6. Faucet Worker (`workers/faucet-worker/`)
 
 CORS open. Self-serve, capped testnet USDC drip (also Arc's native gas token).
 
@@ -116,7 +169,7 @@ than unified, to avoid a breaking header rename for existing integrators).
 
 ---
 
-## 6. x402 Gateway Worker (`workers/x402-gateway-worker/`)
+## 7. x402 Gateway Worker (`workers/x402-gateway-worker/`)
 
 CORS open. This worker exposes a Circle x402-gated OpenRails artifact endpoint. It is separate from
 the legacy Express `GET /api/x402/openrails-artifact` route.
@@ -129,18 +182,18 @@ the legacy Express `GET /api/x402/openrails-artifact` route.
 
 ---
 
-## 7. MCP server (`mcp/`)
+## 8. MCP server (`mcp/`)
 
 Not HTTP - stdio, per the [Model Context Protocol](https://modelcontextprotocol.io). See
-[`mcp/README.md`](../mcp/README.md) for the tool table and write-tool guardrails
-(`MCP_MAX_AMOUNT_USDC` cap, idempotent retries, bearer-mode acknowledgment).
+[`mcp/README.md`](../mcp/README.md) for the safe-only tool table. The MCP does not create or custody
+signers, call the keeper relay, sign, or broadcast.
 
 ---
 
 ## Verification
 
 This table was built by reading every `app.get(`/`app.post(` in `server/index.ts` and every
-`url.pathname ===` / `request.method` dispatch in the 5 workers' `src/index.ts` files directly,
+`url.pathname ===` / `request.method` dispatch in the 6 workers' `src/index.ts` files directly,
 not from an existing summary. To re-verify after a change:
 
 ```bash

@@ -16,6 +16,7 @@ const result = spawnSync(process.execPath, [
   "--target", "ES2022",
   "--module", "NodeNext",
   "--moduleResolution", "NodeNext",
+  "--types", "node",
   "--skipLibCheck",
   fixturePath
 ], { cwd: packageRoot, encoding: "utf8" });

@@ -1,8 +1,8 @@
 {
   "name": "@openrails/shared-interface",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Private JSON Schema and generated TypeScript contract for OpenRails Shared Interface 1.0.1.",
+  "description": "Private JSON Schema and generated TypeScript contract for OpenRails Shared Interface 1.2.0.",
   "type": "module",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
@@ -32,7 +32,9 @@
     "check": "npm test && npm run typecheck && npm run build && npm run pack:check"
   },
   "dependencies": {
-    "ajv": "^8.20.0"
+    "ajv": "^8.20.0",
+    "canonicalize": "^3.0.0",
+    "ethers": "^6.17.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

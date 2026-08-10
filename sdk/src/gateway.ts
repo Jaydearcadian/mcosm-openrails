@@ -25,7 +25,6 @@ export interface DepositParams {
   amountBaseUnits: bigint; // USDC 6-decimal units (mwei)
   tokenAddress?: string; // defaults to Arc USDC
   autoApprove?: boolean; // automatically submit approve transaction if allowance is insufficient
-  gatewayWalletAddress?: string; // defaults to the live Arc testnet GatewayWallet; override for tests
 }
 
 export interface DepositForParams extends DepositParams {
@@ -36,7 +35,6 @@ export interface MintParams {
   signer: ethers.Signer;
   attestationPayload: string; // hex string
   signature: string; // hex string
-  gatewayMinterAddress?: string; // defaults to the live Arc testnet GatewayMinter; override for tests
 }
 
 /**
@@ -44,20 +42,19 @@ export interface MintParams {
  */
 export async function depositToGateway(params: DepositParams): Promise<{ txHash: string }> {
   const token = params.tokenAddress || ARC_USDC_ADDRESS;
-  const gatewayWallet = params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS;
   const signerAddress = await params.signer.getAddress();
 
   if (params.autoApprove !== false) {
     const erc20 = new ethers.Contract(token, ERC20_ABI, params.signer);
-    const allowance = await erc20.allowance(signerAddress, gatewayWallet);
+    const allowance = await erc20.allowance(signerAddress, GATEWAY_WALLET_ADDRESS);
     if (allowance < params.amountBaseUnits) {
       console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${params.amountBaseUnits.toString()}...`);
-      const approveTx = await erc20.approve(gatewayWallet, params.amountBaseUnits);
+      const approveTx = await erc20.approve(GATEWAY_WALLET_ADDRESS, params.amountBaseUnits);
       await approveTx.wait();
     }
   }
 
-  const contract = new ethers.Contract(gatewayWallet, GATEWAY_WALLET_ABI, params.signer);
+  const contract = new ethers.Contract(GATEWAY_WALLET_ADDRESS, GATEWAY_WALLET_ABI, params.signer);
   const tx = await contract.deposit(token, params.amountBaseUnits);
   const receipt = await tx.wait();
   return { txHash: receipt.hash };
@@ -68,20 +65,19 @@ export async function depositToGateway(params: DepositParams): Promise<{ txHash:
  */
 export async function depositForToGateway(params: DepositForParams): Promise<{ txHash: string }> {
   const token = params.tokenAddress || ARC_USDC_ADDRESS;
-  const gatewayWallet = params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS;
   const signerAddress = await params.signer.getAddress();
 
   if (params.autoApprove !== false) {
     const erc20 = new ethers.Contract(token, ERC20_ABI, params.signer);
-    const allowance = await erc20.allowance(signerAddress, gatewayWallet);
+    const allowance = await erc20.allowance(signerAddress, GATEWAY_WALLET_ADDRESS);
     if (allowance < params.amountBaseUnits) {
       console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${params.amountBaseUnits.toString()}...`);
-      const approveTx = await erc20.approve(gatewayWallet, params.amountBaseUnits);
+      const approveTx = await erc20.approve(GATEWAY_WALLET_ADDRESS, params.amountBaseUnits);
       await approveTx.wait();
     }
   }
 
-  const contract = new ethers.Contract(gatewayWallet, GATEWAY_WALLET_ABI, params.signer);
+  const contract = new ethers.Contract(GATEWAY_WALLET_ADDRESS, GATEWAY_WALLET_ABI, params.signer);
   const tx = await contract.depositFor(token, params.depositor, params.amountBaseUnits);
   const receipt = await tx.wait();
   return { txHash: receipt.hash };
@@ -91,8 +87,7 @@ export async function depositForToGateway(params: DepositForParams): Promise<{ t
  * Submits an attestation payload and signature to the Gateway Minter to mint tokens.
  */
 export async function mintFromGateway(params: MintParams): Promise<{ txHash: string }> {
-  const gatewayMinter = params.gatewayMinterAddress || GATEWAY_MINTER_ADDRESS;
-  const contract = new ethers.Contract(gatewayMinter, GATEWAY_MINTER_ABI, params.signer);
+  const contract = new ethers.Contract(GATEWAY_MINTER_ADDRESS, GATEWAY_MINTER_ABI, params.signer);
   const tx = await contract.gatewayMint(params.attestationPayload, params.signature);
   const receipt = await tx.wait();
   return { txHash: receipt.hash };

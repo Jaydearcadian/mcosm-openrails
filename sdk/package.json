@@ -1,7 +1,7 @@
 {
   "name": "openrails-sdk",
-  "version": "0.1.2",
-  "description": "OpenRails SDK + `openrails` CLI — intent-driven clearing & settlement for streamed USDC work on Arc (RailsFlow, RailsCard, Paycard Streams, nonce lanes, receipts).",
+  "version": "1.1.0-rc.2",
+  "description": "OpenRails Shared Interface 1.2 SDK with canonical operation envelopes, runtime transitions, receipts, and external-wallet handoffs.",
   "license": "MIT",
   "homepage": "https://openrails.pages.dev",
   "type": "commonjs",
@@ -11,6 +11,38 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./shared-interface": {
+      "types": "./dist/shared-interface.d.ts",
+      "default": "./dist/shared-interface.js"
+    },
+    "./operations": {
+      "types": "./dist/operations.d.ts",
+      "default": "./dist/operations.js"
+    },
+    "./runtime-signature": {
+      "types": "./dist/runtime-signature.d.ts",
+      "default": "./dist/runtime-signature.js"
+    },
+    "./wallet-handoff": {
+      "types": "./dist/wallet-handoff.d.ts",
+      "default": "./dist/wallet-handoff.js"
+    },
+    "./circle-gas-station": {
+      "types": "./dist/circle-gas-station.d.ts",
+      "default": "./dist/circle-gas-station.js"
+    },
+    "./canonical-record": {
+      "types": "./dist/canonical-record.d.ts",
+      "default": "./dist/canonical-record.js"
+    },
+    "./runtime-client": {
+      "types": "./dist/runtime-client.d.ts",
+      "default": "./dist/runtime-client.js"
+    },
+    "./arc": {
+      "types": "./dist/arc.d.ts",
+      "default": "./dist/arc.js"
     },
     "./adapters/ethers": {
       "types": "./dist/adapters/ethers.d.ts",
@@ -32,10 +64,6 @@
       "types": "./dist/gateway.d.ts",
       "default": "./dist/gateway.js"
     },
-    "./agent": {
-      "types": "./dist/agent/index.d.ts",
-      "default": "./dist/agent/index.js"
-    },
     "./package.json": "./package.json"
   },
   "bin": {
@@ -43,14 +71,25 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md",
+    "MIGRATION.md",
+    "NOTICE.md",
+    "THIRD_PARTY_LICENSES.md"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "npm run build"
+    "sync:interface": "node scripts/sync-shared-interface.mjs",
+    "sync:interface:check": "node scripts/sync-shared-interface.mjs --check",
+    "typecheck": "npm run sync:interface:check && tsc --noEmit -p tsconfig.json",
+    "build": "npm run sync:interface:check && tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "pack:check": "npm run build && node scripts/pack-smoke.mjs",
+    "check": "npm run typecheck && npm test && npm run pack:check",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check"
   },
   "keywords": [
     "openrails",
@@ -63,6 +102,7 @@
     "agent-payments"
   ],
   "dependencies": {
+    "ajv": "^8.20.0",
     "ethers": "^6.13.0"
   },
   "peerDependencies": {
@@ -79,6 +119,7 @@
   },
   "devDependencies": {
     "typescript": "^5.4.5",
-    "@types/node": "^20.12.12"
+    "@types/node": "^20.12.12",
+    "canonicalize": "^3.0.0"
   }
 }

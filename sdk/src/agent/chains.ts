@@ -45,7 +45,7 @@ export const OPENRAILS_CHAINS = {
     settlementChain: 'arc-testnet',
     environment: 'testnet',
     chainId: 5042002,
-    rpcUrl: 'https://rpc.testnet.arc.network',
+    rpcUrl: 'https://rpc.testnet.arc.io',
     // USDC is Arc's native gas token — unlike most chains, there is no separate gas asset.
     nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
     contracts: {

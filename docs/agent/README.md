@@ -18,7 +18,7 @@ primitives. It does not introduce a second settlement model and it does not cust
 
 ## Boundary
 
-Use the root `openrails-sdk` package for payment actions:
+Use `openrails-sdk/arc` for the legacy Arc payment actions:
 
 - build and sign EIP-712 permission envelopes
 - create RailsFlow and RailsCard links
@@ -46,4 +46,3 @@ import {
   buildOpenRailsConformanceFixture,
 } from "openrails-sdk/agent";
 ```
-

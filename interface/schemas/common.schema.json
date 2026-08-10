@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.openrails.dev/openrails/1.0.1/common.schema.json",
+  "$id": "https://schemas.openrails.dev/openrails/1.2.0/common.schema.json",
   "title": "OpenRailsCommon",
   "$defs": {
     "InterfaceVersion": {
       "type": "string",
-      "const": "1.0.1"
+      "enum": ["1.1.0", "1.2.0"]
     },
     "Identifier": {
       "type": "string",
@@ -33,11 +33,13 @@
         "RailsCard",
         "PaycardStream",
         "Receipt",
+        "CanonicalRecord",
         "GaiaCase",
         "RectificationObligation",
         "InterfaceError",
         "TransactionState",
         "OperationEnvelope",
+        "WalletHandoff",
         "NetworkManifest",
         "CapabilityDeclaration",
         "Provenance"
@@ -305,6 +307,12 @@
         { "properties": { "type": { "const": "Receipt" } } }
       ]
     },
+    "CanonicalRecordRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "CanonicalRecord" } } }
+      ]
+    },
     "GaiaCaseRef": {
       "allOf": [
         { "$ref": "#/$defs/ObjectRef" },
@@ -333,6 +341,12 @@
       "allOf": [
         { "$ref": "#/$defs/ObjectRef" },
         { "properties": { "type": { "const": "OperationEnvelope" } } }
+      ]
+    },
+    "WalletHandoffRef": {
+      "allOf": [
+        { "$ref": "#/$defs/ObjectRef" },
+        { "properties": { "type": { "const": "WalletHandoff" } } }
       ]
     },
     "NetworkManifestRef": {
@@ -437,6 +451,37 @@
         "chainId": { "$ref": "#/$defs/ChainId" },
         "verifyingContract": { "$ref": "#/$defs/NonZeroAddress" },
         "domain": { "$ref": "#/$defs/SignatureDomain" }
+      }
+    },
+    "RuntimeSignatureDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "chainId", "salt"],
+      "properties": {
+        "name": { "const": "OpenRails Runtime" },
+        "version": { "const": "1.2.0" },
+        "chainId": { "$ref": "#/$defs/ChainId" },
+        "salt": { "$ref": "#/$defs/Hash" }
+      }
+    },
+    "RuntimeSignatureBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signatureStandard", "primaryType", "signaturePurpose", "operationId", "payloadHash", "signer", "signature", "nonce", "issuedAt", "expiresAt", "chainId", "anchorContract", "domain"],
+      "properties": {
+        "signatureStandard": { "const": "eip-712" },
+        "primaryType": { "const": "OpenRailsRuntimeTransition" },
+        "signaturePurpose": { "const": "offchain-runtime" },
+        "operationId": { "$ref": "#/$defs/Identifier" },
+        "payloadHash": { "$ref": "#/$defs/Hash" },
+        "signer": { "$ref": "#/$defs/NonZeroAddress" },
+        "signature": { "$ref": "#/$defs/HexData" },
+        "nonce": { "$ref": "#/$defs/NonNegativeIntegerString" },
+        "issuedAt": { "$ref": "#/$defs/Timestamp" },
+        "expiresAt": { "$ref": "#/$defs/Timestamp" },
+        "chainId": { "$ref": "#/$defs/ChainId" },
+        "anchorContract": { "$ref": "#/$defs/NonZeroAddress" },
+        "domain": { "$ref": "#/$defs/RuntimeSignatureDomain" }
       }
     },
     "Subject": {

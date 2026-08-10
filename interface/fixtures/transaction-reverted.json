@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "code": "TRANSACTION_REVERTED",
   "message": "The settlement transaction was mined but reverted.",
   "retryable": true,

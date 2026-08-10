@@ -1,4 +1,4 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.2.0",
   "manifests": ["arc-testnet.json"]
 }

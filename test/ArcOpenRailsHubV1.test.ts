@@ -1356,7 +1356,7 @@ describe("ArcOpenRailsHubV1", () => {
       chainId: 5042002,
       chainName: "Arc Testnet",
       nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-      rpcUrls: ["https://rpc.testnet.arc.network"],
+      rpcUrls: ["https://rpc.testnet.arc.io"],
       blockExplorerUrls: ["https://testnet.arcscan.app"],
     });
     expect(switched).to.equal("switched");
@@ -1381,7 +1381,7 @@ describe("ArcOpenRailsHubV1", () => {
       chainId: 5042002,
       chainName: "Arc Testnet",
       nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-      rpcUrls: ["https://rpc.testnet.arc.network"],
+      rpcUrls: ["https://rpc.testnet.arc.io"],
       blockExplorerUrls: ["https://testnet.arcscan.app"],
     });
     expect(added).to.equal("added");
@@ -1391,7 +1391,7 @@ describe("ArcOpenRailsHubV1", () => {
         chainId: "0x4cef52",
         chainName: "Arc Testnet",
         nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-        rpcUrls: ["https://rpc.testnet.arc.network"],
+        rpcUrls: ["https://rpc.testnet.arc.io"],
         blockExplorerUrls: ["https://testnet.arcscan.app"],
       }],
     });
@@ -1834,7 +1834,7 @@ describe("ArcOpenRailsHubV1", () => {
     expect(appSource).to.include("switchOrAddOpenRailsNetwork");
     expect(appSource).to.include("Wallet-signed Arc transaction");
     expect(appSource).to.include("Wallet-signed local transaction");
-    expect(appSource).to.include("https://rpc.testnet.arc.network");
+    expect(appSource).to.include("https://rpc.testnet.arc.io");
     expect(appSource).to.include("createPaymentReceipt");
     expect(appSource).to.include("createSettlementReceipt");
     expect(appSource).to.include("createResidualRecoveryReceipt");

@@ -1,0 +1,82 @@
+import canonicalize from "canonicalize";
+import {
+  TypedDataEncoder,
+  getAddress,
+  keccak256,
+  toUtf8Bytes,
+  verifyTypedData,
+  type TypedDataDomain,
+  type TypedDataField
+} from "ethers";
+
+import type { RuntimeSignatureBinding } from "./generated.js";
+
+export const RUNTIME_TRANSITION_PRIMARY_TYPE = "OpenRailsRuntimeTransition" as const;
+
+export const RUNTIME_TRANSITION_TYPES: Record<typeof RUNTIME_TRANSITION_PRIMARY_TYPE, TypedDataField[]> = {
+  OpenRailsRuntimeTransition: [
+    { name: "operationId", type: "string" },
+    { name: "payloadHash", type: "bytes32" },
+    { name: "signer", type: "address" },
+    { name: "nonce", type: "uint256" },
+    { name: "issuedAt", type: "string" },
+    { name: "expiresAt", type: "string" },
+    { name: "signaturePurpose", type: "string" },
+    { name: "anchorContract", type: "address" }
+  ]
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function canonicalizeRuntimePayload(data: unknown): string {
+  if (!isRecord(data)) throw new TypeError("Runtime transition data must be an object.");
+  const { signatureBinding: _signatureBinding, ...unsignedPayload } = data;
+  const canonical = canonicalize(unsignedPayload);
+  if (typeof canonical !== "string") throw new TypeError("Runtime transition data is not JSON-canonicalizable.");
+  return canonical;
+}
+
+export function hashRuntimePayload(data: unknown): `0x${string}` {
+  return keccak256(toUtf8Bytes(canonicalizeRuntimePayload(data))) as `0x${string}`;
+}
+
+export function runtimeTransitionDomain(binding: RuntimeSignatureBinding): TypedDataDomain {
+  return {
+    name: binding.domain.name,
+    version: binding.domain.version,
+    chainId: binding.domain.chainId,
+    salt: binding.domain.salt
+  };
+}
+
+export function runtimeTransitionMessage(binding: RuntimeSignatureBinding): Record<string, unknown> {
+  return {
+    operationId: binding.operationId,
+    payloadHash: binding.payloadHash,
+    signer: binding.signer,
+    nonce: binding.nonce,
+    issuedAt: binding.issuedAt,
+    expiresAt: binding.expiresAt,
+    signaturePurpose: binding.signaturePurpose,
+    anchorContract: binding.anchorContract
+  };
+}
+
+export function hashRuntimeTransition(binding: RuntimeSignatureBinding): `0x${string}` {
+  return TypedDataEncoder.hash(
+    runtimeTransitionDomain(binding),
+    RUNTIME_TRANSITION_TYPES,
+    runtimeTransitionMessage(binding)
+  ) as `0x${string}`;
+}
+
+export function recoverRuntimeTransitionSigner(binding: RuntimeSignatureBinding): string {
+  return getAddress(verifyTypedData(
+    runtimeTransitionDomain(binding),
+    RUNTIME_TRANSITION_TYPES,
+    runtimeTransitionMessage(binding),
+    binding.signature
+  ));
+}

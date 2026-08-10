@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "code": "RPC_UNAVAILABLE",
   "message": "The RPC provider did not answer during transaction reconciliation.",
   "retryable": true,

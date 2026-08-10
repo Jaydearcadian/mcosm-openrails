@@ -25,6 +25,7 @@ import {
 } from "./intents";
 import { signFlowPermit } from "./permit";
 import type { OpenRailsLinkArtifact, RailsCardLinkPayload, RailsFlowLinkPayload } from "./links";
+import { evaluateRailsCardFunding } from "./railsCardFunding";
 
 // Public gasless claim relay (the funded keeper worker). Override per-deploy if needed.
 const RELAY_URL =
@@ -38,6 +39,24 @@ export type RailsActionStatus =
   | { id: "submitting" }
   | { id: "success"; txHash: string; paycardId: string }
   | { id: "error"; msg: string };
+
+function actionErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("http request failed") ||
+    normalized.includes("failed to fetch") ||
+    normalized.includes("429") ||
+    normalized.includes("timeout") ||
+    normalized.includes("network error")
+  ) {
+    return "Arc RPC is temporarily unavailable. Retry the network check in a moment.";
+  }
+  if (normalized.includes("permit is expired") || normalized.includes("permit expired")) {
+    return "The sender's authorization expired. Ask the sender to reissue this payment.";
+  }
+  return message.slice(0, 220);
+}
 
 export function useRailsActions() {
   const { address, chainId } = useAccount();
@@ -76,8 +95,25 @@ export function useRailsActions() {
       const hub = config.clearinghouseAddress as `0x${string}`;
       const usdc = config.usdcAddress as `0x${string}`;
 
-      // Submit EIP-2612 permit on-chain first if it exists in the RailsCard link
-      if (envelope.permit) {
+      const [payerBalance, payerAllowance, currentNonce] = (await Promise.all([
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [envelope.payerAddress as `0x${string}`] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [envelope.payerAddress as `0x${string}`, hub] }),
+        publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)] }),
+      ])) as [bigint, bigint, bigint];
+      let funding = evaluateRailsCardFunding({
+        expectedNonce: BigInt(i.nonceValue),
+        currentNonce,
+        balance: payerBalance,
+        allowance: payerAllowance,
+        allocation: BigInt(i.totalAllocationPool),
+        permit: envelope.permit,
+        payer: envelope.payerAddress,
+        hub,
+      });
+      if (!funding.ok) throw new Error(funding.message);
+
+      // Legacy RailsCards may carry a permit. New cards establish allowance at issuance.
+      if (funding.needsPermit && envelope.permit) {
         setStatus({ id: "approving" });
         const p = envelope.permit;
         try {
@@ -113,7 +149,25 @@ export function useRailsActions() {
           });
           await publicClient!.waitForTransactionReceipt({ hash: permitTx, timeout: 120_000 });
         } catch (permitErr) {
-          console.warn("Permit already used or failed:", permitErr);
+          const allowance = (await publicClient!.readContract({
+            address: usdc,
+            abi: USDC_ABI,
+            functionName: "allowance",
+            args: [envelope.payerAddress as `0x${string}`, hub],
+          })) as bigint;
+          funding = evaluateRailsCardFunding({
+            expectedNonce: BigInt(i.nonceValue),
+            currentNonce,
+            balance: payerBalance,
+            allowance,
+            allocation: BigInt(i.totalAllocationPool),
+            payer: envelope.payerAddress,
+            hub,
+          });
+          if (!funding.ok) {
+            console.warn("Legacy RailsCard permit failed", permitErr);
+            throw new Error(funding.message);
+          }
         }
       }
 
@@ -142,7 +196,7 @@ export function useRailsActions() {
       await publicClient!.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
       setStatus({ id: "success", txHash, paycardId: i.paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 
@@ -153,6 +207,7 @@ export function useRailsActions() {
    * ignores it and honors the signed recipient.
    */
   async function claimRailsCardSponsored(artifact: OpenRailsLinkArtifact): Promise<void> {
+    if (!config) return setStatus({ id: "error", msg: "Config not loaded." });
     if (!address) return setStatus({ id: "error", msg: "Connect a wallet first." });
     
     // Enforce switching to Arc Testnet
@@ -166,6 +221,27 @@ export function useRailsActions() {
 
     const pl = artifact.payload as RailsCardLinkPayload;
     try {
+      const envelope = deserializeEnvelope<CryptographicEnvelopeV1>(pl.envelopeToken);
+      const i = envelope.intent;
+      const hub = config.clearinghouseAddress as `0x${string}`;
+      const usdc = config.usdcAddress as `0x${string}`;
+      const [payerBalance, payerAllowance, currentNonce] = (await Promise.all([
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [envelope.payerAddress as `0x${string}`] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [envelope.payerAddress as `0x${string}`, hub] }),
+        publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [envelope.payerAddress as `0x${string}`, BigInt(i.nonceChannel)] }),
+      ])) as [bigint, bigint, bigint];
+      const funding = evaluateRailsCardFunding({
+        expectedNonce: BigInt(i.nonceValue),
+        currentNonce,
+        balance: payerBalance,
+        allowance: payerAllowance,
+        allocation: BigInt(i.totalAllocationPool),
+        permit: envelope.permit,
+        payer: envelope.payerAddress,
+        hub,
+      });
+      if (!funding.ok) throw new Error(funding.message);
+
       setStatus({ id: "submitting" });
       const res = await fetch(`${RELAY_URL}/relay-claim`, {
         method: "POST",
@@ -176,7 +252,7 @@ export function useRailsActions() {
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
       setStatus({ id: "success", txHash: data.txHash, paycardId: data.paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 
@@ -285,7 +361,7 @@ export function useRailsActions() {
       await publicClient!.waitForTransactionReceipt({ hash: txHash, timeout: 120_000 });
       setStatus({ id: "success", txHash, paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 
@@ -404,7 +480,7 @@ export function useRailsActions() {
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
       setStatus({ id: "success", txHash: data.txHash, paycardId: data.paycardId ?? paycardId });
     } catch (e) {
-      setStatus({ id: "error", msg: e instanceof Error ? e.message.slice(0, 220) : String(e) });
+      setStatus({ id: "error", msg: actionErrorMessage(e) });
     }
   }
 

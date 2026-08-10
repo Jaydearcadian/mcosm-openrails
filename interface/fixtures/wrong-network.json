@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "code": "WRONG_NETWORK",
   "message": "The connected wallet chain does not match the Arc Testnet manifest.",
   "retryable": true,

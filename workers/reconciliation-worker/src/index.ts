@@ -1,9 +1,11 @@
 import { ethers } from "ethers";
 import { authorized } from "../../shared/auth";
+import { createRpcProvider } from "../../shared/rpc";
 
 export interface Env {
   STREAM_DB?: D1Database; // only used in the legacy "d1" settler mode
   ARC_RPC_URL: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
   ARC_USDC_ADDRESS?: string; // USDC token (for the optional EIP-2612 permit in /relay-open)
@@ -18,6 +20,7 @@ export interface Env {
 }
 
 const HUB_ABI = [
+  "function accountNonceTracks(address account, uint256 channel) external view returns (uint256)",
   "function processDripSettle(bytes32 paycardId) external",
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
   "function claimWildcardPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address claimRecipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
@@ -26,6 +29,8 @@ const HUB_ABI = [
 ];
 
 const USDC_PERMIT_ABI = [
+  "function balanceOf(address account) external view returns (uint256)",
+  "function allowance(address owner, address spender) external view returns (uint256)",
   "function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external"
 ];
 
@@ -205,24 +210,49 @@ export default {
     }
     claimRecipient = ethers.getAddress(claimRecipient as string);
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
+    if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured" }, 503);
+    const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+    const allocation = BigInt(i.totalAllocationPool);
+    const payer = ethers.getAddress(env0.payerAddress);
 
-    // Optional: land the payer's approval via permit (gasless for them) before claiming.
-    if (env0.permit) {
-      if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured for permit" }, 503);
+    const [payerBalance, currentNonce] = await Promise.all([
+      usdc.balanceOf(payer) as Promise<bigint>,
+      hub.accountNonceTracks(payer, BigInt(i.nonceChannel)) as Promise<bigint>,
+    ]);
+    if (currentNonce !== BigInt(i.nonceValue)) {
+      return jsonResponse({ error: "This RailsCard is stale or already claimed. Ask the sender to reissue it." }, 409);
+    }
+    if (payerBalance < allocation) {
+      return jsonResponse({ error: "The sender no longer has enough USDC for this RailsCard. Ask the sender to reissue it." }, 409);
+    }
+
+    let allowance = (await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS)) as bigint;
+
+    // Legacy cards may contain a deferred permit. New cards establish allowance at issuance.
+    if (allowance < allocation && env0.permit) {
       const p = env0.permit;
-      const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+      const permitMatchesCard =
+        p.owner.toLowerCase() === payer.toLowerCase() &&
+        p.spender.toLowerCase() === env.OPENRAILS_HUB_ADDRESS.toLowerCase() &&
+        BigInt(p.value) >= allocation;
+      if (!permitMatchesCard || p.deadline <= Math.floor(Date.now() / 1000)) {
+        return jsonResponse({ error: "The sender's RailsCard authorization expired or is invalid. Ask the sender to reissue it." }, 409);
+      }
       try {
         await usdc.permit.staticCall(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
         const ptx = await usdc.permit(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
         await ptx.wait();
         console.log(`[relay] claim permit landed for ${p.owner} (${ptx.hash})`);
       } catch (error) {
-        // Permit might already be landed or expired, warn but don't fail yet
-        console.warn(`[relay] permit staticCall failed or already set for ${p.owner}: ${(error as Error).message}`);
+        console.warn(`[relay] legacy claim permit failed for ${p.owner}: ${(error as Error).message?.slice(0, 180)}`);
       }
+      allowance = (await usdc.allowance(payer, env.OPENRAILS_HUB_ADDRESS)) as bigint;
+    }
+    if (allowance < allocation) {
+      return jsonResponse({ error: "The sender's RailsCard authorization is unavailable. Ask the sender to reissue it." }, 409);
     }
 
     const fn = bearer ? "claimWildcardPaycardChannel" : "openPaycardChannel";
@@ -293,7 +323,7 @@ export default {
       return jsonResponse({ error: "relay-open needs a fixed recipient; use /relay-claim for bearer cards" }, 400);
     }
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -367,7 +397,7 @@ export default {
     const windowBlocks = readPositiveInt(env.SETTLER_WINDOW_BLOCKS, 9000);
     const minAccruedBase = BigInt(Math.round(Number(env.MIN_ACCRUED_USDC ?? "0.0005") * 1_000_000));
 
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY!, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 
@@ -439,7 +469,7 @@ export default {
     }
 
     // 2. Initialize provider and wallet signer
-    const provider = new ethers.JsonRpcProvider(env.ARC_RPC_URL);
+    const provider = createRpcProvider(env);
     const signer = new ethers.Wallet(env.RECONCILIATION_SIGNER_KEY, provider);
     const hub = new ethers.Contract(env.OPENRAILS_HUB_ADDRESS, HUB_ABI, signer);
 

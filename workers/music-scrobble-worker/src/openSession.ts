@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { createRpcProvider } from "../../shared/rpc";
 
 const HUB_ABI = [
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
@@ -8,6 +9,8 @@ const HUB_ABI = [
 export interface OpenSessionParams {
   hubAddress: string;
   rpcUrl: string;
+  rpcFallbackUrl?: string;
+  chainId: number;
   relayerPrivateKey: string; // The sidecar's own key for gas
   listenerAddress: string;
   artistWallet: string;
@@ -43,7 +46,11 @@ function decodeEnvelope(token: string) {
 }
 
 export async function openListeningSession(params: OpenSessionParams) {
-  const provider = new ethers.JsonRpcProvider(params.rpcUrl);
+  const provider = createRpcProvider({
+    ARC_RPC_URL: params.rpcUrl,
+    ARC_RPC_FALLBACK_URL: params.rpcFallbackUrl,
+    ARC_CHAIN_ID: String(params.chainId),
+  });
   const relayerWallet = new ethers.Wallet(params.relayerPrivateKey, provider);
   const hub = new ethers.Contract(params.hubAddress, HUB_ABI, relayerWallet);
 

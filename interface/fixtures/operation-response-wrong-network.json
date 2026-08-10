@@ -1,5 +1,5 @@
 {
-  "interfaceVersion": "1.0.1",
+  "interfaceVersion": "1.1.0",
   "executionProfile": "direct-wallet-authorized",
   "operationId": "railsflow.pay",
   "capability": "railsflow.pay",
@@ -9,7 +9,7 @@
   "network": { "networkId": "unknown-network", "chainId": "1" },
   "data": null,
   "errors": [{
-    "interfaceVersion": "1.0.1",
+    "interfaceVersion": "1.1.0",
     "code": "WRONG_NETWORK",
     "message": "The connected wallet chain does not match the Arc Testnet manifest.",
     "retryable": true,

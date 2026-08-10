@@ -34,6 +34,25 @@ experiments/name-registry/
 # Local Wrangler state
 **/.wrangler/state/
 
+# Local agent, browser, and database tooling
+/.agents/
+/.claude/
+/.playwright-cli/
+/.neon
+/skills-lock.json
+
+# Local screenshots and submission recordings
+/screenshot/
+/output/
+/docs/interface-foundry-*.zip
+/docs/openrails-arc-programmable-money-pitch-deck.*
+
+# Windows provenance sidecars copied into the workspace
+*:Zone.Identifier
+
+# Test runner output
+**/test-results/
+
 # Wrangler local-dev secrets (e.g. INDEXER_ADMIN_TOKEN) — never commit
 **/.dev.vars
 
@@ -59,5 +78,4 @@ experiments/traction-bots/
 experiments/website_layout_and_narrative.md
 experiments/x402_showcase_guide.md
 experiments/Openrails-logo.jpg
-
 

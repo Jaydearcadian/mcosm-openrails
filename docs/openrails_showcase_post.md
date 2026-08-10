@@ -8,7 +8,7 @@
 
 **OpenRails V1** is intent-driven clearing & settlement infrastructure for streamed (and one-time) work on **Arc**, settling in native USDC. A payer signs an EIP-712 **SettlementIntent**; funds clear into a bounded per-channel Vault; value settles as work is performed via a reactive drip engine; unspent **residual always returns to the payer**. It is **non-custodial end to end** — wallets self-submit directly to the Hub, and no operator can move funds beyond what a signed intent authorizes.
 
-- **Network:** Arc Testnet — chainId `5042002`, RPC `https://rpc.testnet.arc.network`
+- **Network:** Arc Testnet, chainId `5042002`, RPC `https://rpc.testnet.arc.io`
 - **Hub (`ArcOpenRailsHubV1`):** `0x01EC54846524D043fD808152D41596beF603381d`
 - **USDC (streaming escrow):** `0x3600000000000000000000000000000000000000`
 - **Explorer:** https://testnet.arcscan.app
@@ -36,7 +36,7 @@
 **5. SDK for integrators.** Build, sign, and submit intents in a few lines:
 
 ```ts
-import { LeptonOpenRailsClient, createRailsCardIntent } from "openrails-sdk";
+import { LeptonOpenRailsClient, createRailsCardIntent } from "openrails-sdk/arc";
 
 const client = new LeptonOpenRailsClient(PRIVATE_KEY, HUB_ADDRESS, 5042002);
 

@@ -5,6 +5,7 @@ export interface Env {
   MUSICBRAINZ_REGISTRY: KVNamespace;
   STREAM_DB: D1Database;
   ARC_RPC_URL: string;
+  ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID: string;
   OPENRAILS_HUB_ADDRESS: string;
   ARC_USDC_ADDRESS: string;
@@ -109,6 +110,8 @@ export default {
           const result = await openListeningSession({
             hubAddress: env.OPENRAILS_HUB_ADDRESS,
             rpcUrl: env.ARC_RPC_URL,
+            rpcFallbackUrl: env.ARC_RPC_FALLBACK_URL,
+            chainId: Number(env.ARC_CHAIN_ID),
             relayerPrivateKey: env.MUSIC_SIDECAR_RELAYER_KEY,
             listenerAddress: body.listenerAddress,
             artistWallet,

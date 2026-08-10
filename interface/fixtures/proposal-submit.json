@@ -1,0 +1,48 @@
+{
+  "proposal": {
+    "interfaceVersion": "1.2.0",
+    "id": "proposal:runtime:1",
+    "executionProfile": "delegated-runtime",
+    "workspaceRef": { "type": "Workspace", "id": "workspace:runtime:1" },
+    "pathRef": { "type": "Path", "id": "path:runtime:1" },
+    "intentRef": { "type": "Intent", "id": "intent:runtime:1" },
+    "normalizedTerms": {
+      "asset": { "symbol": "USDC", "decimals": 6, "address": "0x3600000000000000000000000000000000000000", "kind": "erc20" },
+      "amount": "1000000",
+      "settlementShape": "one-time"
+    },
+    "inputHash": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "policyVersion": "policy:runtime:1",
+    "status": "EVALUATING",
+    "createdAt": "2026-08-08T00:00:00Z",
+    "provenance": {
+      "source": "runtime-evaluation",
+      "authority": "OpenRails interface tests",
+      "evidenceLevel": "runtime-observed",
+      "observedAt": "2026-08-08T00:00:00Z",
+      "repository": "Jaydearcadian/mcosm-OpenRails",
+      "commit": "df70344",
+      "evidenceRefs": ["TEST-OR-PR2"]
+    }
+  },
+  "signatureBinding": {
+    "signatureStandard": "eip-712",
+    "primaryType": "OpenRailsRuntimeTransition",
+    "signaturePurpose": "offchain-runtime",
+    "operationId": "proposal.submit",
+    "payloadHash": "0xb865eaeb46d78eba9d980d30bc7249dace985a65cc77826ef323a37bacdf2ee8",
+    "signer": "0x28ef60aA0537471e5FFf5c84769237C5C1B93853",
+    "signature": "0x0a688348328228ea7c8a5402a6b09f8da0759c009a51a8979d2005eca123cd947567a400028baa8c04f64999c7d5fb883b35d2f8d2cf6763f4c2deebbf831de31c",
+    "nonce": "2",
+    "issuedAt": "2026-08-08T00:00:00Z",
+    "expiresAt": "2026-08-09T00:00:00Z",
+    "chainId": "5042002",
+    "anchorContract": "0x941C8029F0f912df3fAb7423890ab2359b996D0b",
+    "domain": {
+      "name": "OpenRails Runtime",
+      "version": "1.2.0",
+      "chainId": "5042002",
+      "salt": "0x1544b041010f9c62321178d4f9a37adf6a9ada7feaf89238f6c1b5f27ebd0bbf"
+    }
+  }
+}
