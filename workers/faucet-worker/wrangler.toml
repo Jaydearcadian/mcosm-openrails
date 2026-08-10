@@ -23,6 +23,7 @@ FAUCET_ENABLED = "true"
 binding = "FAUCET_CLAIMS"
 id = "796e96d0c81b465890609c5b4b401b3b"
 
-# Secrets (never in this file): set with `wrangler secret put FAUCET_SIGNER_KEY` (the dedicated
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider with
+# `wrangler secret put ARC_CANTEEN_RPC_URL`. Set `FAUCET_SIGNER_KEY` with Wrangler (the dedicated
 # faucet wallet from `npm run faucet:wallet` — fund it via the Circle faucet UI, never the
 # deployer/governance wallet) and `wrangler secret put FAUCET_ADMIN_TOKEN` (guards GET /status).

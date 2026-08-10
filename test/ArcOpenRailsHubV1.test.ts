@@ -322,7 +322,8 @@ describe("ArcOpenRailsHubV1", () => {
     const paycardId = ethers.keccak256(ethers.toUtf8Bytes("drip-id"));
     const totalAllocation = ethers.parseUnits("100", 6);
     const velocity = ethers.parseUnits("2", 6);
-    const genesisTime = Math.floor(Date.now() / 1000);
+    const latestBlock = await ethers.provider.getBlock("latest");
+    const genesisTime = latestBlock!.timestamp;
 
     const intent = buildIntent({
       paycardId,

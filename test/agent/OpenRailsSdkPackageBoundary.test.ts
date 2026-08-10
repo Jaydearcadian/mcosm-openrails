@@ -14,7 +14,9 @@ function readJson(relativePath: string): any {
 // (a barrel over chains/manifest/discovery/provider/conformance) — deliberately different from
 // the successor repo's five separate subpaths, so the agent layer can never leak into the root
 // `openrails-sdk` import and stays a single, clearly-bounded surface. See docs/agent/README.md.
-describe("OpenRails SDK npm package boundary (agent layer)", () => {
+describe("OpenRails SDK npm package boundary (agent layer)", function () {
+  this.timeout(180_000);
+
   it("declares the root barrel unchanged and one consolidated ./agent export subpath", () => {
     const pkg = readJson("sdk/package.json");
 

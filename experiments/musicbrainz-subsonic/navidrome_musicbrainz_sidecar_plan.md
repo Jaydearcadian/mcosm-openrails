@@ -187,7 +187,7 @@ import { ethers } from 'ethers';
 import { LeptonOpenRailsClient } from '../../sdk/src/client';
 import { checkAndUpdateBudget } from './budget';
 
-const PROVIDER_URL = process.env.ARC_RPC_URL || 'https://rpc.testnet.arc.network';
+const PROVIDER_URL = process.env.ARC_RPC_URL || 'https://rpc.testnet.arc.io';
 const PAYER_KEY = process.env.OPENRAILS_PAYER_PRIVATE_KEY!;
 const HUB_ADDRESS = process.env.ARC_OPENRAILS_HUB_ADDRESS || '0x01EC54846524D043fD808152D41596beF603381d';
 const REGISTRY_ADDRESS = process.env.MUSICBRAINZ_REGISTRY_ADDRESS!;
@@ -299,7 +299,7 @@ npx hardhat run scripts/register-artist.ts --network arcTestnet
 ### Step 4: Run the Sidecar Server
 Launch the sidecar on port `3002` pre-loaded with your funded Arc Testnet test key:
 ```bash
-ARC_RPC_URL=https://rpc.testnet.arc.network \
+ARC_RPC_URL=https://rpc.testnet.arc.io \
 ARC_OPENRAILS_HUB_ADDRESS=0x01EC54846524D043fD808152D41596beF603381d \
 MUSICBRAINZ_REGISTRY_ADDRESS=<your-deployed-registry-address> \
 OPENRAILS_PAYER_PRIVATE_KEY=<your-funded-testnet-wallet-key> \

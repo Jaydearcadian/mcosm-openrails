@@ -24,6 +24,7 @@ const HUB_ABI = [
   "function processDripSettle(bytes32 paycardId) external",
   "function openPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address recipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
   "function claimWildcardPaycardChannel(bytes32 paycardId, bytes32 metadataHash, address claimRecipient, uint256 totalAllocationPool, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, address residualDeltaRecipient, bytes envelopeSignature, uint256 nonceChannel, uint256 nonceValue, address payer) external",
+  "function accountNonceTracks(address account, uint256 channel) external view returns (uint256)",
   "function registry(bytes32 paycardId) external view returns (address payer, address recipient, bytes32 metadataHash, uint256 totalAllocationPool, uint256 availableBalance, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds, uint256 lastCheckpointEpoch, address residualDeltaRecipient, uint8 operationalStatus)",
   "event PaycardProvisioned(bytes32 indexed paycardId, address indexed payer, address indexed recipient, bytes32 metadataHash, uint256 poolAllocation, uint256 flowVelocityPerSecond, uint256 genesisTimestamp, uint256 lifespanSeconds)"
 ];
@@ -167,7 +168,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Worker request failed") }, 500);
     }
   },
 
@@ -198,6 +199,12 @@ export default {
     const i = env0.intent;
     if (!i?.paycardId || !env0.envelopeSignature) {
       return jsonResponse({ error: "Envelope is missing an intent or signature" }, 400);
+    }
+    if (env0.mode !== "railscard_bearer" && env0.mode !== "railscard_recipient_bound") {
+      return jsonResponse({ error: "relay-claim only accepts RailsCard envelopes" }, 400);
+    }
+    if (!env.ARC_USDC_ADDRESS) {
+      return jsonResponse({ error: "USDC address is not configured" }, 503);
     }
 
     const bearer = env0.mode === "railscard_bearer" || /^0x0{40}$/i.test(i.recipient);
@@ -260,22 +267,22 @@ export default {
       i.paycardId,
       i.metadataHash,
       claimRecipient,
-      BigInt(i.totalAllocationPool),
+      allocation,
       BigInt(i.flowVelocityPerSecond),
       BigInt(i.genesisTimestamp),
       BigInt(i.lifespanSeconds),
       i.residualDeltaRecipient,
       env0.envelopeSignature,
-      BigInt(i.nonceChannel),
-      BigInt(i.nonceValue),
-      env0.payerAddress, // V2: explicit payer
+      nonceChannel,
+      nonceValue,
+      payer, // V2: explicit payer
     ];
 
     try {
       // Precheck: reverts here (already claimed, expired, payer under-funded) cost the keeper nothing.
       await hub[fn].staticCall(...args);
     } catch (error) {
-      const msg = (error as Error).message?.slice(0, 300) || "claim would revert";
+      const msg = safeRpcError(error, "claim would revert");
       return jsonResponse({ error: `Claim not currently valid: ${msg}` }, 409);
     }
 
@@ -285,7 +292,7 @@ export default {
       console.log(`[relay] sponsored ${fn} ${i.paycardId} -> ${claimRecipient} (${tx.hash})`);
       return jsonResponse({ txHash: tx.hash, paycardId: i.paycardId, recipient: claimRecipient, mode: env0.mode });
     } catch (error) {
-      return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "relay submit failed" }, 502);
+      return jsonResponse({ error: safeRpcError(error, "relay submit failed") }, 502);
     }
   },
 
@@ -300,8 +307,7 @@ export default {
       return jsonResponse({ error: "Relay signer is not configured" }, 503);
     }
 
-    type Permit = { owner: string; spender: string; value: string; deadline: number; v: number; r: string; s: string };
-    let body: { envelopeToken?: string; permit?: Permit };
+    let body: { envelopeToken?: string; permit?: RelayPermit };
     try {
       body = (await request.json()) as typeof body;
     } catch {
@@ -332,17 +338,19 @@ export default {
       if (!env.ARC_USDC_ADDRESS) return jsonResponse({ error: "USDC address not configured for permit" }, 503);
       const p = body.permit;
       const usdc = new ethers.Contract(env.ARC_USDC_ADDRESS, USDC_PERMIT_ABI, signer);
+      const permitError = validateRelayPermit(p, payer, env.OPENRAILS_HUB_ADDRESS, allocation);
+      if (permitError) return jsonResponse({ error: permitError }, 409);
       try {
         await usdc.permit.staticCall(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
       } catch (error) {
-        return jsonResponse({ error: `Permit not valid: ${(error as Error).message?.slice(0, 240)}` }, 409);
+        return jsonResponse({ error: `Permit not valid: ${safeRpcError(error, "permit check failed")}` }, 409);
       }
       try {
         const ptx = await usdc.permit(p.owner, p.spender, BigInt(p.value), BigInt(p.deadline), p.v, p.r, p.s);
         await ptx.wait();
         console.log(`[relay] permit landed for ${p.owner} (${ptx.hash})`);
       } catch (error) {
-        return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "permit submit failed" }, 502);
+        return jsonResponse({ error: safeRpcError(error, "permit submit failed") }, 502);
       }
     }
 
@@ -350,7 +358,7 @@ export default {
       i.paycardId,
       i.metadataHash,
       i.recipient,
-      BigInt(i.totalAllocationPool),
+      allocation,
       BigInt(i.flowVelocityPerSecond),
       BigInt(i.genesisTimestamp),
       BigInt(i.lifespanSeconds),
@@ -358,13 +366,13 @@ export default {
       env0.envelopeSignature,
       BigInt(i.nonceChannel),
       BigInt(i.nonceValue),
-      env0.payerAddress, // V2: explicit payer
+      payer, // V2: explicit payer
     ];
 
     try {
       await hub.openPaycardChannel.staticCall(...args);
     } catch (error) {
-      const msg = (error as Error).message?.slice(0, 300) || "open would revert";
+      const msg = safeRpcError(error, "open would revert");
       return jsonResponse({ error: `Open not currently valid: ${msg}` }, 409);
     }
 
@@ -374,7 +382,7 @@ export default {
       console.log(`[relay] sponsored open ${i.paycardId} -> ${i.recipient} (${tx.hash})`);
       return jsonResponse({ txHash: tx.hash, paycardId: i.paycardId, recipient: i.recipient, mode: env0.mode });
     } catch (error) {
-      return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "relay open failed" }, 502);
+      return jsonResponse({ error: safeRpcError(error, "relay open failed") }, 502);
     }
   },
 
@@ -441,7 +449,7 @@ export default {
         console.log(`[settler] settled ${paycardId} (${tx.hash})`);
       } catch (error) {
         errors++;
-        console.error(`[settler] settle failed ${paycardId}:`, (error as Error).message?.slice(0, 300));
+        console.error(`[settler] settle failed ${paycardId}:`, safeRpcError(error, "settlement failed"));
       }
     }
     console.log(`[settler] done - settled ${settled}, skipped ${skipped}, errors ${errors}`);
@@ -520,8 +528,8 @@ export default {
         ).bind(Math.floor(Date.now() / 1000), paycardId).run();
 
       } catch (error) {
-        console.error(`[reconciliation-worker] Failed to settle stream ${paycardId}:`, error);
-        const message = (error as Error).message?.slice(0, 500) || "settlement failed";
+        const message = safeRpcError(error, "settlement failed");
+        console.error(`[reconciliation-worker] Failed to settle stream ${paycardId}:`, message);
         await db.prepare(
           "UPDATE plays SET settled = CASE WHEN settlement_attempts >= ? THEN 2 ELSE 0 END, last_error = ?, updated_at = ? WHERE paycard_id = ? AND settled = 3"
         ).bind(maxAttempts, message, Math.floor(Date.now() / 1000), paycardId).run();

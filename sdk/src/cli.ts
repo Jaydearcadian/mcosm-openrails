@@ -635,9 +635,36 @@ function nowSeconds(): number {
 }
 
 function renderHelp(command?: string): string {
-  const suffix = command && COMMANDS.includes(command as typeof COMMANDS[number])
-    ? `\n\nCommand help: ${command}\nMutating commands require --execute for transactions. Use --dry-run on read-only commands to preview without RPC reads.`
-    : '';
+  if (command && COMMANDS.includes(command as typeof COMMANDS[number])) {
+    const options = command === 'close'
+      ? [
+          '  --hub <address>                         OpenRails Hub address',
+          '  --paycard-id <bytes32>                   Paycard to close',
+          '  --execute                                Submit the transaction',
+          '  --ack-irrevocable-close                  Confirm residual close',
+        ]
+      : command === 'pay-stream'
+        ? [
+            '  --recipient <address>                    Payment recipient',
+            '  --total-allocation-pool <base units>     Escrow allocation',
+            '  --flow-velocity-per-second <base units>  Stream velocity',
+            '  --lifespan-seconds <seconds>             Stream lifespan',
+            '  --sign-only                              Sign without broadcast',
+            '  --execute                                Submit transactions',
+          ]
+        : ['  --help                                  Show command help'];
+    return [
+      'OpenRails CLI',
+      '',
+      `Usage: openrails ${command} [options]`,
+      '',
+      'Options:',
+      ...options,
+      '',
+      'Mutating commands require --execute. Keys must come from environment variables.',
+    ].join('\n');
+  }
+
   return [
     'OpenRails CLI',
     '',
@@ -657,7 +684,6 @@ function renderHelp(command?: string): string {
     '  Use pay-stream --sign-only to sign an envelope without opening a stream.',
     '  stream-status and recover are read-only; pass --dry-run to preview without RPC reads.',
     '  Do not pass private keys on argv. Set an env var and select it with --signer-env.',
-    suffix,
   ].join('\n');
 }
 

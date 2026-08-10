@@ -20,7 +20,8 @@ MAX_SETTLEMENT_ATTEMPTS = "5"
 # sponsors gas only; escrow is pulled from the payer per the signed intent (non-custodial).
 RELAY_CLAIMS_ENABLED = "true"
 
-# Secrets (never in this file): set with `wrangler secret put RECONCILIATION_SIGNER_KEY`
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider with
+# `wrangler secret put ARC_CANTEEN_RPC_URL`. Set `RECONCILIATION_SIGNER_KEY` with Wrangler
 # (funded keeper wallet — pays gas only, non-custodial) and optionally RECONCILIATION_ADMIN_TOKEN
 # to guard the POST /reconcile trigger.
 

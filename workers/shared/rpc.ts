@@ -1,32 +1,37 @@
 import { ethers } from "ethers";
 
-export interface RpcEnv {
+export interface ArcRpcEnv {
   ARC_CANTEEN_RPC_URL?: string;
-  ARC_RPC_URL: string;
+  ARC_RPC_URL?: string;
   ARC_RPC_FALLBACK_URL?: string;
   ARC_CHAIN_ID?: string;
 }
 
-export function createRpcProvider(env: RpcEnv): ethers.AbstractProvider {
-  const urls = [
-    ...new Set(
-      [env.ARC_CANTEEN_RPC_URL, env.ARC_RPC_URL, env.ARC_RPC_FALLBACK_URL]
-        .filter((url): url is string => Boolean(url)),
-    ),
-  ];
-  const chainId = env.ARC_CHAIN_ID ? Number(env.ARC_CHAIN_ID) : undefined;
+export function rpcUrlsFromEnv(env: ArcRpcEnv): string[] {
+  const urls = [env.ARC_CANTEEN_RPC_URL, env.ARC_RPC_URL, env.ARC_RPC_FALLBACK_URL]
+    .map((url) => url?.trim())
+    .filter((url): url is string => Boolean(url));
+  return [...new Set(urls)];
+}
+
+export function createRpcProvider(env: ArcRpcEnv): ethers.AbstractProvider {
+  const urls = rpcUrlsFromEnv(env);
+  if (urls.length === 0) throw new Error("No Arc RPC provider is configured");
+
+  const chainId = Number(env.ARC_CHAIN_ID ?? "5042002");
+  const network = Number.isSafeInteger(chainId) && chainId > 0 ? chainId : undefined;
   const providers = urls.map(
-    (url) => new ethers.JsonRpcProvider(url, chainId, { staticNetwork: chainId !== undefined }),
+    (url) => new ethers.JsonRpcProvider(url, network, { staticNetwork: network !== undefined }),
   );
   if (providers.length === 1) return providers[0];
   return new ethers.FallbackProvider(
     providers.map((provider, index) => ({
       provider,
       priority: index + 1,
+      stallTimeout: 2_000,
       weight: 1,
-      stallTimeout: 1_200,
     })),
-    chainId,
+    network,
     { quorum: 1 },
   );
 }

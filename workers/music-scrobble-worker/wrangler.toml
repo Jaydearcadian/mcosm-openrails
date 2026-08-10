@@ -10,6 +10,9 @@ ARC_RPC_FALLBACK_URL = "https://rpc.drpc.testnet.arc.io"
 OPENRAILS_HUB_ADDRESS = "0x941C8029F0f912df3fAb7423890ab2359b996D0b"
 ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
 
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider with
+# `wrangler secret put ARC_CANTEEN_RPC_URL`.
+
 [[kv_namespaces]]
 binding = "MUSICBRAINZ_REGISTRY"
 id = "e20d0dcd77364b8dbebdcfe0802e2636"

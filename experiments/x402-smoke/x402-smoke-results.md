@@ -1,10 +1,10 @@
-# Circle/x402 Smoke — Results & Status
+# Circle/x402 Smoke: Results & Status
 
 Status date: 2026-06-28. This records exactly what was and was not proven, so no claim
 outruns the evidence.
 
 > **Going further:** the paid x402 request can now be redeemed into a **real, non-custodial
-> OpenRails Vault stream** — see [`x402-stream-bridge-results.md`](./x402-stream-bridge-results.md)
+> OpenRails Vault stream**: see [`x402-stream-bridge-results.md`](./x402-stream-bridge-results.md)
 > (`npm run smoke:x402:stream`).
 
 ## Summary
@@ -42,7 +42,7 @@ The endpoint is gated by `requireArcX402Mode` (Arc testnet mode only) and Circle
 `createGatewayMiddleware(...).require(price)`. In local mode it does not activate, so it cannot
 falsely report a paid settlement.
 
-### 3. Live paid settlement (Arc testnet) — **PROVEN 2026-06-28**
+### 3. Live paid settlement (Arc testnet): **PROVEN 2026-06-28**
 
 A real paid x402 settlement was executed against the live Circle facilitator on Arc testnet
 via the real buyer `x402-paid-buyer.ts` (`npm run smoke:x402:paid`):
@@ -59,28 +59,28 @@ via the real buyer `x402-paid-buyer.ts` (`npm run smoke:x402:paid`):
   `status: received`, `fromAddress 0x1a76…473c`, `toAddress 0x933a…9682`, `amount 10000`
   (0.01 USDC), `sendingNetwork eip155:5042002`.
 - Gateway balance debited 0.10 → 0.09 USDC (the $0.01 was spent).
-- Artifact kept `vaultEscrowClaimed: false` / `openRailsSettlementStage: "metadata_only"` —
+- Artifact kept `vaultEscrowClaimed: false` / `openRailsSettlementStage: "metadata_only"` -
   x402 payment proof is **not** Vault escrow proof.
 
 This satisfies the Phase 4 roadmap exit criterion: *paid x402 smoke passes end to end.* The
-captured artifact is recorded under "Paid run — Arc testnet" below.
+captured artifact is recorded under "Paid run: Arc testnet" below.
 
-## Runbook — real paid smoke (Arc testnet)
+## Runbook: real paid smoke (Arc testnet)
 
 A real buyer now exists: `experiments/x402-smoke/x402-paid-buyer.ts`
 (`npm run smoke:x402:paid`). It pays the live endpoint via Circle's Gateway facilitator with a
 gasless `TransferWithAuthorization`, then validates the artifact and prints a capture-ready block.
-x402 is **gasless for the buyer** — the funded wallet needs **test USDC only**, no native gas.
+x402 is **gasless for the buyer**: the funded wallet needs **test USDC only**, no native gas.
 
-**Terminal A — server in Arc testnet mode** (default seller `0x933a…`, default price `$0.01`):
+**Terminal A: server in Arc testnet mode** (default seller `0x933a…`, default price `$0.01`):
 ```bash
 OPENRAILS_DASHBOARD_MODE=arc-testnet \
-ARC_RPC_URL=https://rpc.testnet.arc.network \
+ARC_RPC_URL=https://rpc.testnet.arc.io \
 OPENRAILS_DEPLOYMENT_REGISTRY_PATH=deployments/openrails-addresses.local.json \
 npm run server
 ```
 
-**Terminal B — buyer** (key via env only, never on argv; here the funded deployer `0x1A76…473C`):
+**Terminal B: buyer** (key via env only, never on argv; here the funded deployer `0x1A76…473C`):
 ```bash
 X402_BUYER_PRIVATE_KEY=0x<deployer key> \
 X402_SMOKE_URL=http://localhost:3001/api/x402/openrails-artifact \
@@ -96,7 +96,7 @@ below and flip the status-table row from NOT EXECUTED → PASS. Settlement batch
 ```bash
 # Server (Terminal A)
 OPENRAILS_DASHBOARD_MODE=arc-testnet                 # required: enables the x402 endpoint
-ARC_RPC_URL=https://rpc.testnet.arc.network          # required: non-loopback Arc RPC
+ARC_RPC_URL=https://rpc.testnet.arc.io          # required: non-loopback Arc RPC
 OPENRAILS_DEPLOYMENT_REGISTRY_PATH=deployments/openrails-addresses.local.json
 # Optional overrides (defaults shown):
 # OPENRAILS_X402_SELLER_ADDRESS=0x933a2405f84c224be1ef373ba16e992e1f459682
@@ -108,7 +108,7 @@ X402_BUYER_PRIVATE_KEY=0x...                          # funded Arc-testnet walle
 X402_SMOKE_URL=http://localhost:3001/api/x402/openrails-artifact
 ```
 
-## Paid run — Arc testnet
+## Paid run: Arc testnet
 
 **Executed 2026-06-28. Status: PASS.** Captured `PAID RUN RESULT` from `npm run smoke:x402:paid`:
 

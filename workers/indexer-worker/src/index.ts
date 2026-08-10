@@ -491,7 +491,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Indexer request failed") }, 500);
     }
   },
 };

@@ -30,7 +30,8 @@ binding = "STREAM_DB"
 database_name = "openrails_indexer_db"
 database_id = "e9e9a594-6cbd-404a-8f90-b22b33fe77fd"
 
-# Secrets (never in this file): set with `wrangler secret put INDEXER_ADMIN_TOKEN` to guard the
+# Secrets (never in this file): set `ARC_CANTEEN_RPC_URL` to the managed primary provider and
+# `INDEXER_ADMIN_TOKEN` with `wrangler secret put`. The admin token guards the
 # manual POST /tick trigger. The scheduled cron below needs no secret.
 
 [triggers]

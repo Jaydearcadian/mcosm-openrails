@@ -141,7 +141,7 @@ async function handleFund(request: Request, env: Env): Promise<Response> {
     console.log(`[faucet] funded ${address} with ${dripAmountStr} USDC (${tx.hash})`);
     return jsonResponse({ txHash: tx.hash, amount: dripAmountStr });
   } catch (error) {
-    return jsonResponse({ error: (error as Error).message?.slice(0, 300) || "faucet transfer failed" }, 502);
+    return jsonResponse({ error: safeRpcError(error, "faucet transfer failed") }, 502);
   }
 }
 
@@ -187,7 +187,7 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      return jsonResponse({ error: safeRpcError(err, "Faucet request failed") }, 500);
     }
   },
 };

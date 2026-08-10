@@ -229,7 +229,7 @@ export async function openListeningSession(params: OpenSessionParams) {
     // Perform dry-run on-chain precheck to catch revert reasons before submitting transaction
     await hub.openPaycardChannel.staticCall(...args);
   } catch (err) {
-    throw new Error(`On-chain precheck failed for openPaycardChannel: ${(err as Error).message}`);
+    throw new Error(`On-chain precheck failed for openPaycardChannel: ${safeRpcError(err)}`);
   }
 
   const tx = await hub.openPaycardChannel(...args);

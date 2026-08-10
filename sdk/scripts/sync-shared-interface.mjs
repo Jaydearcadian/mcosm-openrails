@@ -184,7 +184,7 @@ if (check) {
       process.exit(1);
     }
   }
-  console.log(`SDK interface artifacts are current: ${schemaFiles.length} schemas and ${operationRegistry.operations.length} operations.`);
+  console.error(`SDK interface artifacts are current: ${schemaFiles.length} schemas and ${operationRegistry.operations.length} operations.`);
 } else {
   fs.mkdirSync(generatedRoot, { recursive: true });
   for (const [outputPath, output] of outputs) fs.writeFileSync(outputPath, output);

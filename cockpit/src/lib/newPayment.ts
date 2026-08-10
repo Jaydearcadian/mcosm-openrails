@@ -53,6 +53,7 @@ export interface NewPaymentParams {
 
 export type NewPaymentStatus =
   | { id: "idle" }
+  | { id: "checking" }
   | { id: "approving" }
   | { id: "signing" }
   | { id: "submitting" }
@@ -189,85 +190,91 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
 
     const hub = hubAddress as `0x${string}`;
     const usdc = usdcAddress as `0x${string}`;
-    // Give deferred claims independent Hub nonce tracks so one claimed card cannot stale
-    // another outstanding card from the same payer.
-    const nonceChannel = randomRailsCardNonceChannel();
-    const [nonceValue, currentBalance, currentAllowance] = (await Promise.all([
-      publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [payer, nonceChannel] }),
-      publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [payer] }),
-      publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [payer, hub] }),
-    ])) as [bigint, bigint, bigint];
-    if (currentBalance < totalAllocationPool) {
-      throw new Error("Amount exceeds your wallet's current USDC balance.");
-    }
-    const paycardId = envelopeMode === "railscard_bearer"
-      ? randomPaycardId()
-      : buildMetadataBoundPaycardId({ payer, nonceChannel, nonceValue, metadataHash });
-    const genesisTimestamp = BigInt(Math.floor(Date.now() / 1000));
+    setStatus({ id: "checking" });
+    try {
+      // Give deferred claims independent Hub nonce tracks so one claimed card cannot stale
+      // another outstanding card from the same payer.
+      const nonceChannel = randomRailsCardNonceChannel();
+      const [nonceValue, currentBalance, currentAllowance] = (await Promise.all([
+        publicClient!.readContract({ address: hub, abi: HUB_ABI, functionName: "accountNonceTracks", args: [payer, nonceChannel] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "balanceOf", args: [payer] }),
+        publicClient!.readContract({ address: usdc, abi: USDC_ABI, functionName: "allowance", args: [payer, hub] }),
+      ])) as [bigint, bigint, bigint];
+      if (currentBalance < totalAllocationPool) {
+        throw new Error("Amount exceeds your wallet's current USDC balance.");
+      }
+      const paycardId = envelopeMode === "railscard_bearer"
+        ? randomPaycardId()
+        : buildMetadataBoundPaycardId({ payer, nonceChannel, nonceValue, metadataHash });
+      const genesisTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
-    const domain = buildOpenRailsDomain(arcTestnet.id, hub);
-    const message = {
-      paycardId,
-      metadataHash,
-      recipient: signedRecipient,
-      totalAllocationPool,
-      flowVelocityPerSecond,
-      genesisTimestamp,
-      lifespanSeconds,
-      residualDeltaRecipient: payer,
-      nonceChannel,
-      nonceValue,
-    } as const;
-    
-    // Deferred EIP-2612 permits expire and share the payer's token nonce. Establish cumulative
-    // Hub allowance now so independently issued RailsCards do not invalidate one another.
-    const requiredAllowance = nextRailsCardAllowance(currentAllowance, totalAllocationPool);
-    if (requiredAllowance !== currentAllowance) {
-      setStatus({ id: "approving" });
-      const approvalHash = await writeContractAsync({
-        address: usdc,
-        abi: USDC_ABI,
-        functionName: "approve",
-        args: [hub, requiredAllowance],
-      });
-      await publicClient!.waitForTransactionReceipt({ hash: approvalHash, timeout: 120_000 });
-    }
-
-    setStatus({ id: "signing" });
-    const sig = await signTypedDataAsync({ domain, types: OPENRAILS_EIP712_TYPES, primaryType: "SettlementIntent", message });
-
-    const envelopeToken = serializeEnvelope({
-      payerAddress: payer,
-      envelopeSignature: sig,
-      intent: {
+      const domain = buildOpenRailsDomain(arcTestnet.id, hub);
+      const message = {
         paycardId,
         metadataHash,
         recipient: signedRecipient,
-        totalAllocationPool: totalAllocationPool.toString(),
-        flowVelocityPerSecond: flowVelocityPerSecond.toString(),
-        genesisTimestamp: Number(genesisTimestamp),
-        lifespanSeconds: Number(lifespanSeconds),
+        totalAllocationPool,
+        flowVelocityPerSecond,
+        genesisTimestamp,
+        lifespanSeconds,
         residualDeltaRecipient: payer,
-        nonceChannel: Number(nonceChannel),
-        nonceValue: Number(nonceValue),
-      },
-      mode: envelopeMode,
-    });
-    
-    setStatus({ id: "idle" });
+        nonceChannel,
+        nonceValue,
+      } as const;
 
-    return createRailsCardClaimLink({
-      appBaseUrl: appBaseUrl(),
-      chainId: arcTestnet.id,
-      vault: hubAddress,
-      token: usdcAddress,
-      metadataHash,
-      payload: {
-        mode: envelopeMode as "railscard_bearer" | "railscard_recipient_bound",
-        envelopeToken,
-        claimHint: p.party || undefined,
-      },
-    });
+      // Deferred EIP-2612 permits expire and share the payer's token nonce. Establish cumulative
+      // Hub allowance now so independently issued RailsCards do not invalidate one another.
+      const requiredAllowance = nextRailsCardAllowance(currentAllowance, totalAllocationPool);
+      if (requiredAllowance !== currentAllowance) {
+        setStatus({ id: "approving" });
+        const approvalHash = await writeContractAsync({
+          address: usdc,
+          abi: USDC_ABI,
+          functionName: "approve",
+          args: [hub, requiredAllowance],
+        });
+        await publicClient!.waitForTransactionReceipt({ hash: approvalHash, timeout: 120_000 });
+      }
+
+      setStatus({ id: "signing" });
+      const sig = await signTypedDataAsync({ domain, types: OPENRAILS_EIP712_TYPES, primaryType: "SettlementIntent", message });
+
+      const envelopeToken = serializeEnvelope({
+        payerAddress: payer,
+        envelopeSignature: sig,
+        intent: {
+          paycardId,
+          metadataHash,
+          recipient: signedRecipient,
+          totalAllocationPool,
+          flowVelocityPerSecond,
+          genesisTimestamp,
+          lifespanSeconds,
+          residualDeltaRecipient: payer,
+          nonceChannel: Number(nonceChannel),
+          nonceValue: Number(nonceValue),
+        },
+        mode: envelopeMode,
+      });
+
+      const link = createRailsCardClaimLink({
+        appBaseUrl: appBaseUrl(),
+        chainId: arcTestnet.id,
+        vault: hubAddress,
+        token: usdcAddress,
+        metadataHash,
+        payload: {
+          mode: envelopeMode as "railscard_bearer" | "railscard_recipient_bound",
+          envelopeToken,
+          claimHint: p.party || undefined,
+        },
+      });
+      setStatus({ id: "idle" });
+      return link;
+    } catch (error) {
+      setStatus({ id: "idle" });
+      throw error;
+    }
   }
 
   /** Sign + fund now. Gasless by default (permit + relay-open); falls back to self-submit. */

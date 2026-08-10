@@ -12,7 +12,7 @@
  *
  *   X402_BUYER_PRIVATE_KEY=0x... \
  *   X402_SMOKE_URL=http://localhost:3001/api/x402/openrails-artifact \
- *   ARC_RPC_URL=https://rpc.testnet.arc.network \
+ *   ARC_RPC_URL=https://rpc.testnet.arc.io \
  *   ARC_OPENRAILS_HUB_ADDRESS=0x... ARC_USDC_ADDRESS=0x... \
  *   npm run smoke:x402:stream
  */
@@ -92,7 +92,7 @@ async function main(): Promise<void> {
   const url = process.env.X402_SMOKE_URL || process.argv[2] || DEFAULT_URL;
   const registry = loadRegistry();
 
-  const rpcUrl = process.env.ARC_RPC_URL || process.env.PROVIDER_URL || "https://rpc.testnet.arc.network";
+  const rpcUrl = process.env.ARC_RPC_URL || process.env.PROVIDER_URL || "https://rpc.testnet.arc.io";
   const chainId = Number(process.env.ARC_CHAIN_ID || registry.chainId || 5042002);
   const hub = requireAddress(process.env.ARC_OPENRAILS_HUB_ADDRESS || registry.arcOpenRailsHubV1, "Arc OpenRails Hub");
   const token = requireAddress(process.env.ARC_USDC_ADDRESS || registry.arcUsdcAddress, "Arc USDC");
