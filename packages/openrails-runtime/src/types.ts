@@ -36,6 +36,7 @@ export interface RuntimeState {
   workspaces: Record<string, Workspace>;
   workspaceAuthorities: Record<string, string>;
   actors: Record<string, Actor>;
+  actorWorkspaces: Record<string, string>;
   paths: Record<string, Path>;
   pathAttestations: Record<string, StoredPathAttestation>;
   intents: Record<string, Intent>;

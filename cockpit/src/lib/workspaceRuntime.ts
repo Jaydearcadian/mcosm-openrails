@@ -12,7 +12,7 @@ import {
 } from "../../../sdk/src/shared-interface";
 import type { OpenRailsAccount } from "../../../sdk/src/account";
 import type { RuntimeAccountHandle } from "./runtimeAccount";
-import { RuntimeClient } from "../../../sdk/src/runtime-client";
+import { RuntimeClient, type RuntimeDiscoveryResponse } from "../../../sdk/src/runtime-client";
 
 const NETWORK = {
   networkId: ARC_TESTNET_MANIFEST.networkId,
@@ -57,6 +57,23 @@ export interface WorkspaceRuntimeLifecycle {
   operations: Record<string, string>;
 }
 
+export interface WorkspaceDiscoveryRecord {
+  id: string;
+  name: string;
+  status: string;
+  updatedAt: string;
+  owner?: string;
+  workspace: Workspace;
+  runtime: WorkspaceRuntimeState;
+}
+
+export interface WorkspaceDiscoveryResponse {
+  interfaceVersion: "1.2.0";
+  operationId: "workspace.list" | "workspace.get";
+  walletAddress: string;
+  workspaces: WorkspaceDiscoveryRecord[];
+}
+
 function runtimeBaseUrl(): string | undefined {
   const value = (import.meta.env.VITE_OPENRAILS_INTERFACE_BASE as string | undefined)
     ?? (import.meta.env.VITE_OPENRAILS_API_BASE as string | undefined);
@@ -67,6 +84,16 @@ function runtimeBaseUrl(): string | undefined {
 
 function client(): RuntimeClient {
   return new RuntimeClient({ baseUrl: runtimeBaseUrl() });
+}
+
+export async function discoverWorkspaces(
+  handle: RuntimeAccountHandle,
+  workspaceId?: string,
+): Promise<WorkspaceDiscoveryResponse> {
+  return client().discoverWorkspaces<RuntimeDiscoveryResponse>(handle.account, {
+    role: "owner",
+    ...(workspaceId ? { workspaceId } : {}),
+  }) as Promise<WorkspaceDiscoveryResponse>;
 }
 
 function ref<T extends ObjectType>(type: T, id: string): { type: T; id: string } {
@@ -330,18 +357,17 @@ export async function revokePath(input: WorkspaceRuntimeInput & { path: Path }, 
 
 export async function preparePact(
   input: WorkspaceRuntimeInput & { title: string; counterparty: string; amountUsdc: string; pactId: string },
-  handle: RuntimeAccountHandle,
+  ownerHandle: RuntimeAccountHandle,
+  delegateHandle: RuntimeAccountHandle = ownerHandle,
 ): Promise<WorkspaceRuntimeLifecycle> {
-  const ownerAddress = await ensureOwner(input, handle.account);
+  await ensureOwner(input, ownerHandle.account);
   const activePath = Object.values(input.runtime?.paths ?? {}).find((path) => path.status === "ACTIVE");
   if (!activePath) throw new Error("Activate a Path before preparing a Pact.");
   const ownerActor = input.runtime?.actors[input.workspace.ownerActorRef.id];
   const delegate = input.runtime?.actors[activePath.delegateActorRef.id];
   if (!ownerActor || !delegate?.walletAddress) throw new Error("The active Path delegate is not available.");
-  const signer = await handle.account.getAddress();
-  if (!sameAddress(ownerAddress, signer) || !sameAddress(delegate.walletAddress, signer)) {
-    throw new Error("For this cockpit flow, the connected wallet must control both the Workspace owner and active delegate. The two-wallet path is covered by the public smoke harness.");
-  }
+  const signer = await delegateHandle.account.getAddress();
+  if (!sameAddress(delegate.walletAddress, signer)) throw new Error("Connect the active Path participant wallet to sign the Pact.");
   const recipient = requireAddress(input.counterparty, "Counterparty");
   const amount = parseUsdc(input.amountUsdc);
   const { now, expiresAt } = nowAndExpiry();
@@ -373,7 +399,7 @@ export async function preparePact(
     provenance: provenance("wallet-signed", now),
   };
   const runtime = client();
-  const intentResponse = await runtime.execute("intent.prepare", { intent }, handle.account, {
+  const intentResponse = await runtime.execute("intent.prepare", { intent }, ownerHandle.account, {
     role: "owner",
     workspaceRef,
     pathRef,
@@ -395,7 +421,7 @@ export async function preparePact(
     provenance: provenance("runtime-evaluation", now),
   };
   const proposalRef = ref("Proposal", proposal.id);
-  const proposalResponse = await runtime.execute("proposal.evaluate", { proposal }, handle.account, {
+  const proposalResponse = await runtime.execute("proposal.evaluate", { proposal }, delegateHandle.account, {
     role: "delegate",
     workspaceRef,
     pathRef,
@@ -431,7 +457,7 @@ export async function preparePact(
     signatureBinding: genericBinding(signer, now, expiresAt),
     provenance: provenance("wallet-signed", now),
   };
-  const pactResponse = await runtime.execute("pact.sign", { intentRef, pact }, handle.account, {
+  const pactResponse = await runtime.execute("pact.sign", { intentRef, pact }, delegateHandle.account, {
     role: "delegate",
     workspaceRef,
     pathRef,

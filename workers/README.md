@@ -254,6 +254,7 @@ Routes:
 | `GET /api/interface/1.2.0/read/:type/:id` | Read the shipped network or capability manifest. | none |
 | `POST /api/interface/1.2.0/runtime/path` | Verify and persist a wallet-attested application Path. | EIP-191 Path attestation; no custody |
 | `POST /api/interface/1.2.0/runtime/execute` | Execute one signed Shared Interface 1.2 Runtime control-plane transition: Workspace, Actor, Path, Intent, Proposal, Pact, or Proof lifecycle. | EIP-712 envelope signature; no custody |
+| `POST /api/interface/1.2.0/runtime/discover` | Return wallet-authorized Workspace records and their persisted Runtime lifecycle projection. | EIP-712 envelope signature; no custody |
 | `GET /api/interface/1.2.0/runtime/state` | Inspect persisted Runtime state while validating deployment. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
 
 The safe routes also remain available at `/api/interface/...` and `/api/v1/interface/...` for
@@ -261,6 +262,12 @@ compatibility. The Runtime endpoint never signs, broadcasts, relays, holds priva
 value. Financial settlement remains the existing wallet or keeper boundary. The Path route uses
 the application-specific EIP-191 attestation defined by the Runtime deployment; the admin token
 is reserved for persisted state inspection and operational controls.
+
+Runtime discovery uses signed `workspace.list` and `workspace.get` reads. Visibility is limited to
+the Workspace authority or a wallet-bound Actor associated with that Workspace. Wrong methods return
+`405` with `Allow`; temporary Neon or RPC failures return retryable `503` responses. The App keeps
+browser-only payment activity as a supplemental projection and does not treat it as Runtime or Arc
+financial authority.
 
 When the Cockpit needs the public safe interface without redirecting its legacy gateway calls, set
 `VITE_OPENRAILS_INTERFACE_BASE` to the Worker URL. Keep it separate from

@@ -59,7 +59,7 @@ export function CinematicHero({ onViewNetwork }: { onViewNetwork: () => void }) 
           <button className="primary" onClick={enter} disabled={entered}>
             {entered ? 'Workspace active' : 'Enter the system'} <b>↘</b>
           </button>
-          <button className="text-action" onClick={onViewNetwork}>Open live Cockpit</button>
+          <button className="text-action" onClick={onViewNetwork}>Open live app</button>
         </motion.div>
       </div>
 

@@ -13,6 +13,8 @@ import type { RuntimeSignatureBinding } from "./generated/shared-interface";
 export type RuntimeRole = "owner" | "delegate";
 
 const RUNTIME_AUTHORIZATION_CLASSES: Record<string, string> = {
+  "workspace.list": "AUTHENTICATED_READ",
+  "workspace.get": "AUTHENTICATED_READ",
   "workspace.register": "RELAY_SIGNED_ENVELOPE",
   "actor.register": "RELAY_SIGNED_ENVELOPE",
   "path.activate": "WALLET_SIGNATURE",
@@ -51,13 +53,37 @@ export interface RuntimeExecuteOptions extends RuntimeRequestReferences {
   expiresAt?: string;
 }
 
+export interface RuntimeDiscoveryOptions {
+  role: RuntimeRole;
+  workspaceId?: string;
+}
+
+export interface RuntimeDiscoveryResponse {
+  interfaceVersion: "1.2.0";
+  operationId: "workspace.list" | "workspace.get";
+  walletAddress: string;
+  workspaces: Array<{
+    id: string;
+    name: string;
+    status: string;
+    updatedAt: string;
+    owner?: string;
+    workspace: unknown;
+    runtime: unknown;
+  }>;
+}
+
 export class RuntimeClientHttpError extends Error {
   readonly status: number;
   readonly url: string;
   readonly body: unknown;
 
   constructor(status: number, url: string, body: unknown) {
-    super(`OpenRails Runtime request failed with HTTP ${status}`);
+    const detail = body && typeof body === "object" && !Array.isArray(body)
+      && typeof (body as Record<string, unknown>).error === "string"
+      ? `: ${(body as Record<string, string>).error}`
+      : "";
+    super(`OpenRails Runtime request failed with HTTP ${status}${detail}`);
     this.name = "RuntimeClientHttpError";
     this.status = status;
     this.url = url;
@@ -186,6 +212,37 @@ export class RuntimeClient {
 
   async ingestPath<T = unknown>(path: unknown): Promise<T> {
     return this.post<T>("/path", { path });
+  }
+
+  async discoverWorkspaces<T = RuntimeDiscoveryResponse>(
+    account: OpenRailsAccount,
+    options: RuntimeDiscoveryOptions,
+  ): Promise<T> {
+    const walletAddress = getAddress(await account.getAddress());
+    const operationId = options.workspaceId ? "workspace.get" : "workspace.list";
+    const data = await this.signTransition(
+      operationId,
+      { walletAddress, ...(options.workspaceId ? { workspaceId: options.workspaceId } : {}) },
+      account,
+      { role: options.role },
+    );
+    return this.post<T>("/discover", {
+      interfaceVersion: "1.2.0",
+      executionProfile: "delegated-runtime" as const,
+      operationId,
+      capability: operationId,
+      authorizationClass: RUNTIME_AUTHORIZATION_CLASSES[operationId],
+      subject: { walletAddress, role: options.role },
+      network: { networkId: ARC_TESTNET_MANIFEST.networkId, chainId: String(ARC_TESTNET_MANIFEST.chainId) },
+      data,
+      provenance: {
+        source: "wallet-signed" as const,
+        authority: "openrails-sdk",
+        evidenceLevel: "runtime-observed" as const,
+        observedAt: new Date().toISOString(),
+      },
+      createdAt: new Date().toISOString(),
+    });
   }
 
   private async post<T>(suffix: string, body: unknown): Promise<T> {

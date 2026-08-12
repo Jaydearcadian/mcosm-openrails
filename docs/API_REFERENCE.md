@@ -52,6 +52,9 @@ The routes are available under `/api/v1/interface/...`, `/api/interface/...`, an
 `/api/interface/1.2.0/...`. The unversioned paths remain supported for compatibility and still
 return the canonical `interfaceVersion` field.
 
+New clients should use `/api/interface/1.2.0/...`. The versioned Runtime is the App's public
+control-plane boundary; it is separate from the payment relay and never moves funds.
+
 | Method & Path | Purpose | Auth |
 |---|---|---|
 | `GET /api/interface/capabilities` | Shared Interface, safe-surface, Canonical Record, and Circle capability declarations. | none |
@@ -90,6 +93,7 @@ Neon persistence. The public deployment does not sign, broadcast, relay, hold ke
 | `GET /api/interface/1.2.0/read/:type/:id` | Typed form of the safe read route. | none |
 | `POST /api/interface/1.2.0/runtime/path` | Persist a Path after application-operator attestation. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
 | `POST /api/interface/1.2.0/runtime/execute` | Execute one signed Runtime control-plane transition. | EIP-712 envelope signature |
+| `POST /api/interface/1.2.0/runtime/discover` | Return Workspaces visible to the wallet in a signed `workspace.list` or `workspace.get` request, including the persisted lifecycle projection. | EIP-712 envelope signature |
 | `GET /api/interface/1.2.0/runtime/state` | Inspect the persisted Runtime state. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
 
 The safe routes also support `/api/interface/...` and `/api/v1/interface/...`. Runtime execution
@@ -100,6 +104,13 @@ with a fresh EIP-712 signature, Neon persistence, and nonce replay rejection. A 
 [`packages/openrails-runtime/migrations/001_runtime.sql`](../packages/openrails-runtime/migrations/001_runtime.sql).
 The Cockpit can target this safe surface through `VITE_OPENRAILS_INTERFACE_BASE` while retaining
 `VITE_OPENRAILS_API_BASE` for legacy gateway routes.
+
+Runtime discovery is wallet-scoped. The Worker records an Actor-to-Workspace association when an
+Actor is registered, and returns only Workspaces owned by or associated with the signed wallet.
+`workspace.list` omits `data.workspaceId`; `workspace.get` requires it. Both use the same Runtime
+EIP-712 binding checks as state-changing transitions. `POST` is required for Runtime mutation and
+discovery routes; an incorrect method returns `405` and an `Allow` header. Temporary persistence
+or provider failures return a retryable `503` rather than a successful-looking response.
 
 ---
 

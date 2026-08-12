@@ -339,6 +339,105 @@ function assertNetwork(request: RuntimeRequest): void {
   }
 }
 
+export interface RuntimeBindingValidationOptions {
+  now?: Date;
+  maxSignatureLifetimeSeconds?: number;
+  clockSkewSeconds?: number;
+}
+
+/**
+ * Validate the signed envelope independently of state mutation. Authenticated
+ * read routes use this same boundary as state-changing Runtime transitions.
+ */
+export function assertRuntimeBinding(
+  operationId: string,
+  request: RuntimeRequest,
+  binding: RuntimeSignatureBinding,
+  options: RuntimeBindingValidationOptions = {},
+): void {
+  if (!isRecord(request) || !isRecord(request.network) || !isRecord(request.subject)) {
+    throw new RuntimeError("INPUT_INVALID", "Signed runtime requests require network and subject fields.");
+  }
+  if (
+    !isRecord(binding)
+    || !isRecord(binding.domain)
+    || typeof binding.operationId !== "string"
+    || typeof binding.signatureStandard !== "string"
+    || typeof binding.primaryType !== "string"
+    || typeof binding.signaturePurpose !== "string"
+    || typeof binding.payloadHash !== "string"
+    || typeof binding.signer !== "string"
+    || typeof binding.signature !== "string"
+    || typeof binding.nonce !== "string"
+    || typeof binding.issuedAt !== "string"
+    || typeof binding.expiresAt !== "string"
+    || typeof binding.chainId !== "string"
+    || typeof binding.anchorContract !== "string"
+    || typeof binding.domain.name !== "string"
+    || typeof binding.domain.version !== "string"
+    || typeof binding.domain.chainId !== "string"
+    || typeof binding.domain.salt !== "string"
+  ) {
+    throw new RuntimeError("INPUT_INVALID", "Runtime signature binding is malformed.");
+  }
+  assertNetwork(request);
+  if (request.interfaceVersion !== "1.2.0") throw new RuntimeError("INPUT_INVALID", "Signed runtime transitions require Shared Interface 1.2.0.");
+  if (binding.operationId !== operationId) throw new RuntimeError("AUTHORIZATION_REQUIRED", "Signature operation binding does not match the requested operation.");
+  if (binding.signatureStandard !== "eip-712" || binding.primaryType !== RUNTIME_TRANSITION_PRIMARY_TYPE) {
+    throw new RuntimeError("SIGNATURE_INVALID", "Runtime signature standard or primary type is not supported.");
+  }
+  if (binding.signaturePurpose !== ARC_TESTNET_MANIFEST.runtime.signaturePurpose) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime signature purpose does not match the Arc manifest.");
+  }
+  const expectedDomain = ARC_TESTNET_MANIFEST.runtime.signatureDomain;
+  if (
+    binding.domain.name !== expectedDomain.name
+    || binding.domain.version !== expectedDomain.version
+    || binding.domain.chainId !== expectedDomain.chainId
+    || binding.domain.salt.toLowerCase() !== expectedDomain.salt.toLowerCase()
+    || "verifyingContract" in (binding.domain as unknown as Record<string, unknown>)
+  ) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime EIP-712 domain does not match the Arc manifest.");
+  }
+  if (binding.chainId !== ARC_TESTNET_MANIFEST.chainId || binding.domain.chainId !== request.network.chainId) {
+    throw new RuntimeError("WRONG_NETWORK", "Runtime signature chain ID does not match the Arc manifest network.");
+  }
+  if (!sameAddress(binding.anchorContract, ARC_TESTNET_MANIFEST.runtime.anchorContract)) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime anchor contract does not match the Arc manifest.");
+  }
+  if (request.subject.walletAddress && !sameAddress(request.subject.walletAddress, binding.signer)) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Request subject wallet does not match the runtime signer.");
+  }
+  let payloadHash: string;
+  try {
+    payloadHash = hashRuntimePayload(request.data);
+  } catch (error) {
+    throw new RuntimeError("INPUT_INVALID", "Runtime transition payload is not canonicalizable.", {
+      details: { reason: error instanceof Error ? error.message : "canonicalization failed" }
+    });
+  }
+  if (binding.payloadHash.toLowerCase() !== payloadHash.toLowerCase()) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime signature payload hash does not match request data.");
+  }
+  const nowMs = (options.now ?? new Date()).getTime();
+  const issuedAtMs = Date.parse(binding.issuedAt);
+  const expiresAtMs = Date.parse(binding.expiresAt);
+  if (!Number.isFinite(issuedAtMs) || !Number.isFinite(expiresAtMs) || expiresAtMs <= issuedAtMs) {
+    throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature time window is invalid.", { details: { field: "issuedAt/expiresAt" } });
+  }
+  const clockSkewSeconds = options.clockSkewSeconds ?? DEFAULT_CLOCK_SKEW_SECONDS;
+  const maxSignatureLifetimeSeconds = options.maxSignatureLifetimeSeconds ?? MAX_SIGNATURE_LIFETIME_SECONDS;
+  if (issuedAtMs > nowMs + clockSkewSeconds * 1000) {
+    throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature was issued in the future.", { details: { field: "issuedAt" } });
+  }
+  if (expiresAtMs <= nowMs) {
+    throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature has expired.", { details: { field: "expiresAt" } });
+  }
+  if (expiresAtMs - issuedAtMs > maxSignatureLifetimeSeconds * 1000) {
+    throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature lifetime exceeds the configured maximum.", { details: { field: "expiresAt" } });
+  }
+}
+
 function assertRequestedNetwork(intent: Intent, request: RuntimeRequest): void {
   if (intent.requestedNetwork && !sameValue(intent.requestedNetwork, request.network)) {
     throw new RuntimeError("WRONG_NETWORK", "Intent requested network does not match the Arc Testnet request network.");
@@ -597,7 +696,11 @@ export class Runtime {
 
     const request = input as RuntimeRequest;
     const binding = runtimeBinding(request.data, operationId);
-    this.assertBinding(operationId, request, binding);
+    assertRuntimeBinding(operationId, request, binding, {
+      now: this.now(),
+      maxSignatureLifetimeSeconds: this.maxSignatureLifetimeSeconds,
+      clockSkewSeconds: this.clockSkewSeconds,
+    });
     await this.verifyBinding(binding);
 
     const scope: ReplayScope = {
@@ -623,63 +726,6 @@ export class Runtime {
       prepared.commit(transaction.state);
       return prepared.response;
     });
-  }
-
-  private assertBinding(operationId: string, request: RuntimeRequest, binding: RuntimeSignatureBinding): void {
-    assertNetwork(request);
-    if (request.interfaceVersion !== "1.2.0") throw new RuntimeError("INPUT_INVALID", "Signed runtime transitions require Shared Interface 1.2.0.");
-    if (binding.operationId !== operationId) throw new RuntimeError("AUTHORIZATION_REQUIRED", "Signature operation binding does not match the registry operation.");
-    if (binding.signatureStandard !== "eip-712" || binding.primaryType !== RUNTIME_TRANSITION_PRIMARY_TYPE) {
-      throw new RuntimeError("SIGNATURE_INVALID", "Runtime signature standard or primary type is not supported.");
-    }
-    if (binding.signaturePurpose !== ARC_TESTNET_MANIFEST.runtime.signaturePurpose) {
-      throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime signature purpose does not match the Arc manifest.");
-    }
-    const expectedDomain = ARC_TESTNET_MANIFEST.runtime.signatureDomain;
-    if (
-      binding.domain.name !== expectedDomain.name
-      || binding.domain.version !== expectedDomain.version
-      || binding.domain.chainId !== expectedDomain.chainId
-      || binding.domain.salt.toLowerCase() !== expectedDomain.salt.toLowerCase()
-      || "verifyingContract" in (binding.domain as unknown as Record<string, unknown>)
-    ) {
-      throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime EIP-712 domain does not match the Arc manifest.");
-    }
-    if (binding.chainId !== ARC_TESTNET_MANIFEST.chainId || binding.domain.chainId !== request.network.chainId) {
-      throw new RuntimeError("WRONG_NETWORK", "Runtime signature chain ID does not match the Arc manifest network.");
-    }
-    if (!sameAddress(binding.anchorContract, ARC_TESTNET_MANIFEST.runtime.anchorContract)) {
-      throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime anchor contract does not match the Arc manifest.");
-    }
-    if (request.subject.walletAddress && !sameAddress(request.subject.walletAddress, binding.signer)) {
-      throw new RuntimeError("AUTHORIZATION_REQUIRED", "Request subject wallet does not match the runtime signer.");
-    }
-    let payloadHash: string;
-    try {
-      payloadHash = hashRuntimePayload(request.data);
-    } catch (error) {
-      throw new RuntimeError("INPUT_INVALID", "Runtime transition payload is not canonicalizable.", {
-        details: { reason: error instanceof Error ? error.message : "canonicalization failed" }
-      });
-    }
-    if (binding.payloadHash.toLowerCase() !== payloadHash.toLowerCase()) {
-      throw new RuntimeError("AUTHORIZATION_REQUIRED", "Runtime signature payload hash does not match request data.");
-    }
-    const nowMs = this.now().getTime();
-    const issuedAtMs = Date.parse(binding.issuedAt);
-    const expiresAtMs = Date.parse(binding.expiresAt);
-    if (!Number.isFinite(issuedAtMs) || !Number.isFinite(expiresAtMs) || expiresAtMs <= issuedAtMs) {
-      throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature time window is invalid.", { details: { field: "issuedAt/expiresAt" } });
-    }
-    if (issuedAtMs > nowMs + this.clockSkewSeconds * 1000) {
-      throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature was issued in the future.", { details: { field: "issuedAt" } });
-    }
-    if (expiresAtMs <= nowMs) {
-      throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature has expired.", { details: { field: "expiresAt" } });
-    }
-    if (expiresAtMs - issuedAtMs > this.maxSignatureLifetimeSeconds * 1000) {
-      throw new RuntimeError("SIGNATURE_EXPIRED", "Runtime signature lifetime exceeds the configured maximum.", { details: { field: "expiresAt" } });
-    }
   }
 
   private async verifyBinding(binding: RuntimeSignatureBinding): Promise<void> {
@@ -915,6 +961,7 @@ export class Runtime {
       response,
       commit: (draft) => {
         draft.actors[data.actor.id] = clone(data.actor);
+        draft.actorWorkspaces[data.actor.id] = workspace.id;
       }
     };
   }

@@ -4,8 +4,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../dist/context.js';
 import {
+  AGENT_MCP_TOOL_NAMES,
   SAFE_MCP_TOOL_NAMES,
+  discoverAgentSurface,
   openrailsCapabilities,
+  planAgentAction,
   prepareOperation,
   validateOperation,
 } from '../dist/tools.js';
@@ -39,11 +42,85 @@ test('safe MCP capabilities do not include signer or broadcast authority', async
   assert.equal(result.runtimeSignature.canSign, false);
   assert.deepEqual(SAFE_MCP_TOOL_NAMES, [
     'openrails_capabilities',
+    'openrails_agent_discover',
+    'openrails_agent_plan',
     'openrails_prepare',
     'openrails_validate',
     'openrails_verify',
     'openrails_read',
   ]);
+  assert.deepEqual(AGENT_MCP_TOOL_NAMES, ['openrails_agent_discover', 'openrails_agent_plan']);
+});
+
+const agentSurface = {
+  version: 'openrails-surface-v1',
+  surfaceId: 'research-agent',
+  name: 'Research agent',
+  description: 'A bounded research service.',
+  type: 'agent_service',
+  recipient: '0x1111111111111111111111111111111111111111',
+  settlementChain: 'arc-testnet',
+  chainId: 5042002,
+  token: { symbol: 'USDC', address: '0x3600000000000000000000000000000000000000', decimals: 6 },
+  pricing: { model: 'one_time', amountBaseUnits: '1000000' },
+  session: { heartbeatTimeoutMs: 30000, stopOnExitSupported: true, residualReturn: 'none' },
+  scope: 'research',
+  openrails: {
+    supportedPrimitives: ['railsflow', 'x402'],
+    hub: '0x941C8029F0f912df3fAb7423890ab2359b996D0b',
+    domainVersion: '2.0.0',
+  },
+  proof: { status: 'demo' },
+};
+
+test('agent discovery and planning remain approval-bound', async () => {
+  const discovered = await discoverAgentSurface(ctx, {
+    openrailsId: 'agent:research',
+    providerId: 'provider:example',
+    manifest: agentSurface,
+  });
+  assert.equal(discovered.valid, true);
+  assert.equal(discovered.defaultPrimitive, 'railsflow');
+  assert.equal(discovered.approval.authorizesPayment, false);
+  assert.equal(discovered.financialSuccess, false);
+
+  const planned = await planAgentAction(ctx, { event: discovered.event, action: 'negotiate' });
+  assert.equal(planned.task.kind, 'negotiate_terms');
+  assert.equal(planned.approval.requiresUserApproval, true);
+  assert.equal(planned.approval.authorizesPayment, false);
+  assert.equal(planned.financialSuccess, false);
+});
+
+test('agent discovery rejects custody material', async () => {
+  await assert.rejects(
+    discoverAgentSurface(ctx, {
+      openrailsId: 'agent:research',
+      providerId: 'provider:example',
+      manifest: { ...agentSurface, privateKey: 'never accepted' },
+    }),
+    /safe-only MCP surface/,
+  );
+});
+
+test('agent discovery and planning reject unknown protocol values', async () => {
+  await assert.rejects(
+    discoverAgentSurface(ctx, {
+      openrailsId: 'agent:research',
+      providerId: 'provider:example',
+      manifest: agentSurface,
+      eventType: 'marketplace.execute_now',
+    }),
+    /Unsupported discovery event type/,
+  );
+  const discovered = await discoverAgentSurface(ctx, {
+    openrailsId: 'agent:research',
+    providerId: 'provider:example',
+    manifest: agentSurface,
+  });
+  await assert.rejects(
+    planAgentAction(ctx, { event: discovered.event, action: 'pay' }),
+    /Unsupported discovery action/,
+  );
 });
 
 test('prepare creates a valid envelope without authorization or broadcast', async () => {

@@ -15,6 +15,8 @@ MCP paths.
 - [Circle Gas Station Boundary](circle-gas-station-boundary.md): credential and custody limits.
 - [Circle Modular Wallet Arc Proof](circle-modular-gas-station-arc-proof.md): the browser integration
   and evidence requirements.
+- [Circle integration status](circle-integration-status.md): the current Circle stack, what is wired
+  into the App and SDK, and the remaining end-to-end work.
 - [Public Workspace Settlement Evidence](public-workspace-runtime-settlement-evidence.md): the
   deployed Runtime-to-Arc verification record.
 

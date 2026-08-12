@@ -61,6 +61,13 @@ See
 [`docs/circle-gas-station-boundary.md`](docs/circle-gas-station-boundary.md) and
 the [documentation index](docs/README.md) for integration boundaries and verification records.
 
+**Circle in the application:** the App and SDK currently use Circle's Modular Wallet and passkey
+path, the Circle smart-account adapter, Console-provisioned browser configuration, Gateway funding
+helpers, the Circle x402 path, and the Gas Station sponsorship boundary. These integrations have
+different verification states. Some are code-complete or configuration-gated, while live sponsored
+execution and fresh cross-chain evidence remain operational gates. The full map is in
+[`docs/circle-integration-status.md`](docs/circle-integration-status.md).
+
 ---
 
 ## Quick start
@@ -107,6 +114,27 @@ create/pay a link, issue/claim a RailsCard.
 
 **Documentation:** [docs/README.md](docs/README.md) — current API, runtime, integration, and
 verification references.
+
+---
+
+## Public Runtime
+
+The App uses the versioned Runtime boundary at
+`https://openrails-interface-worker.microcosm.workers.dev/api/interface/1.2.0/runtime`.
+The Runtime is a Neon-backed, wallet-signed control plane for Workspace initialization and the
+Workspace lifecycle: Actors, Paths, Intents, Proposals, Pacts, and Proofs. A connected wallet can
+discover its authorized Workspaces from a fresh browser through the signed `workspace.list` and
+`workspace.get` reads.
+
+The Runtime does not hold keys, sign transactions, broadcast to Arc, or move funds. Direct and
+Workspace-scoped payments still use the App, SDK, keeper relay, and Arc Vault paths. Financial
+truth is the verified Arc transaction, Vault state, and receipt. Runtime errors return structured
+retryable or non-retryable responses, and unsupported HTTP methods return `405` with an `Allow`
+header so clients can recover without treating a failed request as a payment result.
+
+The public route list, persistence model, and Circle verification boundaries are documented in
+[`docs/API_REFERENCE.md`](docs/API_REFERENCE.md), [`workers/README.md`](workers/README.md), and
+[`docs/circle-integration-status.md`](docs/circle-integration-status.md).
 
 ---
 

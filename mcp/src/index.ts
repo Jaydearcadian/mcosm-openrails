@@ -11,7 +11,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { buildContext } from "./context.js";
 import {
+  discoverAgentSurface,
   openrailsCapabilities,
+  planAgentAction,
   prepareOperation,
   readInterfaceObject,
   validateOperation,
@@ -19,7 +21,7 @@ import {
 } from "./tools.js";
 
 const ctx = buildContext();
-const server = new McpServer({ name: "openrails-mcp", version: "0.3.0" });
+const server = new McpServer({ name: "openrails-mcp", version: "0.3.1" });
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
 
@@ -49,6 +51,32 @@ server.registerTool(
     inputSchema: {},
   },
   async () => run(() => openrailsCapabilities(ctx)),
+);
+
+server.registerTool(
+  "openrails_agent_discover",
+  {
+    description: "Validate and describe a payable agent surface. Discovery never authorizes payment or creates a signer.",
+    inputSchema: {
+      openrailsId: z.string().describe("Stable OpenRails identifier for the discovered service."),
+      providerId: z.string().describe("Provider identifier from the service manifest."),
+      manifest: z.record(z.unknown()).describe("OpenRails surface manifest."),
+      eventType: z.string().optional().describe("Discovery event type, default marketplace.service_arrived."),
+    },
+  },
+  async (args) => run(() => discoverAgentSurface(ctx, args)),
+);
+
+server.registerTool(
+  "openrails_agent_plan",
+  {
+    description: "Plan an inspect, quote, negotiate, ignore, or mute action for a discovered surface. It never authorizes payment.",
+    inputSchema: {
+      event: z.record(z.unknown()).describe("Discovery event returned by openrails_agent_discover."),
+      action: z.enum(["inspect", "quote", "negotiate", "ignore", "mute"]),
+    },
+  },
+  async (args) => run(() => planAgentAction(ctx, args)),
 );
 
 server.registerTool(

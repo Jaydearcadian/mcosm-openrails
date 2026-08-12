@@ -1,4 +1,5 @@
 const PUBLIC_INTERFACE_BASE = "https://openrails-interface-worker.microcosm.workers.dev";
+const INTERFACE_PATH = "/api/interface/1.2.0";
 
 function configuredBase(...values: Array<string | undefined>): string | undefined {
   const value = values.find((candidate) => candidate?.trim());
@@ -63,22 +64,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const sharedInterface = {
-  capabilities: () => request<SharedInterfaceCapabilities>("/api/interface/capabilities"),
+  capabilities: () => request<SharedInterfaceCapabilities>(`${INTERFACE_PATH}/capabilities`),
   prepare: (body: SharedOperationPreparation) => request<{ valid: boolean; broadcasted: false; request: unknown }>(
-    "/api/interface/prepare",
+    `${INTERFACE_PATH}/prepare`,
     { method: "POST", body: JSON.stringify(body) },
   ),
   validate: (body: { operationId: string; direction?: "request" | "response"; envelope: unknown }) => request<unknown>(
-    "/api/interface/validate",
+    `${INTERFACE_PATH}/validate`,
     { method: "POST", body: JSON.stringify(body) },
   ),
   verify: (body: { operationId?: string; direction?: "request" | "response"; envelope?: unknown; record?: unknown; policy?: unknown }) => request<unknown>(
-    "/api/interface/verify",
+    `${INTERFACE_PATH}/verify`,
     { method: "POST", body: JSON.stringify(body) },
   ),
   read: (type: string, id?: string) => request<unknown>(
     id
-      ? `/api/interface/read/${encodeURIComponent(type)}/${encodeURIComponent(id)}`
-      : `/api/interface/read?type=${encodeURIComponent(type)}`,
+      ? `${INTERFACE_PATH}/read/${encodeURIComponent(type)}/${encodeURIComponent(id)}`
+      : `${INTERFACE_PATH}/read?type=${encodeURIComponent(type)}`,
   ),
 };

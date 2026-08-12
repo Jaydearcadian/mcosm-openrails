@@ -22,7 +22,7 @@ export function Footer() {
         <div className="footer-links">
           <div><span>SYSTEM</span><Link to="/system">Workspace</Link><Link to="/system">Path</Link><Link to="/system">Pact</Link><Link to="/system">Proof</Link><Link to="/system">Gaia</Link></div>
           <div><span>BUILD</span><Link to="/build">Runtime</Link><Link to="/docs#sdk">SDK</Link><Link to="/docs#mcp">MCP</Link><Link to="/docs#api">REST</Link></div>
-          <div><span>ARC</span><Link to="/app">Open Cockpit</Link><Link to="/network">Deployment</Link><a href={arcTestnet.blockExplorers.default.url} target="_blank" rel="noreferrer">Explorer ↗</a></div>
+          <div><span>ARC</span><Link to="/app">Enter App</Link><Link to="/network">Deployment</Link><a href={arcTestnet.blockExplorers.default.url} target="_blank" rel="noreferrer">Explorer ↗</a></div>
         </div>
       </div>
       <div className="footer-status">

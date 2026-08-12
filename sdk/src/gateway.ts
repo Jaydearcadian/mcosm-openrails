@@ -39,61 +39,90 @@ export interface MintParams {
   gatewayMinterAddress?: string; // override for local or test deployments
 }
 
+function nonZeroAddress(value: string, field: string): string {
+  if (!ethers.isAddress(value) || ethers.getAddress(value) === ethers.ZeroAddress) {
+    throw new Error(`${field} must be a non-zero EVM address`);
+  }
+  return ethers.getAddress(value);
+}
+
+function positiveAmount(value: bigint): bigint {
+  if (typeof value !== "bigint" || value <= 0n) {
+    throw new Error("amountBaseUnits must be a positive bigint");
+  }
+  return value;
+}
+
+function nonEmptyHex(value: string, field: string): string {
+  if (!ethers.isHexString(value) || value === "0x") {
+    throw new Error(`${field} must be non-empty hex data`);
+  }
+  return value;
+}
+
+async function confirmedHash(transaction: ethers.TransactionResponse, operation: string): Promise<string> {
+  const receipt = await transaction.wait();
+  if (!receipt) throw new Error(`${operation} did not return a transaction receipt`);
+  return receipt.hash;
+}
+
 /**
  * Deposits USDC (or another supported token) to the Circle Gateway Wallet.
  */
 export async function depositToGateway(params: DepositParams): Promise<{ txHash: string }> {
-  const token = params.tokenAddress || ARC_USDC_ADDRESS;
-  const gatewayWallet = params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS;
-  const signerAddress = await params.signer.getAddress();
+  const amountBaseUnits = positiveAmount(params.amountBaseUnits);
+  const token = nonZeroAddress(params.tokenAddress || ARC_USDC_ADDRESS, "tokenAddress");
+  const gatewayWallet = nonZeroAddress(params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS, "gatewayWalletAddress");
+  const signerAddress = nonZeroAddress(await params.signer.getAddress(), "signer address");
 
   if (params.autoApprove !== false) {
     const erc20 = new ethers.Contract(token, ERC20_ABI, params.signer);
     const allowance = await erc20.allowance(signerAddress, gatewayWallet);
-    if (allowance < params.amountBaseUnits) {
-      console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${params.amountBaseUnits.toString()}...`);
-      const approveTx = await erc20.approve(gatewayWallet, params.amountBaseUnits);
+    if (allowance < amountBaseUnits) {
+      console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${amountBaseUnits.toString()}...`);
+      const approveTx = await erc20.approve(gatewayWallet, amountBaseUnits);
       await approveTx.wait();
     }
   }
 
   const contract = new ethers.Contract(gatewayWallet, GATEWAY_WALLET_ABI, params.signer);
-  const tx = await contract.deposit(token, params.amountBaseUnits);
-  const receipt = await tx.wait();
-  return { txHash: receipt.hash };
+  const tx = await contract.deposit(token, amountBaseUnits);
+  return { txHash: await confirmedHash(tx, "Gateway deposit") };
 }
 
 /**
  * Deposits USDC (or another supported token) to the Circle Gateway Wallet on behalf of another address.
  */
 export async function depositForToGateway(params: DepositForParams): Promise<{ txHash: string }> {
-  const token = params.tokenAddress || ARC_USDC_ADDRESS;
-  const gatewayWallet = params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS;
-  const signerAddress = await params.signer.getAddress();
+  const amountBaseUnits = positiveAmount(params.amountBaseUnits);
+  const token = nonZeroAddress(params.tokenAddress || ARC_USDC_ADDRESS, "tokenAddress");
+  const gatewayWallet = nonZeroAddress(params.gatewayWalletAddress || GATEWAY_WALLET_ADDRESS, "gatewayWalletAddress");
+  const depositor = nonZeroAddress(params.depositor, "depositor");
+  const signerAddress = nonZeroAddress(await params.signer.getAddress(), "signer address");
 
   if (params.autoApprove !== false) {
     const erc20 = new ethers.Contract(token, ERC20_ABI, params.signer);
     const allowance = await erc20.allowance(signerAddress, gatewayWallet);
-    if (allowance < params.amountBaseUnits) {
-      console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${params.amountBaseUnits.toString()}...`);
-      const approveTx = await erc20.approve(gatewayWallet, params.amountBaseUnits);
+    if (allowance < amountBaseUnits) {
+      console.log(`[Gateway] Insufficient allowance (${allowance.toString()}). Approving ${amountBaseUnits.toString()}...`);
+      const approveTx = await erc20.approve(gatewayWallet, amountBaseUnits);
       await approveTx.wait();
     }
   }
 
   const contract = new ethers.Contract(gatewayWallet, GATEWAY_WALLET_ABI, params.signer);
-  const tx = await contract.depositFor(token, params.depositor, params.amountBaseUnits);
-  const receipt = await tx.wait();
-  return { txHash: receipt.hash };
+  const tx = await contract.depositFor(token, depositor, amountBaseUnits);
+  return { txHash: await confirmedHash(tx, "Gateway third-party deposit") };
 }
 
 /**
  * Submits an attestation payload and signature to the Gateway Minter to mint tokens.
  */
 export async function mintFromGateway(params: MintParams): Promise<{ txHash: string }> {
-  const gatewayMinter = params.gatewayMinterAddress || GATEWAY_MINTER_ADDRESS;
+  const attestationPayload = nonEmptyHex(params.attestationPayload, "attestationPayload");
+  const signature = nonEmptyHex(params.signature, "signature");
+  const gatewayMinter = nonZeroAddress(params.gatewayMinterAddress || GATEWAY_MINTER_ADDRESS, "gatewayMinterAddress");
   const contract = new ethers.Contract(gatewayMinter, GATEWAY_MINTER_ABI, params.signer);
-  const tx = await contract.gatewayMint(params.attestationPayload, params.signature);
-  const receipt = await tx.wait();
-  return { txHash: receipt.hash };
+  const tx = await contract.gatewayMint(attestationPayload, signature);
+  return { txHash: await confirmedHash(tx, "Gateway mint") };
 }

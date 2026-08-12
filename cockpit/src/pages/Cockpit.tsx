@@ -56,7 +56,7 @@ function FirstRunGuide({ view, onSelect, onDismiss }: { view: CockpitView; onSel
       <h2 id="guide-title">Start with context, then move value.</h2>
       <p>Use a Workspace when a payment belongs to delegated work, accepted terms, or Proof. Use Direct Payment when the connected wallet only needs to pay a recipient.</p>
       <div>{views.map((item, index) => <button type="button" className={view === item.id ? "active" : ""} key={item.id} onClick={() => onSelect(item.id)}><b>0{index + 1}</b><strong>{item.label}</strong><small>{item.description}</small></button>)}</div>
-      <footer><button type="button" className="primary" onClick={onDismiss}>Enter Cockpit <ArrowRight size={14} /></button></footer>
+      <footer><button type="button" className="primary" onClick={onDismiss}>Enter App <ArrowRight size={14} /></button></footer>
     </div>
   );
 }
@@ -108,12 +108,76 @@ function AuthorityView({ workspace, records, address, onNotice }: { workspace: N
   const [pactAmount, setPactAmount] = useState("250");
   const [proof, setProof] = useState("");
   const [proofRef, setProofRef] = useState("");
+  const delegateCandidates = useMemo(() => workspace.actors.filter((actor) => Boolean(actor.address)), [workspace.actors]);
+
+  const activePath = workspace.paths.find((path) => path.state === "Active");
+  const activeDelegate = workspace.actors.find((actor) => actor.id === activePath?.delegateId);
+  const activeDelegateRuntime = useRuntimeAccount(activeDelegate?.address);
+  const pactSignerLabel = !activePath
+    ? "Activate a Path first"
+    : activeDelegateRuntime.handle
+      ? `${activeDelegate?.name ?? "Participant"} wallet ready`
+      : `Connect ${activeDelegate?.name ?? "participant"} wallet`;
 
   return (
     <div className="or-operating-grid">
-      <section className="or-operation-panel"><header><span>01 / PEOPLE + AGENTS</span><h2>Who can participate?</h2></header><form onSubmit={(event) => { event.preventDefault(); if (!actorName.trim()) return; void records.addActor({ name: actorName, type: actorType, address: actorAddress.trim() || undefined }).then((actor) => { setActorName(""); setActorAddress(address ?? ""); if (actorType === "Agent") setDelegateId(actor.id); }).catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Actor registration failed.")); }}><label><span>WALLET ADDRESS</span><input value={actorAddress} onChange={(event) => setActorAddress(event.target.value)} placeholder="Participant wallet address" /></label><div className="or-form-row"><label><span>NAME</span><input value={actorName} onChange={(event) => setActorName(event.target.value)} placeholder="Participant or agent" /></label><label><span>TYPE</span><select value={actorType} onChange={(event) => setActorType(event.target.value as WorkspaceActorType)}><option>Person</option><option>Party</option><option>Application</option><option>Agent</option></select></label><button type="submit"><Plus size={14} /> Add</button></div></form><div className="or-record-list">{workspace.actors.length ? workspace.actors.map((actor) => <article key={actor.id}><span>{actor.type}</span><strong>{actor.name}<small>ACTOR ID / {actor.id}</small></strong><small>{actor.address ? shortHex(actor.address) : actor.state}</small></article>) : <p>No participants recorded.</p>}</div></section>
-      <section className="or-operation-panel"><header><span>02 / PATH</span><h2>What may they do?</h2></header><form onSubmit={(event) => { event.preventDefault(); if (!delegateId.trim()) return; void records.addPath({ delegateId, capability, ceilingUsdc: ceiling, expiresAt: new Date(Date.now() + 86400000).toISOString() }).then(() => setDelegateId("")).catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Path activation failed.")); }}><label><span>DELEGATE ID</span><input value={delegateId} onChange={(event) => setDelegateId(event.target.value)} placeholder="Actor or agent ID" /></label><label><span>CAPABILITY</span><input value={capability} onChange={(event) => setCapability(event.target.value)} /></label><label><span>MAXIMUM EXPOSURE / USDC</span><input type="number" min="0" value={ceiling} onChange={(event) => setCeiling(event.target.value)} /></label><button type="submit"><Plus size={14} /> Activate Path</button></form><div className="or-record-list">{workspace.paths.length ? workspace.paths.map((path) => <article key={path.id}><span>{path.state}</span><strong>{path.capability}</strong><small>{path.ceilingUsdc} USDC / {path.delegateId}</small></article>) : <p>No delegated Paths drafted.</p>}</div></section>
-      <section className="or-operation-panel"><header><span>03 / PACT</span><h2>What was accepted?</h2></header><form onSubmit={(event) => { event.preventDefault(); if (!pactTitle.trim() || !counterparty.trim()) return; void records.addPact({ title: pactTitle, counterparty, amountUsdc: pactAmount }).then(() => setPactTitle("")).catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Pact preparation failed.")); }}><label><span>COMMERCIAL TERMS</span><input value={pactTitle} onChange={(event) => setPactTitle(event.target.value)} placeholder="Deliverable or accepted terms" /></label><label><span>COUNTERPARTY WALLET</span><input value={counterparty} onChange={(event) => setCounterparty(event.target.value)} placeholder="0x..." /></label><label><span>VALUE / USDC</span><input type="number" min="0" value={pactAmount} onChange={(event) => setPactAmount(event.target.value)} /></label><button type="submit"><Plus size={14} /> Commit Pact</button></form><div className="or-record-list">{workspace.pacts.length ? workspace.pacts.map((pact) => <article key={pact.id}><span>{pact.state}</span><strong>{pact.title}</strong><small>{pact.amountUsdc} USDC / {shortHex(pact.counterparty)}</small></article>) : <p>No Pacts prepared.</p>}</div></section>
+      <section className="or-operation-panel">
+        <header><span>01 / PEOPLE + AGENTS</span><h2>Who can participate?</h2></header>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          if (!actorName.trim()) return;
+          void records.addActor({ name: actorName, type: actorType, address: actorAddress.trim() || undefined })
+            .then((actor) => {
+              setActorName("");
+              setActorAddress("");
+              if (actor.walletAddress) setDelegateId(actor.id);
+              else onNotice("Participant recorded. Add a wallet address before assigning a Path.");
+            })
+            .catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Actor registration failed."));
+        }}>
+          <label><span>WALLET ADDRESS</span><input value={actorAddress} onChange={(event) => setActorAddress(event.target.value)} placeholder="Participant wallet address" /></label>
+          <div className="or-form-row"><label><span>NAME</span><input value={actorName} onChange={(event) => setActorName(event.target.value)} placeholder="Participant or agent" /></label><label><span>TYPE</span><select value={actorType} onChange={(event) => setActorType(event.target.value as WorkspaceActorType)}><option>Person</option><option>Party</option><option>Application</option><option>Agent</option></select></label><button type="submit"><Plus size={14} /> Add</button></div>
+        </form>
+        <div className="or-record-list">{workspace.actors.length ? workspace.actors.map((actor) => <article key={actor.id}><span>{actor.type}</span><strong>{actor.name}<small>PARTICIPANT ID / {actor.id}</small></strong><small>{actor.address ? shortHex(actor.address) : "WALLET REQUIRED"}</small></article>) : <p>No participants recorded.</p>}</div>
+      </section>
+      <section className="or-operation-panel">
+        <header><span>02 / PATH</span><h2>What may they do?</h2></header>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          if (!delegateId.trim()) return;
+          void records.addPath({ delegateId, capability, ceilingUsdc: ceiling, expiresAt: new Date(Date.now() + 86400000).toISOString() })
+            .then(() => setDelegateId(""))
+            .catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Path activation failed."));
+        }}>
+          <label><span>PARTICIPANT</span><select value={delegateId} onChange={(event) => setDelegateId(event.target.value)} disabled={!delegateCandidates.length}><option value="">{delegateCandidates.length ? "Choose a wallet-bound participant" : "Add a participant wallet first"}</option>{delegateCandidates.map((actor) => <option value={actor.id} key={actor.id}>{actor.name} / {actor.type}</option>)}</select></label>
+          <label><span>CAPABILITY</span><input value={capability} onChange={(event) => setCapability(event.target.value)} /></label>
+          <label><span>MAXIMUM EXPOSURE / USDC</span><input type="number" min="0" value={ceiling} onChange={(event) => setCeiling(event.target.value)} /></label>
+          <button type="submit" disabled={!delegateId}><Plus size={14} /> Activate Path</button>
+        </form>
+        <div className="or-record-list">{workspace.paths.length ? workspace.paths.map((path) => { const delegate = workspace.actors.find((actor) => actor.id === path.delegateId); return <article key={path.id}><span>{path.state}</span><strong>{path.capability}</strong><small>{path.ceilingUsdc} USDC / {delegate?.name ?? path.delegateId}</small></article>; }) : <p>No delegated Paths drafted.</p>}</div>
+      </section>
+      <section className="or-operation-panel">
+        <header><span>03 / PACT</span><h2>What was accepted?</h2></header>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          if (!pactTitle.trim() || !counterparty.trim()) return;
+          const delegateHandle = activeDelegateRuntime.handle;
+          if (!delegateHandle) {
+            onNotice("Connect the active Path participant wallet before committing the Pact.");
+            return;
+          }
+          void records.addPact({ title: pactTitle, counterparty, amountUsdc: pactAmount }, delegateHandle)
+            .then(() => setPactTitle(""))
+            .catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Pact preparation failed."));
+        }}>
+          <label><span>COMMERCIAL TERMS</span><input value={pactTitle} onChange={(event) => setPactTitle(event.target.value)} placeholder="Deliverable or accepted terms" /></label>
+          <label><span>PARTICIPANT SIGNER</span><input value={pactSignerLabel} readOnly /></label>
+          <label><span>COUNTERPARTY WALLET</span><input value={counterparty} onChange={(event) => setCounterparty(event.target.value)} placeholder="0x..." /></label>
+          <label><span>VALUE / USDC</span><input type="number" min="0" value={pactAmount} onChange={(event) => setPactAmount(event.target.value)} /></label>
+          <button type="submit" disabled={!activeDelegateRuntime.handle}><Plus size={14} /> Commit Pact</button>
+        </form>
+        <div className="or-record-list">{workspace.pacts.length ? workspace.pacts.map((pact) => <article key={pact.id}><span>{pact.state}</span><strong>{pact.title}</strong><small>{pact.amountUsdc} USDC / {shortHex(pact.counterparty)}</small></article>) : <p>No Pacts prepared.</p>}</div>
+      </section>
       <section className="or-operation-panel"><header><span>04 / PROOF</span><h2>What evidence exists?</h2></header><form onSubmit={(event) => { event.preventDefault(); const pact = workspace.pacts.find((candidate) => candidate.state === "Committed") ?? workspace.pacts[0]; if (!proof.trim() || !pact) return; void records.addProof({ pactId: pact.id, description: proof, reference: proofRef }).then(() => { setProof(""); setProofRef(""); }).catch((error: unknown) => onNotice(error instanceof Error ? error.message : "Proof verification failed.")); }}><label><span>PROOF DESCRIPTION</span><input value={proof} onChange={(event) => setProof(event.target.value)} placeholder={workspace.pacts.length ? "Delivery or usage evidence" : "Commit a Pact first"} disabled={!workspace.pacts.length} /></label><label><span>REFERENCE</span><input value={proofRef} onChange={(event) => setProofRef(event.target.value)} placeholder="URI, hash, or receipt" disabled={!workspace.pacts.length} /></label><button type="submit" disabled={!workspace.pacts.length}><Plus size={14} /> Verify Proof</button></form><div className="or-record-list">{workspace.proofs.length ? workspace.proofs.map((item) => <article key={item.id}><span>{item.state}</span><strong>{item.description}</strong><small>{item.reference || item.pactId}</small></article>) : <p>No Proof submitted.</p>}</div></section>
     </div>
   );
@@ -165,7 +229,7 @@ export default function Cockpit() {
     <ProductShell>
       <main className="or-cockpit">
         <section className="or-cockpit-heading">
-          <div><span className="tech-label">COCKPIT / OPERATING SURFACE</span><h1>One context.<br /><b>Verifiable movement.</b></h1><p>Coordinate authority, terms, Proof, direct payment, Workspace-scoped payment, and Arc settlement evidence without mixing browser records with canonical chain state.</p></div>
+          <div><span className="tech-label">APP / OPERATING SURFACE</span><h1>One context.<br /><b>Verifiable movement.</b></h1><p>Coordinate authority, terms, Proof, direct payment, Workspace-scoped payment, and Arc settlement evidence without mixing browser records with canonical chain state.</p></div>
           <div className="or-cockpit-actions"><button type="button" onClick={() => openPayment("direct")}>Direct payment</button><button className="primary" type="button" onClick={() => workspace ? openPayment("workspace") : openWorkspace()}>{workspace ? "Workspace payment" : "Initialize Workspace"} <ArrowRight size={14} /></button></div>
         </section>
 
@@ -174,12 +238,15 @@ export default function Cockpit() {
           <div><span>WALLET</span><strong>{address ? shortHex(address) : "NOT CONNECTED"}</strong><small>{isConnected ? "READY" : "CONNECT TO AUTHORIZE"}</small></div>
           <div><span>INTERFACE</span><strong>{capabilities?.interfaceVersion ?? (capabilitiesError ? "UNAVAILABLE" : "CHECKING")}</strong><small>VERSIONED BOUNDARY</small></div>
           <div><span>INDEXER</span><strong>{streams.status.toUpperCase()}</strong><small>NON-AUTHORITATIVE READS</small></div>
-          <button type="button" onClick={() => streams.refresh()} disabled={streams.refreshing}><RefreshCw size={14} /> Refresh</button>
+          <button type="button" onClick={() => void Promise.all([streams.refresh(), records.refresh()])} disabled={streams.refreshing || records.refreshing}><RefreshCw size={14} /> Refresh</button>
         </section>
+
+        {records.runtimeStatus === "loading" && <div className="or-notice"><span>WORKSPACE RUNTIME</span><strong>Discovering saved Workspace records...</strong><small>Reading wallet-authorized state from the versioned Runtime.</small></div>}
+        {records.runtimeStatus === "error" && <div className="or-notice"><span>WORKSPACE RUNTIME</span><strong>{records.runtimeError ?? "Workspace discovery failed."}</strong><button type="button" onClick={() => void records.refresh()}>Retry discovery</button></div>}
 
         <LifecycleRail hasWorkspace={Boolean(workspace)} paths={workspace?.paths.length ?? 0} pacts={workspace?.pacts.length ?? 0} proofs={workspace?.proofs.length ?? 0} payments={workspaceSettlementCount} />
 
-        <nav className="or-cockpit-tabs" aria-label="Cockpit views">{views.map((item, index) => <button type="button" className={view === item.id ? "active" : ""} onClick={() => setView(item.id)} key={item.id}><span>0{index + 1}</span><strong>{item.label}</strong><small>{item.description}</small></button>)}<button className="guide" type="button" onClick={() => guide.restart()}><CircleHelp size={15} /> Guide</button></nav>
+        <nav className="or-cockpit-tabs" aria-label="App views">{views.map((item, index) => <button type="button" className={view === item.id ? "active" : ""} onClick={() => setView(item.id)} key={item.id}><span>0{index + 1}</span><strong>{item.label}</strong><small>{item.description}</small></button>)}<button className="guide" type="button" onClick={() => guide.restart()}><CircleHelp size={15} /> Guide</button></nav>
 
         {notice && <div className="or-notice"><span>NOTICE</span><strong>{notice}</strong><button type="button" onClick={() => setNotice("")}><X size={14} /></button></div>}
 

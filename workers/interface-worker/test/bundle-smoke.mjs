@@ -7,14 +7,14 @@ const env = {
   OPENRAILS_RUNTIME_ENABLED: "false",
 };
 
-async function request(path, init = {}) {
+async function request(path, init = {}, requestEnv = env) {
   return handler.fetch(new Request(`https://worker.test${path}`, {
     ...init,
     headers: {
       Origin: "https://openrails.pages.dev",
       ...(init.headers ?? {}),
     },
-  }), env);
+  }), requestEnv);
 }
 
 const health = await request("/healthz");
@@ -42,5 +42,22 @@ const custody = await request("/api/interface/prepare", {
   body: JSON.stringify({ operationId: "network.list", privateKey: "must-not-enter" }),
 });
 assert.equal(custody.status, 400);
+
+const malformedDiscovery = await request("/api/interface/1.2.0/runtime/discover", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    interfaceVersion: "1.2.0",
+    operationId: "workspace.list",
+    subject: { walletAddress: "0x1111111111111111111111111111111111111111", role: "owner" },
+    network: { networkId: "arc-testnet", chainId: "5042002" },
+    data: { walletAddress: "0x1111111111111111111111111111111111111111", signatureBinding: {} },
+  }),
+}, {
+  ...env,
+  OPENRAILS_RUNTIME_ENABLED: "true",
+  DATABASE_URL: "postgresql://runtime.test/openrails",
+});
+assert.equal(malformedDiscovery.status, 400);
 
 console.log("Interface Worker bundle smoke passed.");

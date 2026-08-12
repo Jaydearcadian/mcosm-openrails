@@ -437,6 +437,9 @@ test("preserves legacy signed transitions with valid EOA authorization", async (
   const store = new MemoryRuntimeStore(initialState());
   const provider = new MockArcProvider();
   const rt = await bootstrap(store, provider);
+  const bootstrappedState = await rt.state();
+  assert.equal(bootstrappedState.actorWorkspaces[ownerActor().id], baseWorkspace().id);
+  assert.equal(bootstrappedState.actorWorkspaces[delegateActor().id], baseWorkspace().id);
 
   const proposal = proposalObject("EVALUATING");
   const proposalData = await signedData("proposal.submit", { proposal }, DELEGATE, { nonce: 3 });

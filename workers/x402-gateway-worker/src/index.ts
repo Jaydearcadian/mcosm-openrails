@@ -114,9 +114,11 @@ function runExpressMiddleware(
 
   return new Promise((resolve) => {
     let resolved = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     const safeResolve = (val: any) => {
       if (!resolved) {
         resolved = true;
+        if (timeout) clearTimeout(timeout);
         resolve(val);
       }
     };
@@ -174,6 +176,13 @@ function runExpressMiddleware(
       },
     };
 
+    timeout = setTimeout(() => {
+      safeResolve({
+        responded: true,
+        response: jsonResponse({ error: "Circle x402 facilitator timed out" }, 504),
+      });
+    }, 25_000);
+
     const next = () => {
       // Middleware passed — payment was verified and settled, req.payment is set
       safeResolve({ responded: false, paymentReq: reqShim, responseHeaders });
@@ -201,9 +210,10 @@ function runExpressMiddleware(
             }
           }
         }).catch((err: any) => {
+          console.error("Circle x402 middleware failure", err);
           safeResolve({
             responded: true,
-            response: jsonResponse({ error: `Middleware error: ${(err as Error).message}` }, 502),
+            response: jsonResponse({ error: "Circle x402 facilitator unavailable" }, 502),
           });
         });
       } else {
@@ -224,9 +234,10 @@ function runExpressMiddleware(
         }
       }
     } catch (err) {
+      console.error("Circle x402 middleware failure", err);
       safeResolve({
         responded: true,
-        response: jsonResponse({ error: `Middleware error: ${(err as Error).message}` }, 502),
+        response: jsonResponse({ error: "Circle x402 facilitator unavailable" }, 502),
       });
     }
   });
@@ -368,7 +379,8 @@ export default {
 
       return jsonResponse({ error: "Not Found" }, 404);
     } catch (err) {
-      return jsonResponse({ error: (err as Error).message }, 500);
+      console.error("OpenRails x402 gateway failure", err);
+      return jsonResponse({ error: "OpenRails x402 gateway unavailable" }, 500);
     }
   },
 };

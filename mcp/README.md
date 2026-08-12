@@ -1,4 +1,4 @@
-# openrails-mcp
+# openrails-mcp 0.3.1
 
 Safe-only MCP server for the OpenRails Shared Interface 1.2 surface over stdio. The server can
 read the bundled Arc Testnet manifest, prepare operation envelopes, validate envelopes, and verify
@@ -11,11 +11,20 @@ preparation accepts caller-supplied external signature evidence and derives only
 1.2 references. The external wallet or application remains responsible for authorization and
 submission.
 
+The agent-facing tools add discovery and planning on top of the same boundary. They validate a
+payable surface manifest, choose a compatible OpenRails primitive, and produce an inspect, quote,
+negotiate, ignore, or mute task. Negotiation and muting are approval-bound. None of these tools
+creates a signer, authorizes payment, or claims financial success. After explicit approval, an
+external wallet can use `openrails_prepare`, `openrails_validate`, and `openrails_verify` for the
+bounded Workspace, Path, Pact, Proof, and Receipt lifecycle.
+
 ## Tools
 
 | Tool | Purpose |
 |---|---|
 | `openrails_capabilities` | Report Shared Interface capabilities and safe-only execution limits. |
+| `openrails_agent_discover` | Validate a payable surface manifest and return a marketplace/discovery event. |
+| `openrails_agent_plan` | Turn a discovery event into an approval-aware agent task. |
 | `openrails_prepare` | Prepare a request envelope for an external wallet or runtime. |
 | `openrails_validate` | Validate a request or response envelope against the registry. |
 | `openrails_verify` | Verify an envelope and optional Canonical Record binding without claiming financial success. |

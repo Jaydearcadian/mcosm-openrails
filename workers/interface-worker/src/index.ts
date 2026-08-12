@@ -15,9 +15,14 @@ import {
 import { getAddress, getBytes, verifyMessage } from "ethers";
 import {
   ArcJsonRpcProvider,
+  ArcRuntimeSignatureVerifier,
   PostgresRuntimeStore,
   Runtime,
   RuntimeError,
+  assertRuntimeBinding,
+  type RuntimeBinding,
+  type RuntimeRequest,
+  type RuntimeState,
 } from "@openrails/runtime";
 import type { InterfaceError, NetworkReference, Path, Provenance } from "@openrails/shared-interface";
 
@@ -44,7 +49,7 @@ const MAX_BODY_BYTES = 64 * 1024;
 const circleGasStation = new CircleGasStationAdapter({ credentialsPresent: false });
 
 class HttpError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(readonly status: number, message: string, readonly allow?: string) {
     super(message);
     this.name = "HttpError";
   }
@@ -132,18 +137,20 @@ function runtimeFailureRecord(error: RuntimeError, context: RuntimeFailureContex
 
 function errorResponse(request: Request, env: Env, error: unknown, context: RuntimeFailureContext = {}): Response {
   if (error instanceof HttpError) {
-    return jsonResponse(request, env, { valid: false, error: error.message }, error.status);
+    const response = jsonResponse(request, env, { valid: false, error: error.message }, error.status);
+    if (error.allow) response.headers.set("Allow", error.allow);
+    return response;
   }
   if (error instanceof RuntimeError) {
     logServerError(error);
     const status = error.code === "RPC_UNAVAILABLE" ? 503
       : error.code === "NONCE_CONFLICT" || error.code === "STATE_STALE" ? 409
         : error.code === "AUTHORIZATION_REQUIRED" || error.code === "SIGNATURE_INVALID" ? 401
-          : error.code === "INTERNAL_ERROR" ? 500
+          : error.code === "INTERNAL_ERROR" ? 503
           : 400;
     return jsonResponse(request, env, {
       valid: false,
-      error: error.code === "INTERNAL_ERROR" ? "Runtime internal error." : error.message,
+      error: error.code === "INTERNAL_ERROR" ? "Runtime temporarily unavailable. Retry shortly." : error.message,
       code: error.code,
       retryable: error.retryable,
       errors: [runtimeFailureRecord(error, context)],
@@ -225,6 +232,20 @@ function runtimeCapability(env: Env) {
     enabled,
     databaseConfigured: persistent,
     adminConfigured,
+    operations: [
+      "workspace.register",
+      "workspace.list",
+      "workspace.get",
+      "actor.register",
+      "path.activate",
+      "path.revoke",
+      "intent.prepare",
+      "proposal.evaluate",
+      "proposal.submit",
+      "pact.sign",
+      "proof.submit",
+      "proof.verify",
+    ],
     financialEffect: "NONE",
     note: "The Runtime never signs, broadcasts, holds keys, or moves value.",
   } as const;
@@ -341,21 +362,153 @@ function createRuntime(env: Env) {
       attest: attestApplicationPath,
     },
   });
-  return { executor, runtime, store };
+  const verifier = new ArcRuntimeSignatureVerifier(provider);
+  return { executor, runtime, store, verifier };
 }
 
-async function withRuntime<T>(env: Env, operation: (runtime: Runtime, store: PostgresRuntimeStore) => Promise<T>): Promise<T> {
-  const { executor, runtime, store } = createRuntime(env);
+async function withRuntime<T>(
+  env: Env,
+  operation: (runtime: Runtime, store: PostgresRuntimeStore, verifier: ArcRuntimeSignatureVerifier) => Promise<T>,
+): Promise<T> {
+  let executor: Awaited<ReturnType<typeof createNeonRuntimeExecutor>> | undefined;
   try {
-    return await operation(runtime, store);
+    const resources = createRuntime(env);
+    executor = resources.executor;
+    return await operation(resources.runtime, resources.store, resources.verifier);
+  } catch (error) {
+    if (error instanceof HttpError || error instanceof RuntimeError) throw error;
+    logServerError(error);
+    throw new RuntimeError("INTERNAL_ERROR", "Runtime persistence is temporarily unavailable.", { retryable: true });
   } finally {
-    await executor.close();
+    try {
+      await executor?.close();
+    } catch (error) {
+      logServerError(error);
+    }
   }
+}
+
+const RUNTIME_READ_OPERATIONS = new Set(["workspace.list", "workspace.get"]);
+
+function refId(value: unknown, expectedType: string): string | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const ref = value as Record<string, unknown>;
+  return ref.type === expectedType && typeof ref.id === "string" ? ref.id : undefined;
+}
+
+function workspaceScoped(value: unknown, workspaceId: string): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return refId((value as Record<string, unknown>).workspaceRef, "Workspace") === workspaceId;
+}
+
+function workspaceSnapshot(state: RuntimeState, workspaceId: string) {
+  const workspace = state.workspaces[workspaceId];
+  if (!workspace) return undefined;
+
+  const paths = Object.fromEntries(Object.entries(state.paths).filter(([, path]) => workspaceScoped(path, workspaceId)));
+  const intents = Object.fromEntries(Object.entries(state.intents).filter(([, intent]) => workspaceScoped(intent, workspaceId)));
+  const proposals = Object.fromEntries(Object.entries(state.proposals).filter(([, proposal]) => workspaceScoped(proposal, workspaceId)));
+  const pacts = Object.fromEntries(Object.entries(state.pacts).filter(([, pact]) => workspaceScoped(pact, workspaceId)));
+  const proofs = Object.fromEntries(Object.entries(state.proofs).filter(([, proof]) => workspaceScoped(proof, workspaceId)));
+  const decisions = Object.fromEntries(Object.entries(state.decisions).filter(([, decision]) => {
+    if (workspaceScoped(decision, workspaceId)) return true;
+    const proposalRef = refId((decision as Record<string, unknown>).proposalRef, "Proposal");
+    return Boolean(proposalRef && proposals[proposalRef]);
+  }));
+
+  const actorIds = new Set<string>([workspace.ownerActorRef.id]);
+  for (const [actorId, actorWorkspaceId] of Object.entries(state.actorWorkspaces)) {
+    if (actorWorkspaceId === workspaceId) actorIds.add(actorId);
+  }
+  for (const path of Object.values(paths)) {
+    const issuerId = refId(path.issuerActorRef, "Actor");
+    const delegateId = refId(path.delegateActorRef, "Actor");
+    if (issuerId) actorIds.add(issuerId);
+    if (delegateId) actorIds.add(delegateId);
+  }
+  for (const actorId of actorIds) {
+    if (!state.actors[actorId]) actorIds.delete(actorId);
+  }
+
+  return {
+    workspace,
+    actors: Object.fromEntries([...actorIds].map((actorId) => [actorId, state.actors[actorId]])),
+    paths,
+    intents,
+    proposals,
+    decisions,
+    pacts,
+    proofs,
+    operations: {},
+  };
+}
+
+function canReadWorkspace(state: RuntimeState, workspaceId: string, walletAddress: string): boolean {
+  const authority = state.workspaceAuthorities[workspaceId];
+  if (authority && sameAddress(authority, walletAddress)) return true;
+  return Object.entries(state.actorWorkspaces).some(([actorId, actorWorkspaceId]) => (
+    actorWorkspaceId === workspaceId
+    && Boolean(state.actors[actorId]?.walletAddress)
+    && sameAddress(state.actors[actorId].walletAddress!, walletAddress)
+  ));
+}
+
+async function discoverRuntime(request: Request, env: Env): Promise<Response> {
+  const body = await bodyRecord(request);
+  const operationId = body.operationId;
+  if (operationId !== "workspace.list" && operationId !== "workspace.get") {
+    throw new HttpError(400, "workspace.list or workspace.get is required.");
+  }
+  const data = body.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new HttpError(400, "data object is required.");
+  const dataRecord = data as Record<string, unknown>;
+  if (typeof dataRecord.walletAddress !== "string") throw new HttpError(400, "data.walletAddress is required.");
+  if (operationId === "workspace.get" && typeof dataRecord.workspaceId !== "string") {
+    throw new HttpError(400, "data.workspaceId is required for workspace.get.");
+  }
+  const binding = dataRecord.signatureBinding;
+  if (!binding || typeof binding !== "object" || Array.isArray(binding)) {
+    throw new RuntimeError("INPUT_INVALID", "Workspace discovery payload is missing signatureBinding.");
+  }
+  const runtimeRequest = body as unknown as RuntimeRequest;
+  assertRuntimeBinding(operationId, runtimeRequest, binding as RuntimeBinding);
+  if (!sameAddress(dataRecord.walletAddress, (binding as { signer: string }).signer)) {
+    throw new RuntimeError("AUTHORIZATION_REQUIRED", "Discovery wallet does not match the runtime signer.");
+  }
+  return withRuntime(env, async (_runtime, store, verifier) => {
+    await verifier.verify(binding as RuntimeBinding);
+    const state = await store.snapshot();
+    const workspaceId = operationId === "workspace.get" ? String(dataRecord.workspaceId) : undefined;
+    const workspaces = Object.keys(state.workspaces)
+      .filter((id) => !workspaceId || id === workspaceId)
+      .filter((id) => canReadWorkspace(state, id, dataRecord.walletAddress as string))
+      .map((id) => workspaceSnapshot(state, id))
+      .filter((value): value is NonNullable<typeof value> => Boolean(value))
+      .map((value) => ({
+        id: value.workspace.id,
+        name: value.workspace.name,
+        status: value.workspace.status,
+        updatedAt: value.workspace.updatedAt,
+        owner: state.workspaceAuthorities[value.workspace.id],
+        workspace: value.workspace,
+        runtime: value,
+      }));
+    if (operationId === "workspace.get" && workspaces.length === 0) {
+      throw new HttpError(404, "Workspace not found.");
+    }
+    return jsonResponse(request, env, {
+      interfaceVersion: ARC_TESTNET_MANIFEST.interfaceVersion,
+      operationId,
+      walletAddress: getAddress(dataRecord.walletAddress as string),
+      workspaces,
+    });
+  });
 }
 
 function capabilities(request: Request, env: Env): Response {
   const runtime = runtimeCapability(env);
   const runtimeOperations = new Set([
+    ...RUNTIME_READ_OPERATIONS,
     "workspace.register",
     "actor.register",
     "path.activate",
@@ -464,7 +617,18 @@ async function handleInterface(request: Request, env: Env, pathname: string): Pr
 
 async function handleRuntime(request: Request, env: Env, pathname: string): Promise<Response> {
   if (!pathname.startsWith(RUNTIME_BASE)) return jsonResponse(request, env, { error: "Runtime route not found" }, 404);
+  const knownPostRoutes = new Set([
+    `${RUNTIME_BASE}/path`,
+    `${RUNTIME_BASE}/execute`,
+    `${RUNTIME_BASE}/discover`,
+  ]);
+  const knownGetRoutes = new Set([`${RUNTIME_BASE}/state`]);
+  if ((knownPostRoutes.has(pathname) && request.method !== "POST") || (knownGetRoutes.has(pathname) && request.method !== "GET")) {
+    const allow = knownPostRoutes.has(pathname) ? "POST, OPTIONS" : "GET, OPTIONS";
+    throw new HttpError(405, `Use ${allow.split(",")[0]} for this Runtime route.`, allow);
+  }
   assertRuntimeReady(env);
+  if (pathname === `${RUNTIME_BASE}/discover`) return discoverRuntime(request, env);
   if (pathname === `${RUNTIME_BASE}/path` && request.method === "POST") {
     const body = await bodyRecord(request);
     const path = body.path;

@@ -1,5 +1,11 @@
 # Changelog — `openrails-mcp`
 
+## [0.3.1] - 2026-08-12
+
+- Add safe agent discovery and action-planning tools backed by `openrails-sdk/agent`.
+- Keep discovery, negotiation, and muting approval-bound with no signer, custody, broadcast, or payment authority.
+- Upgrade the SDK dependency to `openrails-sdk@^1.1.1` for the published agent subpath.
+
 ## [0.3.0] — 2026-08-10
 
 - Promoted the reviewed safe-only Shared Interface 1.2 surface from `0.3.0-rc.1` to the stable

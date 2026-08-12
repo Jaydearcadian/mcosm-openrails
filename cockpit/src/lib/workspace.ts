@@ -3,6 +3,7 @@ import type { Workspace } from "../../../sdk/src/shared-interface";
 import type { RuntimeAccountHandle } from "./runtimeAccount";
 import {
   activatePath,
+  discoverWorkspaces,
   emptyWorkspaceRuntimeState,
   preparePact,
   registerActor,
@@ -11,6 +12,7 @@ import {
   submitProof,
   type WorkspaceRuntimeState,
 } from "./workspaceRuntime";
+import type { WorkspaceDiscoveryRecord } from "./workspaceRuntime";
 
 export type WorkspaceActorType = "Person" | "Party" | "Application" | "Agent";
 
@@ -90,6 +92,10 @@ function id(prefix: string): string {
   return `${prefix}-${random.toUpperCase()}`;
 }
 
+function sameAddress(left: string | undefined, right: string | undefined): boolean {
+  return !!left && !!right && left.toLowerCase() === right.toLowerCase();
+}
+
 function activity(label: string, detail: string, state: string, financialEffect: WorkspaceActivity["financialEffect"] = "No value moved"): WorkspaceActivity {
   return {
     id: id("ACT"),
@@ -139,6 +145,87 @@ function runtimeInput(workspace: WorkspaceRecord): { workspace: Workspace; runti
   return { workspace: workspace.runtime.workspace, runtime: workspace.runtime };
 }
 
+export type WorkspaceRuntimeStatus = "idle" | "loading" | "ready" | "error";
+
+function actorType(kind: string): WorkspaceActorType {
+  if (kind === "agent") return "Agent";
+  if (kind === "application" || kind === "sidecar") return "Application";
+  if (kind === "service") return "Party";
+  return "Person";
+}
+
+function usdcAmount(value: unknown): string {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) return "0";
+  const base = BigInt(value);
+  const whole = base / 1_000_000n;
+  const fraction = (base % 1_000_000n).toString().padStart(6, "0").replace(/0+$/, "");
+  return fraction ? `${whole}.${fraction}` : whole.toString();
+}
+
+function remoteWorkspaceRecord(remote: WorkspaceDiscoveryRecord, local?: WorkspaceRecord): WorkspaceRecord {
+  const runtime = remote.runtime;
+  const workspace = remote.workspace;
+  const actors = Object.values(runtime.actors).map((actor) => ({
+    id: actor.id,
+    name: actor.displayName,
+    type: actorType(actor.kind),
+    address: actor.walletAddress,
+    state: "Recorded" as const,
+    createdAt: actor.createdAt,
+  }));
+  const paths = Object.values(runtime.paths).map((path) => ({
+    id: path.id,
+    delegateId: path.delegateActorRef.id,
+    capability: path.capabilities[0] ?? "CREATE_RAILSFLOW",
+    ceilingUsdc: usdcAmount(path.limits[0]?.maxAmount),
+    expiresAt: path.signatureBinding.expiresAt,
+    state: path.status === "ACTIVE" ? "Active" as const : path.status === "REVOKED" ? "Revoked" as const : "Draft" as const,
+    createdAt: path.provenance.observedAt,
+  }));
+  const pacts = Object.values(runtime.pacts).map((pact) => ({
+    id: pact.id,
+    title: `${pact.paymentTerms.settlementShape} payment`,
+    counterparty: pact.paymentTerms.recipient ?? pact.parties[0]?.id ?? "Pact party",
+    amountUsdc: usdcAmount(pact.paymentTerms.amount),
+    state: pact.status === "ACTIVE" ? "Committed" as const : "Awaiting acceptance" as const,
+    createdAt: pact.createdAt,
+  }));
+  const proofs = Object.values(runtime.proofs).map((proof) => ({
+    id: proof.id,
+    pactId: proof.pactRef?.id ?? "",
+    description: `${proof.gate} proof`,
+    reference: proof.evidenceHash,
+    state: proof.status === "VERIFIED" ? "Verified" as const : "Proof submitted" as const,
+    createdAt: proof.submittedAt,
+  }));
+  const objectState: WorkspaceRecord["objectState"] = proofs.some((proof) => proof.state === "Verified")
+    ? "Verified"
+    : pacts.some((pact) => pact.state === "Committed")
+      ? "Committed"
+      : paths.some((path) => path.state === "Active")
+        ? "Active"
+        : "Prepared";
+  const owner = remote.owner
+    ?? runtime.actors[workspace.ownerActorRef.id]?.walletAddress
+    ?? local?.owner
+    ?? "";
+  return {
+    id: workspace.id,
+    name: workspace.name,
+    owner,
+    objectState,
+    persistence: "runtime-backed",
+    createdAt: workspace.createdAt,
+    actors,
+    paths,
+    pacts,
+    proofs,
+    payments: local?.payments ?? [],
+    activity: local?.activity ?? [],
+    runtime,
+  };
+}
+
 function mergeRuntime(workspace: WorkspaceRecord, patch: Partial<WorkspaceRuntimeState>, operations: Record<string, string>): WorkspaceRuntimeState {
   const current = workspace.runtime ?? emptyWorkspaceRuntimeState();
   return {
@@ -158,10 +245,57 @@ function mergeRuntime(workspace: WorkspaceRecord, patch: Partial<WorkspaceRuntim
 export function useWorkspaceRecords(handle?: RuntimeAccountHandle) {
   const [workspaces, setWorkspaces] = useState<WorkspaceRecord[]>(readStored);
   const [selectedId, setSelectedId] = useState<string>(() => readStored()[0]?.id ?? "");
+  const [runtimeStatus, setRuntimeStatus] = useState<WorkspaceRuntimeStatus>("idle");
+  const [runtimeError, setRuntimeError] = useState<string>();
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+    if (!handle) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(workspaces));
-  }, [workspaces]);
+  }, [handle, workspaces]);
+
+  const refresh = useCallback(async () => {
+    if (!handle) {
+      setWorkspaces([]);
+      setSelectedId("");
+      setRuntimeStatus("idle");
+      setRuntimeError(undefined);
+      return;
+    }
+    setRefreshing(true);
+    setRuntimeStatus("loading");
+    setRuntimeError(undefined);
+    try {
+      const walletAddress = await handle.account.getAddress();
+      const response = await discoverWorkspaces(handle);
+      setWorkspaces((current) => {
+        const localRecords = [...readStored(), ...current]
+          .filter((record, index, records) => records.findIndex((candidate) => candidate.id === record.id) === index)
+          .filter((record) => sameAddress(record.owner, walletAddress));
+        const localById = new Map(localRecords.map((record) => [record.id, record]));
+        const discovered = response.workspaces.map((record) => remoteWorkspaceRecord(record, localById.get(record.id)));
+        const discoveredIds = new Set(discovered.map((record) => record.id));
+        return [...discovered, ...localRecords.filter((record) => !discoveredIds.has(record.id))];
+      });
+      setSelectedId((current) => current || response.workspaces[0]?.id || "");
+      setRuntimeStatus("ready");
+    } catch (error) {
+      const walletAddress = await handle.account.getAddress().catch(() => "");
+      if (walletAddress) {
+        setWorkspaces((current) => current.length
+          ? current
+          : readStored().filter((record) => sameAddress(record.owner, walletAddress)));
+      }
+      setRuntimeStatus("error");
+      setRuntimeError(error instanceof Error ? error.message : "Workspace Runtime discovery failed.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [handle]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     if (selectedId && !workspaces.some((workspace) => workspace.id === selectedId)) {
@@ -294,11 +428,14 @@ export function useWorkspaceRecords(handle?: RuntimeAccountHandle) {
     replaceSelected(next);
   }, [requireHandle, replaceSelected, selected]);
 
-  const addPact = useCallback(async (input: Omit<WorkspacePact, "id" | "state" | "createdAt">) => {
+  const addPact = useCallback(async (
+    input: Omit<WorkspacePact, "id" | "state" | "createdAt">,
+    delegateHandle?: RuntimeAccountHandle,
+  ) => {
     const workspace = selected;
     if (!workspace) throw new Error("Select or initialize a Workspace first.");
     const pactId = id("PACT");
-    const remote = await preparePact({ ...runtimeInput(workspace), ...input, pactId }, requireHandle());
+    const remote = await preparePact({ ...runtimeInput(workspace), ...input, pactId }, requireHandle(), delegateHandle);
     if (!remote.pact || !remote.intent || !remote.proposal || !remote.decision) throw new Error("The Runtime did not return the Pact lifecycle records.");
     const pact = remote.pact;
     const next = {
@@ -369,8 +506,8 @@ export function useWorkspaceRecords(handle?: RuntimeAccountHandle) {
   }, [replaceSelected, selected]);
 
   return {
-    workspaces,
-    selected,
+    workspaces: handle ? workspaces : [],
+    selected: handle ? selected : null,
     selectedId,
     select: setSelectedId,
     initialize,
@@ -380,5 +517,9 @@ export function useWorkspaceRecords(handle?: RuntimeAccountHandle) {
     addPact,
     addProof,
     recordPayment,
+    runtimeStatus,
+    runtimeError,
+    refreshing,
+    refresh,
   };
 }
