@@ -3,7 +3,7 @@
  * Deferred RailsCards use independent nonce lanes so multiple outstanding cards
  * can be redeemed in any order without invalidating one another.
  */
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   useAccount,
   usePublicClient,
@@ -152,9 +152,9 @@ export function useNewPayment(hubAddress: string, usdcAddress: string) {
 
   const busy = status.id === "approving" || status.id === "signing" || status.id === "submitting";
 
-  function reset() {
+  const reset = useCallback(() => {
     setStatus({ id: "idle" });
-  }
+  }, []);
 
   async function ensureArcTestnet(): Promise<void> {
     if (chainId === arcTestnet.id) return;
