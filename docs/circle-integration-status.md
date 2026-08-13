@@ -115,8 +115,14 @@ payment into a Workspace, Pact, Proof, or settlement receipt automatically.
   and API-balance reconciliation is recorded in `experiments/circle-gateway-live-proof-2026-08-12.md`.
   A funded second supported testnet source and a destination Arc mint remain outstanding before
   claiming a cross-chain proof.
-- **CCTP:** add it only when a canonical source-chain-to-Arc funding path is required. SDK orchestration
-  is not currently implemented.
+- **CCTP:** the SDK now exposes a prepare-only CCTP V2 boundary for Ethereum Sepolia and Base
+  Sepolia source burns, read-only Circle attestation status, Arc Testnet destination minting, and
+  Workspace funding references. The plan funds the party's Arc wallet first, then the existing
+  direct or streaming OpenRails flow runs on Arc. It does not sign, broadcast, call CCTP
+  automatically, or treat a source burn as a payment receipt. A funded source-chain burn, Circle
+  attestation, Arc mint, and matching OpenRails receipt are still required for a live cross-chain
+  proof. A direct CCTP hook into the Hub remains out of scope until the contract and replay policy
+  are separately reviewed.
 - **App Kits:** introduce only the kits that solve a demonstrated flow. Send is the clearest candidate
   for one-time value movement. Unified Balance can simplify funding visibility. Bridge, Swap, or a
   future RFQ or FX surface should be added only when procurement or treasury workflows require them.

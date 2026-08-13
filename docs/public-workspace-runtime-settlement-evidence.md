@@ -61,5 +61,48 @@ The run also committed metadata binding:
 
 This is Arc Testnet evidence. It does not claim production security, mainnet readiness, Circle
 sponsorship, or chain-native Workspace state. The Cockpit currently uses the Runtime as its write
-boundary and retains a browser cache for its local projection; public Workspace discovery after a
-new browser session remains a follow-up.
+boundary and retains a browser cache for its local projection.
+
+## Fresh delegated Workspace-to-settlement proof
+
+**Observed:** 2026-08-13
+
+The public smoke harness completed a new delegated lifecycle against the deployed Neon-backed
+Runtime and the Arc V2 Hub:
+
+| Stage | Result |
+| --- | --- |
+| Workspace registration | `PREPARED` |
+| Intent preparation | `PREPARED` |
+| Proposal evaluation | `ALLOWED` |
+| Pact signing | `COMMITTED` |
+| Proof verification | `PROOF_VERIFIED` |
+| Over-limit proposal | `BLOCKED` with `PATH_LIMIT_EXCEEDED` |
+| Arc open | `0xb272f1f219b963f7dd06a9bb9c35264ff7a241f582e9db93749e8b69d9fa9c49` |
+| Arc settlement | `0x8bb8ca85414afdd0daf33d61379dede9fa307f9276df65726b0cd2f2c80879cc` |
+| Residual flush | `0xc5f120f0a7b26231fec361cc099ec1e3d98b19f6a61a9d470fb8cf24bd420f20` |
+| Final Vault balance | `0` |
+
+The run used Workspace `workspace:public-proof:msqrg8m2`, Path
+`path:public-proof:msqrg8m2`, Pact `pact:public-proof:msqrg8m2`, and Proof
+`proof:public-proof:msqrg8m2`. The settlement metadata committed all four references and
+reconciled the final Arc Vault row after settlement and residual return.
+
+This is the current public proof of the delegated Workspace-to-settlement lifecycle. The separate
+Circle Gas Station UserOperation proof and a funded cross-chain CCTP proof remain outstanding.
+
+## Fresh public Runtime probe
+
+**Observed:** 2026-08-12
+
+A fresh wallet registered and discovered a new Workspace through the deployed versioned Runtime:
+
+| Field | Value |
+| --- | --- |
+| Workspace | `workspace:runtime-probe:msqmly87` |
+| Register response | `PREPARED` |
+| Discovery response | one wallet-authorized Workspace |
+| Persistence | Neon-backed Runtime |
+
+This probe confirms public Runtime registration and wallet-scoped discovery. It is non-financial:
+it does not open, settle, or claim an Arc Paycard.

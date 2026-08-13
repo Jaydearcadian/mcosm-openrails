@@ -532,11 +532,11 @@ export const DOCS: Record<string, DocPage> = {
         { k: "MessageTransmitterV2", v: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275" },
         { k: "TokenMinterV2", v: "0xb43db544E2c27092c107639Ad201b3dEfAbcF192" },
         { k: "transfer mode", v: "Standard Transfer only, as Fast Transfer is N/A on Arc" },
-        { k: "status", v: "supported infrastructure; SDK integration planned" },
+        { k: "status", v: "prepare-only SDK boundary; live burn, attestation, and Arc mint proof outstanding" },
       ]),
       callout(
         "note",
-        "Current integration status: Gateway deposit and mint helpers are implemented in the SDK. A fresh live cross-chain proof remains required before the product should present Gateway funding as end-to-end verified. CCTP SDK orchestration is not implemented.",
+        "Current integration status: Gateway deposit and mint helpers are implemented in the SDK, while a fresh live cross-chain proof remains required before the product should present Gateway funding as end-to-end verified. The SDK also prepares CCTP V2 source approval and burn calls, reads Circle attestation status, prepares the Arc receiveMessage call after attestation, and carries a Workspace funding reference for direct or streaming settlement. It does not sign, broadcast, mint, or claim a CCTP payment receipt.",
       ),
     ],
   },

@@ -40,6 +40,7 @@ const checkOnly = process.argv.includes("--check");
 const replaceExisting = process.argv.includes("--replace-existing");
 const syncCloudflare = process.argv.includes("--sync-cloudflare");
 const useNpxWrangler = process.argv.includes("--npx-wrangler");
+const circleConsoleOnly = process.argv.includes("--circle-console");
 
 const loadedRoot = loadEnvFile(rootEnvPath);
 const loadedCockpit = loadEnvFile(cockpitEnvPath);
@@ -481,10 +482,23 @@ async function syncWorkerSecrets(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log(checkOnly ? "OpenRails harness check" : "OpenRails harness setup");
+  console.log(
+    circleConsoleOnly
+      ? checkOnly
+        ? "OpenRails Circle Console check"
+        : "OpenRails Circle Console setup"
+      : checkOnly
+        ? "OpenRails harness check"
+        : "OpenRails harness setup",
+  );
   console.log("Existing valid values are retained. Secret values are never printed.\n");
 
-  for (const spec of [...rootSpecs, ...cockpitSpecs]) {
+  const specs = circleConsoleOnly
+    ? cockpitSpecs
+      .filter((spec) => ["VITE_CIRCLE_CLIENT_KEY", "VITE_CIRCLE_CLIENT_URL"].includes(spec.name))
+      .map((spec) => ({ ...spec, required: true }))
+    : [...rootSpecs, ...cockpitSpecs];
+  for (const spec of specs) {
     await collectSpec(spec);
   }
 
@@ -492,6 +506,20 @@ async function main(): Promise<void> {
     if (Object.keys(collectedRoot).length > 0) upsertEnvFile(rootEnvPath, collectedRoot);
     if (Object.keys(collectedCockpit).length > 0) upsertEnvFile(cockpitEnvPath, collectedCockpit);
     console.log("\nLocal configuration written to ignored env files.");
+  }
+
+  if (circleConsoleOnly) {
+    checkLocalFile({ path: cockpitEnvPath, values: loadedCockpit.values });
+    if (failures.length > 0) {
+      console.log("\nFailures:");
+      for (const failure of failures) console.log(`- ${failure}`);
+      process.exitCode = 1;
+    } else {
+      console.log("\nCircle browser configuration is ready for a fresh Cockpit build.");
+      console.log("Configure the exact production Web Allowed Domain and Passkey Domain in Circle Console.");
+      console.log("Then run: npm run cockpit:deploy");
+    }
+    return;
   }
 
   const merged = { ...loadedRoot.values, ...loadedCockpit.values, ...collectedRoot, ...collectedCockpit, ...process.env };

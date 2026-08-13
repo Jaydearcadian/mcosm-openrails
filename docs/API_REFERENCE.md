@@ -91,7 +91,7 @@ Neon persistence. The public deployment does not sign, broadcast, relay, hold ke
 | `POST /api/interface/1.2.0/verify` | Verify an envelope and optional Canonical Record policy binding. | none; custody fields rejected |
 | `GET /api/interface/1.2.0/read` | Read the shipped network or capability manifest. | none |
 | `GET /api/interface/1.2.0/read/:type/:id` | Typed form of the safe read route. | none |
-| `POST /api/interface/1.2.0/runtime/path` | Persist a Path after application-operator attestation. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |
+| `POST /api/interface/1.2.0/runtime/path` | Persist a Path after an application-signed attestation is independently verified by the Worker. | Signed application Path attestation |
 | `POST /api/interface/1.2.0/runtime/execute` | Execute one signed Runtime control-plane transition. | EIP-712 envelope signature |
 | `POST /api/interface/1.2.0/runtime/discover` | Return Workspaces visible to the wallet in a signed `workspace.list` or `workspace.get` request, including the persisted lifecycle projection. | EIP-712 envelope signature |
 | `GET /api/interface/1.2.0/runtime/state` | Inspect the persisted Runtime state. | `OPENRAILS_RUNTIME_ADMIN_TOKEN` |

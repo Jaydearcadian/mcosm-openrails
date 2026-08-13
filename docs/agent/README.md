@@ -7,6 +7,11 @@ signed intents, links, metadata, receipts, nonce lanes, relays, and wallet adapt
 The agent layer is for discovery, compatibility checks, and provider policy around those
 primitives. It does not introduce a second settlement model and it does not custody funds.
 
+The stdio MCP surface builds on this package. It exposes discovery and approval-aware planning,
+then prepares and verifies the signed Runtime lifecycle: Workspace, Actor, Path, Intent, Proposal,
+Pact, Proof, and Receipt references. It never signs or broadcasts. A provider can use the SDK
+middleware to fail closed when a payable session is absent or unverified.
+
 ## What It Contains
 
 - `chains`: the OpenRails chain allowlist and supported deployment metadata.

@@ -1,233 +1,191 @@
 # OpenRails
 
-**Pay for exactly what you use.**
+**Programmable clearing and settlement for work, commerce, and agentic services.**
 
-**OpenRails is intent-driven clearing and settlement infrastructure for streamed work on Arc.**
+OpenRails turns a commercial request into a bounded, verifiable payment lifecycle. A Workspace
+holds the durable context for the relationship. Parties and agents operate through delegated
+Paths. A Pact records accepted terms. Proof confirms the work or usage. OpenRails then clears a
+direct or streamed USDC payment on Arc and produces a verifiable Receipt.
 
-In plain terms it's a payment rail: a payer signs a **bounded intent**, it **clears** into a
-non-custodial on-chain Vault, value **settles** to the recipient as work is performed, and unused
-residual **returns** to the payer when the stream ends: usable by **humans or AI agents**. Arc
-provides fast, low-cost, USDC-native settlement; OpenRails provides the intent, escrow, streaming,
-receipt, and recovery layer on top.
+```text
+Workspace -> delegated authority -> agreement -> proof -> settlement -> receipt
+```
 
-> Two properties make it work: the Vault authenticates the **signature, not the sender** (so
-> payments can be relayed and gas-sponsored), and escrow is **bounded by construction** (a bug, a bad
-> actor, or a runaway agent can never move more than was signed for).
+OpenRails is the coordination, clearing, and settlement layer. It is not itself a wallet, an AI
+agent, a bridge, or a generic collaboration product. Wallets, agents, applications, and Circle
+infrastructure connect to the same OpenRails lifecycle.
 
-**Core protocol primitives:**
+## Product model
 
-| Primitive | Meaning |
+| Object | Role |
 | :--- | :--- |
-| **RailsFlow** | A link to *ask* to be paid: invoice / paywall / usage bill. |
-| **RailsCard** | A link to *send* pre-authorized value to claim: gift card / payout / agent budget (bearer or recipient-bound). |
-| **Paycard Stream** | The on-chain Vault row that escrows funds and meters settlement. |
-| **Nonce Lane** | Replay/concurrency protection for parallel agent payments (`nonceChannel` / `nonceValue`). |
-| **Receipts** | Verifiable proof of every open, settlement, and residual return. |
+| **Workspace** | Persistent context for a commercial relationship or operating environment. |
+| **Party or agent** | A participant that can be registered and given bounded responsibility. |
+| **Path** | A defined capability and authority limit for a participant. |
+| **Intent and proposal** | The requested action and the terms submitted for evaluation. |
+| **Pact** | The accepted commercial terms that bind the workflow. |
+| **Proof** | Evidence that the agreed work or usage occurred. |
+| **Settlement** | A direct payment or a stream that releases value over time or usage. |
+| **Receipt** | The verifiable record of what cleared, settled, and returned. |
 
-The product UI uses **Payment Request** for RailsFlow and **Claimable Payment** for RailsCard.
-The protocol names remain unchanged in the SDK, REST, MCP, schemas, and contract-facing code.
+The result is a shared economic lifecycle for people, businesses, creators, and agents. A payment
+can be authorized once, constrained by the agreed terms, released as the underlying work occurs,
+and independently checked afterward.
 
-The agent economy and the creator economy are the flagship verticals; the rail itself is
-vertical-agnostic.
+## Current implementation
 
----
+OpenRails is currently anchored on Arc, using USDC-native settlement and the deployed V2 contract
+system on chain `5042002`.
 
-## Status
-
-**Live on Arc testnet (chain `5042002`). Unaudited: test funds only.** V2 is deployed; V1 is frozen
-to new opens and left to drain.
-
-| | Address / package |
+| Surface | Current reference |
 | :--- | :--- |
-| **V2 canonical hub** (default) | `0x941C8029F0f912df3fAb7423890ab2359b996D0b` |
-| V2 factory · master logic | see `deployments/openrails-v2-addresses.local.json` after deploy |
-| V1 hub (frozen/legacy) | `0x01EC54846524D043fD808152D41596beF603381d` |
-| USDC (native gas token) | `0x3600000000000000000000000000000000000000` |
-| SDK + CLI | [`openrails-sdk`](https://www.npmjs.com/package/openrails-sdk) (npm) |
-| Agent server | [`openrails-mcp`](https://www.npmjs.com/package/openrails-mcp) (npm) |
+| V2 canonical hub | `0x941C8029F0f912df3fAb7423890ab2359b996D0b` |
+| Arc USDC | `0x3600000000000000000000000000000000000000` |
+| Versioned Runtime | `https://openrails-interface-worker.microcosm.workers.dev` |
+| Web application | [openrails.pages.dev](https://openrails.pages.dev) |
+| SDK and CLI | [`openrails-sdk`](https://www.npmjs.com/package/openrails-sdk) |
+| Agent surface | [`openrails-mcp`](https://www.npmjs.com/package/openrails-mcp) |
 
-**What's shipped:** EIP-1271-compatible **smart accounts** *and* EOAs (humans via embedded wallets,
-agents via server wallets), including a local and test proof of the Hub's EIP-1271 verification
-path against the deployed V2 Hub on Arc testnet (real tx hashes:
-[`experiments/circle-sa-live-proof/results.md`](experiments/circle-sa-live-proof/results.md));
-**gasless** relaying via the keeper worker; streaming + instant settlement; automatic
-residual return; on-chain receipts; a published SDK/CLI and MCP server; a deployed cockpit at
-[openrails.pages.dev](https://openrails.pages.dev). Test baseline: **90 Hardhat + 9 Foundry** passing.
+The current implementation includes:
 
-**Not yet:** mainnet, a security audit, session keys, USDC paymaster, and a proven live Circle
-Modular Wallet Gas Station transaction. The Cockpit now has an optional credential-gated Circle
-passkey path, but this checkout has no live Console credentials or proven Circle Wallet transaction.
-See
-[`docs/circle-gas-station-boundary.md`](docs/circle-gas-station-boundary.md) and
-the [documentation index](docs/README.md) for integration boundaries and verification records.
+- Persistent, wallet-signed Workspace coordination through the versioned Runtime.
+- Workspace, Actor, Path, Intent, Proposal, Pact, and Proof transitions.
+- Direct and streaming settlement through the Arc Vault.
+- EOA and EIP-1271 smart-account signing paths.
+- Relayed execution, on-chain receipts, residual recovery, and indexed reads.
+- A shared SDK, CLI, REST boundary, and MCP surface.
+- A fresh public Workspace-to-settlement verification record.
 
-**Circle in the application:** the App and SDK currently use Circle's Modular Wallet and passkey
-path, the Circle smart-account adapter, Console-provisioned browser configuration, Gateway funding
-helpers, the Circle x402 path, and the Gas Station sponsorship boundary. These integrations have
-different verification states. Some are code-complete or configuration-gated, while live sponsored
-execution and fresh cross-chain evidence remain operational gates. The full map is in
+The public Runtime is the persistent coordination layer. It does not custody keys or become the
+financial authority. Arc transaction evidence, Vault state, and the resulting Receipt remain the
+source of truth for settlement.
+
+## Workspace to settlement
+
+1. Initialize a Workspace and register its owner.
+2. Register the people, businesses, applications, or agents that may participate.
+3. Activate a Path that defines what a participant may do and the limits that apply.
+4. Prepare an Intent, evaluate a Proposal, and record the accepted terms in a Pact.
+5. Submit and verify Proof for the work or usage covered by the Pact.
+6. Fund the payer on Arc and execute a direct payment or a stream.
+7. Reconcile the Arc transaction, Vault state, and Receipt.
+
+This sequence keeps authority, agreement, proof, and money distinct while making them usable as one
+workflow. Circle funding paths can supply the payer's Arc balance; they do not replace the Pact,
+Proof, or OpenRails Receipt.
+
+## Agent surface
+
+The agent surface is the application layer for discovery, decision support, and authorization
+handoff. The SDK and MCP server use the same Shared Interface as the Runtime and payment surfaces.
+
+An agent can discover a service, inspect or quote it, plan an approval-bound action, prepare an
+operation, validate the request, and verify the resulting records. An external wallet or
+application remains responsible for authorization and submission. The agent surface does not
+create signers, receive private keys, sign Runtime transitions, invoke CCTP, open a Vault, stream
+funds, relay transactions, or claim financial success without verified evidence.
+
+## Arc and Circle
+
+Arc is the primary settlement environment for OpenRails. Its USDC-native fee model and fast
+settlement make it a strong base for direct payments, streamed work, and agent transactions.
+
+Circle infrastructure is integrated around the OpenRails lifecycle:
+
+- **Modular Wallets and passkeys** provide the browser account path.
+- **Circle smart-account support** connects EIP-1271 accounts to the OpenRails signing boundary.
+- **Circle Console** provisions the public browser client and allowed origin.
+- **Gas Station** provides the sponsorship boundary for Arc UserOperations.
+- **Gateway** provides funding helpers for moving USDC into the Arc settlement environment.
+- **x402** provides an HTTP payment path for service access and agent-facing experiments.
+- **CCTP V2** provides the SDK funding handoff, source-chain burn plan, attestation lookup, and Arc
+  destination receive plan for Workspace-funded payments.
+- **Agent Stack patterns** connect agent discovery, approval, and wallet handoff to the OpenRails
+  lifecycle.
+
+OpenRails remains the authority and settlement model above these infrastructure components. The
+exact execution evidence and verification state for each Circle integration is maintained in
 [`docs/circle-integration-status.md`](docs/circle-integration-status.md).
 
----
+## Start using OpenRails
 
-## Quick start
+### Web application
 
-**Start here.** Want to just use it? → **Cockpit** (no install). Building an app or bot? → **SDK**
-(library, pluggable signers). Scripting or a one-off transaction? → **CLI**. Wiring up an AI agent?
-→ **MCP**. All four below hit the same live V2 Hub; pick one and go.
+Open [openrails.pages.dev](https://openrails.pages.dev) to connect a wallet, initialize a Workspace,
+create a payment, issue or claim value, and inspect the resulting lifecycle.
 
-The fastest paths need no repo checkout — the packages default to Arc-testnet-V2. No testnet USDC
-yet? See "Get testnet funds" in [`GETTING_STARTED.md`](GETTING_STARTED.md#0-what-you-need) — the
-faucet drips both escrow funds and gas (USDC is Arc's native gas token) to any address in one call.
-Full walkthrough in [`GETTING_STARTED.md`](GETTING_STARTED.md). The safe MCP prepares and verifies
-the same shared objects but leaves authorization and submission to an external wallet.
+### SDK and CLI
 
-**CLI (one command to a first payment):**
-```bash
-npm i -g openrails-sdk
-export OPENRAILS_PAYER_PRIVATE_KEY=0x<funded-arc-testnet-key>
-openrails pay-stream --recipient 0x… --total-allocation-pool 10000 \
-  --flow-velocity-per-second 1 --lifespan-seconds 3600 --execute
-```
-Network config (chain / RPC / hub / USDC) is defaulted; the paycard id, nonce, and metadata hash are
-auto-derived. Mutating commands are dry-run until `--execute`; keys come from env, never argv.
-
-**SDK (library):**
 ```bash
 npm install openrails-sdk
 ```
+
 ```ts
 import { LeptonOpenRailsClient, payGasless } from "openrails-sdk/arc";
-// Shared Interface preparation and verification use the safe package root.
 ```
 
-**Agent (MCP):** register the safe-only MCP surface with an MCP client (e.g. Claude Desktop):
+For a direct command-line flow:
+
+```bash
+npm install --global openrails-sdk
+export OPENRAILS_PAYER_PRIVATE_KEY=0x<funded-arc-key>
+openrails pay-stream --recipient 0x<recipient> --total-allocation-pool 10000 \
+  --flow-velocity-per-second 1 --lifespan-seconds 3600 --execute
+```
+
+Mutating CLI commands are dry-run unless `--execute` is supplied. Keys are read from environment
+variables and never from command arguments.
+
+### MCP
+
+Register the safe agent surface with an MCP client:
+
 ```json
-{ "mcpServers": { "openrails": {
-  "command": "npx", "args": ["openrails-mcp"] } } }
-```
-Tools: `openrails_capabilities`, `openrails_prepare`, `openrails_validate`, `openrails_verify`,
-and `openrails_read`. The MCP does not create signers, custody keys, sign, or broadcast.
-
-**Cockpit (no install):** [openrails.pages.dev](https://openrails.pages.dev): connect a wallet,
-create/pay a link, issue/claim a RailsCard.
-
-**Documentation:** [docs/README.md](docs/README.md) — current API, runtime, integration, and
-verification references.
-
----
-
-## Public Runtime
-
-The App uses the versioned Runtime boundary at
-`https://openrails-interface-worker.microcosm.workers.dev/api/interface/1.2.0/runtime`.
-The Runtime is a Neon-backed, wallet-signed control plane for Workspace initialization and the
-Workspace lifecycle: Actors, Paths, Intents, Proposals, Pacts, and Proofs. A connected wallet can
-discover its authorized Workspaces from a fresh browser through the signed `workspace.list` and
-`workspace.get` reads.
-
-The Runtime does not hold keys, sign transactions, broadcast to Arc, or move funds. Direct and
-Workspace-scoped payments still use the App, SDK, keeper relay, and Arc Vault paths. Financial
-truth is the verified Arc transaction, Vault state, and receipt. Runtime errors return structured
-retryable or non-retryable responses, and unsupported HTTP methods return `405` with an `Allow`
-header so clients can recover without treating a failed request as a payment result.
-
-The public route list, persistence model, and Circle verification boundaries are documented in
-[`docs/API_REFERENCE.md`](docs/API_REFERENCE.md), [`workers/README.md`](workers/README.md), and
-[`docs/circle-integration-status.md`](docs/circle-integration-status.md).
-
----
-
-## The suite
-
-```
-Surface   RailsFlow & RailsCard : links/QR: ask to be paid, or send value to claim
-Accounts  whoever signs         : embedded wallets, EIP-1271 smart accounts, agents
-Rail      intent → vault → stream → residual : non-custodial clearing & settlement
-Build     SDK · CLI · MCP       : one command / one tool-call to transact
-Settle    on Arc                : USDC-native, fast, low-cost finality
+{
+  "mcpServers": {
+    "openrails": {
+      "command": "npx",
+      "args": ["openrails-mcp"]
+    }
+  }
+}
 ```
 
-- **Contracts** (`contracts/`): `ArcOpenRailsHubV1.sol` (V1, frozen); `contracts/v2-factory/`
- : `ArcOpenRailsHubV2Initializable.sol` (master logic), `ArcOpenRailsFactoryV1.sol` (ERC-1167
-  clone factory). The **canonical default hub is a governance-owned clone** of the master; enterprise
-  tenants can mint their own isolated clones. V2 verifies signatures via OpenZeppelin
-  `SignatureChecker` (EOA + EIP-1271) with an explicit `payer` argument; EIP-712 domain version
-  `2.0.0`.
-- **SDK + CLI** (`sdk/`): a safe Shared Interface root for preparation, validation, receipts,
-  Canonical Records, and wallet handoffs; the legacy Arc transaction surface under `openrails-sdk/arc`;
-  pluggable-signer `adapters/*`; and the `openrails` CLI.
-- **Keeper** (`workers/reconciliation-worker/`): a Cloudflare Worker that cron-settles active streams
-  and sponsors gas for opens/claims (`/relay-open`, `/relay-claim`).
-- **Cockpit** (`cockpit/`): the React/Vite product surface.
+The MCP tools cover capabilities, discovery, planning, preparation, validation, verification,
+and safe reads. They do not custody keys or submit financial transactions.
 
-Every HTTP route across the legacy server and all 4 Cloudflare Workers — method, path, purpose,
-auth model — is in one table: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
-
----
-
-## Core mechanics
-
-**Vault-centered security.** The SDK, cockpit, keeper, and links are convenience layers; the security
-boundary is the on-chain Vault. It verifies the EIP-712 signature for the claimed `payer`, enforces
-the Nonce Lane, blocks `paycardId` reuse, escrows USDC, and stores the isolated `PaycardRegistry` row.
-Non-custodial: nothing but the Vault ever holds the funds.
-
-**Smart accounts (EIP-1271).** The open path takes an explicit `payer` and verifies via
-`SignatureChecker.isValidSignatureNow`: transparently accepting both EOAs (ECDSA) and contract
-accounts (Circle Smart Accounts, EIP-1271). Domain separation (`verifyingContract` + version `2.0.0`)
-makes cross-version replay impossible.
-
-**RailsFlow & RailsCard.** RailsFlow is a merchant-created request the payer reviews and signs.
-RailsCard is a payer-signed value link: **bearer** (first valid claimant binds, first-holder-wins) or
-**recipient-bound**. Fixed-recipient envelopes cannot be redirected after signing. Both produce
-links/QR encoded as URL fragments (`#or=…`) so payloads never hit HTTP servers as query strings.
-
-**Streaming & instant settlement.** `processDripSettle` uses block clock-math so a recipient claims
-exactly what's earned to the current block; `lifespanSeconds == 0` is explicit instant mode (full
-release on first settle). Off-chain projections are non-authoritative; balances change only on-chain.
-
-**STN-Delta residual recovery.** Payers over-provision (allocation = realized invoice + safety
-buffer). On `flushResidualDelta`, the Vault settles accrued value first, then returns the unspent
-residual to the payer's recovery address in the same transaction.
-
-**Metadata integrity & receipts.** Every intent commits a `metadataHash` (bound to the invoice/card
-terms), signed and emitted so indexers and proofs connect on-chain events to exact off-chain terms.
-Receipts distinguish open, settlement, residual return, and workflow timelines.
-
----
-
-## Develop
+## Developer surface
 
 ```bash
 npm install
-npm run compile          # Hardhat compile (viaIR)
-npm run test             # Hardhat: 90 passing
-npm run test:foundry     # Foundry fuzz/invariant: 9 passing
-npm run build:sdk        # tsc build of the SDK + CLI
-npm --prefix cockpit run build
+npm run compile
+npm run test
+npm run test:foundry
+npm run build:sdk
+npm run release:check
 ```
 
-**Deploy V2 to a network** (`scripts/deploy-v2-core.ts`): deploys master → factory → a
-governance-owned canonical clone and writes an address registry. Requires `.env` (see `.env.example`)
-with `ARC_USDC_ADDRESS` + a funded `DEPLOYER_PRIVATE_KEY`. Note: on Arc the deploy script's
-governance signer path assumes `governance == deployer`; a separate governance multisig needs a
-key env or a deploy-then-`transferOwnership` handoff (tracked for mainnet).
+The release gate covers the Shared Interface, public Runtime, worker bundle, SDK, MCP server, and
+web application build. The full HTTP route map, auth model, and response authority are documented
+in [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
----
+## Security and authority model
 
-## Limitations & honesty
+The Arc Vault is the financial boundary. It authenticates the explicit payer signature, supports
+EOA and EIP-1271 accounts, enforces replay protection, escrows USDC, and records the payment state.
+OpenRails coordination records describe why a payment is allowed; the Vault and transaction
+receipts prove what actually moved.
 
-- **Testnet, unaudited, test funds only.** Not production software; do not handle non-demo funds.
-- Non-custodial and bounded by design: but a mainnet **audit** is the gate before real value.
-- **Bearer RailsCard** links are first-holder-wins until claimed; treat unclaimed links as sensitive.
-- On Arc, USDC is the native gas token: a USDC holder inherently has gas; `transferFrom` cannot move
-  a holder's *entire* balance, so over-fund the payer.
-- The legacy Express server (`server/index.ts`) and dashboard remain on V1 and are superseded by the
-  cockpit + keeper + SDK path.
-- Never commit secrets, private keys, private RPC URLs, or local registry files (`.env`,
-  `.bot-wallets/`, and `deployments/*.local.json` are gitignored).
+The application, SDK, CLI, Runtime, keeper, indexers, and agents are replaceable interfaces around
+that authority boundary. None of them should be treated as a substitute for on-chain verification.
 
----
+## Documentation
 
-**OpenRails** // *Intent-driven clearing & settlement infrastructure for streamed work on Arc.*
+- [Getting Started](GETTING_STARTED.md)
+- [Documentation index](docs/README.md)
+- [API reference](docs/API_REFERENCE.md)
+- [Agent surface](docs/agent/README.md)
+- [Circle integration status](docs/circle-integration-status.md)
+- [Public Workspace settlement evidence](docs/public-workspace-runtime-settlement-evidence.md)
+
+OpenRails provides the shared interface for turning bounded work into verifiable settlement.

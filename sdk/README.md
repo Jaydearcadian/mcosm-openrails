@@ -16,8 +16,9 @@ npm i openrails-sdk        # library + the `openrails` CLI
 
 `1.1.0` makes the package root the Shared Interface 1.2 safe surface. It exports canonical
 types, the Arc capability manifest, operation envelopes, receipts, errors, and external-wallet
-`WalletHandoff` helpers. It also supports the four signed runtime operation shapes: workspace
-registration, actor registration, proposal submission, and Pact signing. The root prepares,
+`WalletHandoff` helpers. It also supports the ten signed Runtime transition shapes: Workspace
+registration, Actor registration, Path activation and revocation, Intent preparation, Proposal
+evaluation and submission, Pact signing, and Proof submission and verification. The root prepares,
 reads, records, validates, and verifies. It does not accept private keys, create signers, or
 broadcast transactions.
 
@@ -43,6 +44,18 @@ exact duplicates are accepted only for compatibility.
 The Circle Gas Station subpath prepares a credential-gated Arc Testnet SCA handoff without
 custody of keys or direct transaction broadcast. It reports configuration or runtime evidence
 without claiming live sponsorship until a real Circle transaction is independently reconciled.
+
+The `openrails-sdk/cctp` subpath prepares a Circle CCTP V2 funding handoff from Ethereum Sepolia
+or Base Sepolia to an Arc Testnet wallet. It produces the source-chain USDC approval and burn
+calls, reads Circle's attestation status, builds the Arc `receiveMessage` call after an attestation,
+and carries an optional Workspace funding extension with `direct` or `streaming` payment intent.
+It does not sign, broadcast, mint, or turn a source burn into an OpenRails payment receipt. The
+intended sequence is to fund the party's Arc wallet once, then use the existing direct or streamed
+Vault flow on Arc.
+
+```ts
+import { prepareCctpFunding, prepareCctpReceiveMessage } from "openrails-sdk/cctp";
+```
 
 ```ts
 import { CircleGasStationAdapter } from "openrails-sdk/circle-gas-station";

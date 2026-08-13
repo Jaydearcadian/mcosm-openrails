@@ -2,8 +2,9 @@
 
 Safe-only MCP server for the OpenRails Shared Interface 1.2 surface over stdio. The server can
 read the bundled Arc Testnet manifest, prepare operation envelopes, validate envelopes, and verify
-Pact-declared Canonical Record bindings. It supports the four signed runtime operation shapes:
-`workspace.register`, `actor.register`, `proposal.submit`, and `pact.sign`.
+Pact-declared Canonical Record bindings. It supports the complete signed Runtime transition set:
+`workspace.register`, `actor.register`, `path.activate`, `path.revoke`, `intent.prepare`,
+`proposal.evaluate`, `proposal.submit`, `pact.sign`, `proof.submit`, and `proof.verify`.
 
 The MCP process does not create signers, accept keys, custody assets, sign wallet requests, submit
 transactions, relay requests, or autonomously execute financial actions. Runtime operation
@@ -17,6 +18,19 @@ negotiate, ignore, or mute task. Negotiation and muting are approval-bound. None
 creates a signer, authorizes payment, or claims financial success. After explicit approval, an
 external wallet can use `openrails_prepare`, `openrails_validate`, and `openrails_verify` for the
 bounded Workspace, Path, Pact, Proof, and Receipt lifecycle.
+
+## Agent lifecycle
+
+The agent surface is a decision and handoff layer. A provider publishes a validated surface
+manifest. An agent can discover it, inspect or quote it, and produce a negotiation or mute task
+that requires approval. After approval, an external wallet or application supplies the signed
+Workspace, Path, Intent, Proposal, Pact, or Proof payload to `openrails_prepare`. MCP then validates
+and verifies the envelope, while the public Runtime persists the offchain lifecycle and Arc verifies
+the eventual financial receipt.
+
+The MCP does not turn an agent into a custodian. It cannot create a wallet, select a private key,
+sign a Runtime transition, call CCTP, open a Vault row, stream funds, or claim a payment. The
+external authorization boundary and the resulting receipt are both required.
 
 ## Tools
 

@@ -22,5 +22,6 @@ export type { OperationContext, OperationResponseContext, SignedRuntimeTransitio
 export * from "./wallet-handoff";
 export * from "./canonical-record";
 export * from "./circle-gas-station";
+export * from "./cctp";
 export * from "./interface-client";
 export * from "./runtime-client";

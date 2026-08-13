@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2] - 2026-08-12
+
+- Added the prepare-only `openrails-sdk/cctp` boundary for CCTP V2 source burns, Arc destination
+  minting, read-only attestation status, and Workspace funding references for direct or streaming
+  settlement.
+- Kept CCTP funding separate from OpenRails agreement, Vault, streaming, and receipt authority;
+  no signer, broadcast, attestation polling, or live cross-chain proof is claimed.
+
 ## [1.1.1] - 2026-08-10
 
 - Published the `openrails-sdk/agent` export for agent discovery and provider policy helpers.
