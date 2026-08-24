@@ -1,7 +1,7 @@
 # OpenRails Documentation
 
-Start with the root [Getting Started guide](../GETTING_STARTED.md) for the Cockpit, SDK, CLI, and
-MCP paths.
+Start with the root [Getting Started guide](../GETTING_STARTED.md) for the web application, SDK,
+CLI, and MCP paths.
 
 ## Product and API
 
