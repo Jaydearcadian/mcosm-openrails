@@ -52,7 +52,7 @@ Developers can use OpenRails' off-chain receipts to build **decentralized gateke
   2. The client submits this receipt in their HTTP headers when querying a server:
      `Authorization: OpenRails <receipt_signature>`
   3. The target server imports the OpenRails SDK and calls `verifyReceipt(receipt)` offline. 
-  4. If valid, access is granted instantly-**requiring zero database checks or on-chain reads on the gateway server**, achieving sub-millisecond verification latency.
+  4. If valid, access is granted instantly—**requiring zero database checks or on-chain reads on the gateway server**, achieving sub-millisecond verification latency.
 
 ---
 

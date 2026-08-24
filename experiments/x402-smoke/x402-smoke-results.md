@@ -96,7 +96,7 @@ below and flip the status-table row from NOT EXECUTED → PASS. Settlement batch
 ```bash
 # Server (Terminal A)
 OPENRAILS_DASHBOARD_MODE=arc-testnet                 # required: enables the x402 endpoint
-ARC_RPC_URL=https://rpc.testnet.arc.io          # required: non-loopback Arc RPC
+ARC_RPC_URL=https://rpc.testnet.arc.io               # required: non-loopback Arc RPC
 OPENRAILS_DEPLOYMENT_REGISTRY_PATH=deployments/openrails-addresses.local.json
 # Optional overrides (defaults shown):
 # OPENRAILS_X402_SELLER_ADDRESS=0x933a2405f84c224be1ef373ba16e992e1f459682

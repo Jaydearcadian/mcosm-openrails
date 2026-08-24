@@ -362,7 +362,11 @@ function getWalletNetworkParams() {
       symbol: "USDC",
       decimals: 6,
     },
-    rpcUrls: ["https://rpc.testnet.arc.io"],
+    rpcUrls: [
+      "https://rpc.testnet.arc.io",
+      "https://rpc.drpc.testnet.arc.io",
+      "https://rpc.blockdaemon.testnet.arc.io",
+    ],
     blockExplorerUrls: [config.explorerBaseUrl || "https://testnet.arcscan.app"],
   };
 }

@@ -26,7 +26,7 @@ import {
   submitSettleWithSigner,
 } from "../../sdk/src/wallet";
 
-const RPC_URL = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
+const RPC_URL = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.io";
 const CHAIN_ID = Number(process.env.ARC_CHAIN_ID || "5042002");
 const HUB = process.env.ARC_OPENRAILS_HUB_ADDRESS || "0x941C8029F0f912df3fAb7423890ab2359b996D0b";
 const USDC = process.env.ARC_USDC_ADDRESS || "0x3600000000000000000000000000000000000000";
